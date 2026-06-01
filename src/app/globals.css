@@ -1,26 +1,37 @@
 @import "tailwindcss";
 
+@theme {
+  /* Paleta de cores FEITORIA */
+  --color-cream: #F6F3EE;
+  --color-sand: #E9E2D6;
+  --color-beige: #DCC8B2;
+  --color-caramel: #BC6A4D;
+  --color-espresso: #3B2F2A;
+  --color-olive: #6B7D5A;
+  --color-terracota: #C55A3A;
+  --color-wine: #7E1D1D;
+
+  /* Tipografia */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #F6F3EE;
+  --foreground: #3B2F2A;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
