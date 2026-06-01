@@ -106,14 +106,14 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* ── PRODUCT MAIN ─────────────────────────────────────────────────── */}
-          <div className="grid lg:grid-cols-2 gap-12 xl:gap-24 py-8 lg:py-12">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 xl:gap-24 py-6 sm:py-8 lg:py-12">
             
             {/* Image Gallery */}
             <div className="flex flex-col gap-4">
               <div className="aspect-[4/5] bg-sand overflow-hidden">
                 <ImagePlaceholder className="w-full h-full" />
               </div>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-4 gap-3 sm:gap-4">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="aspect-square bg-sand/50 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                     <ImagePlaceholder className="w-full h-full" />
@@ -123,46 +123,46 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
             </div>
 
             {/* Content */}
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6 sm:gap-8">
               <div>
-                <span className="font-sans text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
+                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
                   {product.category}
                 </span>
-                <h1 className="font-serif text-4xl lg:text-5xl xl:text-6xl text-espresso mt-3 font-normal leading-tight">
+                <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-espresso mt-2 sm:mt-3 font-normal leading-[1.15] sm:leading-tight">
                   {product.name}
                 </h1>
-                <div className="flex items-center gap-4 mt-6">
-                  <span className="font-serif text-3xl text-espresso font-normal">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5 sm:mt-6">
+                  <span className="font-serif text-2xl sm:text-3xl text-espresso font-normal">
                     R$ {product.price.toFixed(2).replace(".", ",")}
                   </span>
-                  <span className="text-espresso/20">|</span>
+                  <span className="hidden sm:block text-espresso/20">|</span>
                   <div className="flex items-center gap-1.5 text-espresso/45">
                     <MapPin size={14} />
-                    <span className="font-sans text-[0.8rem]">{product.city}</span>
+                    <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">{product.city}</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <p className="font-sans text-[0.95rem] text-espresso/70 leading-relaxed">
+                <p className="font-sans text-[0.9rem] sm:text-[0.95rem] text-espresso/70 leading-relaxed">
                   {product.description}
                 </p>
-                <div className="pt-4 flex flex-col gap-2">
-                  <span className="font-sans text-[0.65rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+                <div className="pt-2 sm:pt-4 flex flex-col gap-1.5 sm:gap-2">
+                  <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
                     Produtora
                   </span>
-                  <a href="#" className="font-serif text-xl text-espresso hover:text-terracota transition-colors underline underline-offset-4 decoration-espresso/10 hover:decoration-terracota">
+                  <a href="#" className="font-serif text-lg sm:text-xl text-espresso hover:text-terracota transition-colors underline underline-offset-4 decoration-espresso/10 hover:decoration-terracota">
                     {product.producer}
                   </a>
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-sand flex flex-col sm:flex-row items-center gap-4">
+              <div className="pt-6 sm:pt-8 border-t border-sand flex flex-col sm:flex-row items-center gap-4">
                 {/* Quantity */}
-                <div className="flex items-center border border-espresso/10 bg-sand/20 h-14 w-full sm:w-auto">
+                <div className="flex items-center border border-espresso/10 bg-sand/20 h-12 sm:h-14 w-full sm:w-auto">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-full flex items-center justify-center text-espresso/30 hover:text-espresso transition-colors"
+                    className="flex-1 sm:w-12 h-full flex items-center justify-center text-espresso/30 hover:text-espresso transition-colors"
                   >
                     <Minus size={16} />
                   </button>
@@ -171,7 +171,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                   </span>
                   <button 
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-12 h-full flex items-center justify-center text-espresso/30 hover:text-espresso transition-colors"
+                    className="flex-1 sm:w-12 h-full flex items-center justify-center text-espresso/30 hover:text-espresso transition-colors"
                   >
                     <Plus size={16} />
                   </button>
@@ -180,20 +180,20 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                 {/* Add to Cart */}
                 <button 
                   onClick={handleAddToCart}
-                  className="flex-1 h-14 bg-terracota text-cream font-sans text-[0.75rem] font-semibold tracking-[0.2em] uppercase hover:bg-caramel transition-colors flex items-center justify-center gap-3 w-full sm:w-auto"
+                  className="flex-1 h-12 sm:h-14 bg-terracota text-cream font-sans text-[0.7rem] sm:text-[0.75rem] font-semibold tracking-[0.2em] uppercase hover:bg-caramel transition-colors flex items-center justify-center gap-3 w-full"
                 >
                   Adicionar ao Carrinho
                   <ShoppingBag size={18} />
                 </button>
 
-                <button className="h-14 w-14 border border-espresso/10 flex items-center justify-center text-espresso/40 hover:text-espresso transition-colors">
+                <button className="h-12 w-full sm:w-14 border border-espresso/10 flex items-center justify-center text-espresso/40 hover:text-espresso transition-colors">
                   <Heart size={20} />
                 </button>
               </div>
 
               {/* Shipping Estimate */}
-              <div className="mt-4 p-5 bg-sand/30 border border-sand flex flex-col gap-4">
-                <span className="font-sans text-[0.65rem] tracking-[0.15em] uppercase text-espresso/50 font-semibold">
+              <div className="mt-2 p-5 bg-sand/30 border border-sand flex flex-col gap-4">
+                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.15em] uppercase text-espresso/50 font-semibold">
                   Calcular Entrega
                 </span>
                 <div className="flex gap-2">
@@ -202,12 +202,12 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                     placeholder="Seu CEP" 
                     value={cep}
                     onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                    className="flex-1 bg-cream border border-espresso/10 px-4 py-2 text-sm font-sans focus:outline-none focus:border-terracota"
+                    className="flex-1 bg-cream border border-espresso/10 px-4 py-2 text-sm font-sans focus:outline-none focus:border-terracota min-w-0"
                   />
                   <button 
                     onClick={handleCepSearch}
                     disabled={loadingCep}
-                    className="bg-espresso text-cream px-6 py-2 text-[0.65rem] uppercase font-sans tracking-widest font-semibold hover:bg-terracota transition-colors disabled:opacity-50 flex items-center justify-center min-w-[80px]"
+                    className="bg-espresso text-cream px-4 sm:px-6 py-2 text-[0.6rem] sm:text-[0.65rem] uppercase font-sans tracking-widest font-semibold hover:bg-terracota transition-colors disabled:opacity-50 flex items-center justify-center min-w-[70px] sm:min-w-[80px]"
                   >
                     {loadingCep ? <Loader2 size={14} className="animate-spin" /> : "OK"}
                   </button>
@@ -246,57 +246,57 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* ── RELATED PRODUCTS ─────────────────────────────────────────────── */}
-          <section className="py-20 lg:py-32 border-t border-sand mt-12">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-12">
+          <section className="py-16 lg:py-32 border-t border-sand mt-12">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-12">
               <div>
-                <span className="font-sans text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
+                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
                   Você também pode gostar
                 </span>
-                <h2 className="font-serif text-3xl lg:text-4xl text-espresso mt-2 font-normal">
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-espresso mt-2 font-normal">
                   Produtos Relacionados
                 </h2>
               </div>
               <a
                 href="/produtos"
-                className="font-sans text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
+                className="font-sans text-[0.65rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
               >
                 Ver todos <ArrowRight size={11} />
               </a>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-6 lg:gap-6">
               {relatedProducts.map((p) => (
                 <div key={p.id} className="group flex flex-col bg-cream">
                   <div className="aspect-square overflow-hidden relative">
                     <ImagePlaceholder className="w-full h-full group-hover:scale-[1.03] transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-espresso/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 bg-espresso/5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none lg:pointer-events-auto">
                       <a 
                         href={`/produtos/${p.id}`}
-                        className="bg-cream text-espresso font-sans text-[0.65rem] tracking-[0.2em] uppercase px-5 py-3 hover:bg-terracota hover:text-cream transition-colors"
+                        className="hidden lg:block bg-cream text-espresso font-sans text-[0.65rem] tracking-[0.2em] uppercase px-5 py-3 hover:bg-terracota hover:text-cream transition-colors"
                       >
                         Ver Detalhes
                       </a>
                     </div>
                   </div>
-                  <div className="p-4 sm:p-5 flex flex-col gap-2">
-                    <span className="font-sans text-[0.62rem] tracking-[0.28em] uppercase text-caramel/80 font-semibold">
+                  <div className="p-3.5 sm:p-5 flex flex-col gap-1.5 sm:gap-2">
+                    <span className="font-sans text-[0.55rem] sm:text-[0.62rem] tracking-[0.2em] sm:tracking-[0.28em] uppercase text-caramel/80 font-semibold">
                       {p.category}
                     </span>
-                    <h3 className="font-sans text-[0.88rem] font-medium text-espresso leading-snug">
+                    <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
                       {p.name}
                     </h3>
-                    <span className="font-sans text-[0.75rem] text-espresso/45">
+                    <span className="font-sans text-[0.65rem] sm:text-[0.75rem] text-espresso/45">
                       por {p.producer}
                     </span>
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-sand">
-                      <span className="font-serif text-[1.15rem] text-espresso font-normal">
+                    <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
+                      <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
                         R$ {p.price.toFixed(2).replace(".", ",")}
                       </span>
                       <button
                         aria-label="Adicionar ao carrinho"
-                        className="w-8 h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
+                        className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
                       >
-                        <Plus size={14} />
+                        <Plus size={12} className="sm:size-[14px]" />
                       </button>
                     </div>
                   </div>
