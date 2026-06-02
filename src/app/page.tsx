@@ -90,10 +90,10 @@ export default function Home() {
         {/* ── HERO ───────────────────────────────────────────────────────────── */}
         <section className="pt-16 sm:pt-20 lg:pt-28 bg-gradient-to-br from-[#BC6A4D] via-[#6B7D5A] to-[#C55A3A]">
           <div className="max-w-7xl mx-auto px-5 sm:px-8">
-            <div className="grid lg:grid-cols-2 gap-10 xl:gap-20 items-center min-h-[85vh] py-12 lg:py-0">
+            <div className="grid lg:grid-cols-2 gap-10 xl:gap-20 items-stretch min-h-[85vh]">
 
               {/* Copy */}
-              <div className="flex flex-col gap-6 sm:gap-7 lg:gap-8 order-2 lg:order-1">
+              <div className="flex flex-col gap-6 sm:gap-7 lg:gap-8 order-2 lg:order-1 self-center py-12 lg:py-20">
                 <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-cream/70 font-semibold">
                   Artesanal · Local · Singular
                 </span>
@@ -125,16 +125,17 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Image */}
-              <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
-                <div className="relative w-full max-w-[280px] sm:max-w-sm lg:max-w-none">
-                  <div className="aspect-[4/5] overflow-hidden">
-                    <ImagePlaceholder className="w-full h-full" />
-                  </div>
-                  {/* Decorative accents */}
-                  <div className="absolute -bottom-3 -left-3 w-16 h-16 sm:w-20 sm:h-20 bg-cream/20 -z-10" />
-                  <div className="absolute -top-3 -right-3 w-10 h-10 sm:w-14 sm:h-14 bg-cream/15 -z-10" />
-                </div>
+              {/* Image — fills full right column height */}
+              <div className="relative order-1 lg:order-2 h-[60vw] sm:h-[50vw] lg:h-auto overflow-hidden">
+                <Image
+                  src="/logo_nova.jpeg"
+                  alt="FEITORIA — Curadoria de sabores, marcas e histórias"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                {/* Overlay left-to-right para harmonizar com o gradiente */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#BC6A4D]/50 via-[#6B7D5A]/15 to-transparent pointer-events-none" />
               </div>
 
             </div>
