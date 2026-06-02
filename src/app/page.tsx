@@ -125,17 +125,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Image — fills full right column height */}
-              <div className="relative order-1 lg:order-2 h-[60vw] sm:h-[50vw] lg:h-auto overflow-hidden">
+              {/* Image */}
+              <div className="relative flex items-center justify-center w-full h-full order-1 lg:order-2">
                 <Image
                   src="/logo_nova.jpeg"
-                  alt="FEITORIA — Curadoria de sabores, marcas e histórias"
-                  fill
-                  className="object-cover"
+                  alt="FEITORIA"
+                  width={500}
+                  height={350}
+                  className="object-contain rounded-lg shadow-sm"
                   priority
                 />
-                {/* Overlay left-to-right para harmonizar com o gradiente */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#BC6A4D]/50 via-[#6B7D5A]/15 to-transparent pointer-events-none" />
               </div>
 
             </div>
