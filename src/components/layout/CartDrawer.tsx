@@ -1,6 +1,7 @@
 "use client";
 
 import { X, ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useCart } from "@/lib/cart-context";
 
@@ -10,7 +11,13 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const router = useRouter();
   const { items, subtotal, updateQuantity, removeItem } = useCart();
+
+  function handleCheckout() {
+    onClose();
+    router.push("/checkout");
+  }
 
   return (
     <>
@@ -119,7 +126,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   R$ {subtotal.toFixed(2).replace(".", ",")}
                 </span>
               </div>
-              <button className="w-full h-12 sm:h-14 bg-terracota text-cream font-sans text-[0.7rem] sm:text-[0.75rem] font-semibold tracking-[0.2em] uppercase hover:bg-caramel transition-colors flex items-center justify-center gap-3">
+              <button
+                onClick={handleCheckout}
+                className="w-full h-12 sm:h-14 bg-terracota text-cream font-sans text-[0.7rem] sm:text-[0.75rem] font-semibold tracking-[0.2em] uppercase hover:bg-caramel transition-colors flex items-center justify-center gap-3"
+              >
                 Finalizar Pedido
               </button>
               <p className="text-center font-sans text-[0.6rem] sm:text-[0.65rem] text-espresso/30 mt-4 leading-relaxed px-4">

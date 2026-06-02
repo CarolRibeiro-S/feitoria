@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
+import { useCart } from "@/lib/cart-context";
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -27,6 +28,7 @@ const ALL_PRODUCTS = [
 ];
 
 export default function ProdutosPage() {
+  const { addItem } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -168,6 +170,14 @@ export default function ProdutosPage() {
                           </span>
                           <button
                             aria-label="Adicionar ao carrinho"
+                            onClick={() => addItem({
+                              id: product.id,
+                              name: product.name,
+                              producer: product.producer,
+                              price: product.price,
+                              quantity: 1,
+                              image: product.image,
+                            })}
                             className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
                           >
                             <Plus size={12} className="sm:size-[14px]" />
