@@ -14,7 +14,7 @@ const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_KEY!)
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type ItemPedidoInput = {
-  produto_id: number
+  produto_id: string
   nome_produto: string
   produtor: string
   preco_unitario: number
