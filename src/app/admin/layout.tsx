@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   }
                 `}
               >
-                <Icon size={16} strokeWidth={1.8} className={active ? "text-terracota" : "text-inherit"} />
+                <Icon size={16} strokeWidth={1.8} className={active ? "text-olive" : "text-inherit"} />
                 {label}
               </Link>
             );

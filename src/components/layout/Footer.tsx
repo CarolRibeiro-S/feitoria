@@ -3,7 +3,7 @@ import { FeitoriaLogo } from "./Header";
 
 export function Footer() {
   return (
-    <footer className="bg-espresso border-t border-white/8 py-12 sm:py-14 lg:py-16">
+    <footer className="bg-caramel border-t border-white/8 py-12 sm:py-14 lg:py-16">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 mb-12">
 

@@ -88,37 +88,37 @@ export default function Home() {
     <div className="bg-cream min-h-screen">
       <main>
         {/* ── HERO ───────────────────────────────────────────────────────────── */}
-        <section className="pt-16 sm:pt-20 lg:pt-28 bg-cream">
+        <section className="pt-16 sm:pt-20 lg:pt-28 bg-gradient-to-br from-[#BC6A4D] via-[#6B7D5A] to-[#C55A3A]">
           <div className="max-w-7xl mx-auto px-5 sm:px-8">
             <div className="grid lg:grid-cols-2 gap-10 xl:gap-20 items-center min-h-[85vh] py-12 lg:py-0">
 
               {/* Copy */}
               <div className="flex flex-col gap-6 sm:gap-7 lg:gap-8 order-2 lg:order-1">
-                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
+                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-cream/70 font-semibold">
                   Artesanal · Local · Singular
                 </span>
                 <div className="flex flex-col gap-4">
-                  <h1 className="font-serif text-[2.2rem] sm:text-5xl lg:text-[3.4rem] xl:text-[4rem] text-espresso leading-[1.1] sm:leading-[1.08] font-normal">
+                  <h1 className="font-serif text-[2.2rem] sm:text-5xl lg:text-[3.4rem] xl:text-[4rem] text-cream leading-[1.1] sm:leading-[1.08] font-normal">
                     Curadoria de sabores, marcas e histórias.
                   </h1>
-                  <p className="font-serif text-lg sm:text-2xl text-espresso/55 italic font-normal">
+                  <p className="font-serif text-lg sm:text-2xl text-cream/80 italic font-normal">
                     Descubra quem faz.
                   </p>
                 </div>
-                <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-espresso/65 leading-relaxed max-w-sm">
+                <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-cream/75 leading-relaxed max-w-sm">
                   Uma plataforma que conecta você a pequenos produtores de alimentos artesanais do Brasil — cada produto com um rosto, uma história, um propósito.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <a
                     href="/produtos"
-                    className="inline-flex items-center justify-center gap-2 bg-terracota text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:bg-caramel transition-colors"
+                    className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:bg-sand transition-colors"
                   >
                     Explorar Produtos
                     <ArrowRight size={14} />
                   </a>
                   <a
                     href="/produtos"
-                    className="inline-flex items-center justify-center gap-2 border border-espresso/25 text-espresso font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-espresso/60 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 border border-cream/40 text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-cream/70 transition-colors"
                   >
                     Conheça as Produtoras
                   </a>
@@ -132,8 +132,8 @@ export default function Home() {
                     <ImagePlaceholder className="w-full h-full" />
                   </div>
                   {/* Decorative accents */}
-                  <div className="absolute -bottom-3 -left-3 w-16 h-16 sm:w-20 sm:h-20 bg-sand -z-10" />
-                  <div className="absolute -top-3 -right-3 w-10 h-10 sm:w-14 sm:h-14 bg-beige/50 -z-10" />
+                  <div className="absolute -bottom-3 -left-3 w-16 h-16 sm:w-20 sm:h-20 bg-cream/20 -z-10" />
+                  <div className="absolute -top-3 -right-3 w-10 h-10 sm:w-14 sm:h-14 bg-cream/15 -z-10" />
                 </div>
               </div>
 
@@ -161,7 +161,7 @@ export default function Home() {
                   className="flex flex-col items-center gap-2.5 flex-shrink-0 group lg:flex-shrink"
                 >
                   <div className="w-[4.2rem] h-[4.2rem] sm:w-20 sm:h-20 lg:w-full bg-cream group-hover:bg-beige/70 transition-colors border border-beige/40 flex items-center justify-center">
-                    <Icon size={24} strokeWidth={1.4} className="text-espresso/70 group-hover:text-espresso transition-colors" />
+                    <Icon size={24} strokeWidth={1.4} className="text-olive/80 group-hover:text-olive transition-colors" />
                   </div>
                   <span className="font-sans text-[0.65rem] sm:text-[0.68rem] font-medium text-espresso/75 tracking-wide text-center w-[4.2rem] sm:w-20 lg:w-full leading-tight">
                     {name}
@@ -326,7 +326,7 @@ export default function Home() {
         </section>
 
         {/* ── BANNER ─────────────────────────────────────────────────────────── */}
-        <section className="bg-espresso py-16 sm:py-20 lg:py-32">
+        <section className="bg-terracota py-16 sm:py-20 lg:py-32">
           <div className="max-w-5xl mx-auto px-5 sm:px-8 text-center flex flex-col items-center gap-6 sm:gap-8">
             <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-cream/35 font-semibold">
               Nossa missão

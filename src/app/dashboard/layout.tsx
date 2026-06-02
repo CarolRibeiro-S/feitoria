@@ -89,12 +89,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   flex items-center gap-3 px-3 py-2.5 transition-colors
                   font-sans text-[0.76rem] font-medium tracking-wide
                   ${active
-                    ? "bg-white/10 text-cream"
-                    : "text-cream/45 hover:bg-white/5 hover:text-cream/75"
+                    ? "bg-caramel/20 text-cream border-l-2 border-caramel"
+                    : "text-cream/45 hover:bg-white/5 hover:text-cream/75 border-l-2 border-transparent"
                   }
                 `}
               >
-                <Icon size={15} strokeWidth={1.7} className="flex-shrink-0" />
+                <Icon size={15} strokeWidth={1.7} className={`flex-shrink-0 ${active ? "text-caramel" : ""}`} />
                 {label}
               </Link>
             );
