@@ -103,7 +103,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
 
           {/* Conteúdo — lado direito, centralizado verticalmente */}
-          <div className="absolute right-6 sm:right-12 lg:right-16 top-1/2 -translate-y-1/2 flex flex-col items-end gap-5 max-w-xs sm:max-w-sm lg:max-w-md text-right">
+          <div className="absolute right-6 sm:right-12 lg:right-16 top-1/2 -translate-y-1/2 flex flex-col items-end gap-5 max-w-xs sm:max-w-sm lg:max-w-md text-right bg-black/35 backdrop-blur-[4px] rounded-2xl p-8 border border-white/10">
 
             <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-widest uppercase text-cream/70 font-semibold drop-shadow-sm">
               Artesanal · Local · Singular
