@@ -103,14 +103,14 @@ export default function Home() {
             </p>
           </div>
 
-          {/* 2 — Imagem centralizada */}
+          {/* 2 — Imagem largura total */}
           <div className="flex items-center justify-center flex-1 py-8 lg:py-10 w-full">
             <Image
               src="/logo_nova.jpeg"
               alt="FEITORIA"
-              width={500}
-              height={400}
-              className="object-contain w-full max-w-[280px] sm:max-w-[380px] lg:max-w-[500px] drop-shadow-2xl"
+              width={1920}
+              height={1080}
+              className="object-contain w-full h-auto drop-shadow-2xl"
               priority
             />
           </div>
