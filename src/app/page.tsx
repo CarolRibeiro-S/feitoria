@@ -88,48 +88,51 @@ export default function Home() {
     <div className="bg-cream min-h-screen">
       <main>
         {/* ── HERO ───────────────────────────────────────────────────────────── */}
-        <section className="w-full min-h-[100vh] bg-gradient-to-br from-[#BC6A4D] via-[#6B7D5A] to-[#C55A3A] flex flex-col items-center justify-between pt-16 sm:pt-20 lg:pt-24 pb-12 lg:pb-16 px-5 sm:px-8">
+        <section className="relative w-full min-h-[100vh] overflow-hidden">
 
-          {/* 1 — Texto topo */}
-          <div className="flex flex-col items-center text-center gap-4 pt-10 lg:pt-14">
-            <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.4em] uppercase text-cream/65 font-semibold drop-shadow-sm">
+          {/* Imagem de fundo */}
+          <Image
+            src="/logo_nova.jpeg"
+            alt="FEITORIA"
+            fill
+            className="object-cover object-center"
+            priority
+          />
+
+          {/* Overlay gradiente esquerda → transparente */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+
+          {/* Conteúdo — lado direito, centralizado verticalmente */}
+          <div className="absolute right-6 sm:right-12 lg:right-16 top-1/2 -translate-y-1/2 flex flex-col items-end gap-5 max-w-xs sm:max-w-sm lg:max-w-md text-right">
+
+            <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-widest uppercase text-cream/70 font-semibold drop-shadow-sm">
               Artesanal · Local · Singular
             </span>
-            <h1 className="font-serif text-[2.6rem] sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] text-cream font-normal leading-[1.06] drop-shadow-md">
+
+            <h1 className="font-serif text-[2.4rem] sm:text-5xl lg:text-[3.6rem] xl:text-[4.2rem] text-cream font-normal leading-[1.06] drop-shadow-md">
               Descubra quem faz.
             </h1>
-            <p className="font-sans text-[0.85rem] sm:text-[0.95rem] text-cream/70 tracking-wide drop-shadow-sm">
+
+            <p className="font-sans text-[0.82rem] sm:text-[0.9rem] text-cream/80 tracking-wide drop-shadow-sm">
               Pequenos produtores. Grandes histórias.
             </p>
-          </div>
 
-          {/* 2 — Imagem largura total */}
-          <div className="flex items-center justify-center flex-1 py-8 lg:py-10 w-full">
-            <Image
-              src="/logo_nova.jpeg"
-              alt="FEITORIA"
-              width={1920}
-              height={1080}
-              className="object-contain w-full h-auto drop-shadow-2xl"
-              priority
-            />
-          </div>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <a
+                href="/produtos"
+                className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.68rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-6 py-3.5 hover:bg-sand transition-colors"
+              >
+                Explorar Produtos
+                <ArrowRight size={13} />
+              </a>
+              <a
+                href="/produtoras"
+                className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.68rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-6 py-3.5 hover:border-cream hover:bg-cream/10 transition-colors"
+              >
+                Conheça as Produtoras
+              </a>
+            </div>
 
-          {/* 3 — Botões base */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-            <a
-              href="/produtos"
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:bg-sand transition-colors"
-            >
-              Explorar Produtos
-              <ArrowRight size={14} />
-            </a>
-            <a
-              href="/produtoras"
-              className="flex-1 inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-cream hover:bg-cream/10 transition-colors"
-            >
-              Conheça as Produtoras
-            </a>
           </div>
 
         </section>
