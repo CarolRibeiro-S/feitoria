@@ -20,15 +20,15 @@ import { useCart } from "@/lib/cart-context";
 // ─── Mock data (Same as catalog for consistency) ─────────────────────────────
 
 const ALL_PRODUCTS = [
-  { id: 1, name: "Geleia de Damasco com Cardamomo", producer: "Casa Mato Verde", price: 34.9, category: "Empório", description: "Uma combinação sofisticada e aromática. Nossa geleia é produzida em pequenos lotes, usando damascos selecionados e cardamomo moído na hora. Perfeita para acompanhar queijos maturados ou torradas de fermentação natural.", city: "Belo Horizonte, MG" },
-  { id: 2, name: "Torta de Lavanda e Limão Siciliano", producer: "Ateliê das Flores", price: 89.0, category: "Confeitaria", description: "Uma sobremesa delicada e surpreendente. A base amanteigada sustenta um creme aveludado de limão siciliano com o toque floral da lavanda orgânica. Decorada com flores comestíveis do nosso jardim.", city: "São Paulo, SP" },
-  { id: 3, name: "Pão de Centeio com Nozes", producer: "Grão Fermentado", price: 28.0, category: "Padaria", description: "Pão de fermentação natural (levain) com 48h de maturação. O centeio traz notas terrosas que harmonizam perfeitamente com a crocância das nozes chilenas.", city: "Florianópolis, SC" },
-  { id: 4, name: "Kit Café da Manhã Especial", producer: "Casa Mato Verde", price: 145.0, category: "Kits", description: "Uma seleção de nossos melhores produtos para um despertar inesquecível. Inclui pão artesanal, geleia da estação, granola da casa e café especial.", city: "Belo Horizonte, MG" },
-  { id: 5, name: "Brigadeiro de Pistache", producer: "Ateliê das Flores", price: 12.0, category: "Confeitaria", description: "Brigadeiro gourmet feito com pistache italiano e chocolate branco belga. Textura impecável e sabor marcante.", city: "São Paulo, SP" },
-  { id: 6, name: "Focaccia de Ervas e Azeite", producer: "Grão Fermentado", price: 42.0, category: "Padaria", description: "Massa leve e aerada, generosamente regada com azeite extra virgem e finalizada com flor de sal e alecrim fresco.", city: "Florianópolis, SC" },
-  { id: 7, name: "Café Especial Torra Média", producer: "Sítio Primavera", price: 54.0, category: "Cafés", description: "Café arábica de altitude com notas de caramelo e chocolate. Torra média que preserva a doçura natural do grão.", city: "Espírito Santo do Pinhal, SP" },
-  { id: 8, name: "Vinho Artesanal de Jabuticaba", producer: "Vinícola Velha", price: 78.0, category: "Bebidas", description: "Fermentado de jabuticaba produzido seguindo tradições familiares. Sabor frutado, equilibrado e com final persistente.", city: "Bento Gonçalves, RS" },
-  { id: 9, name: "Lasanha Artesanal Congelada", producer: "Massa & Cia", price: 45.0, category: "Congelados", description: "Massa fresca produzida com ovos caipiras e farinha italiana. Molho de tomate artesanal e queijos selecionados.", city: "Curitiba, PR" },
+  { id: "1", name: "Geleia de Damasco com Cardamomo", producer: "Casa Mato Verde", price: 34.9, category: "Empório", description: "Uma combinação sofisticada e aromática. Nossa geleia é produzida em pequenos lotes, usando damascos selecionados e cardamomo moído na hora. Perfeita para acompanhar queijos maturados ou torradas de fermentação natural.", city: "Belo Horizonte, MG" },
+  { id: "2", name: "Torta de Lavanda e Limão Siciliano", producer: "Ateliê das Flores", price: 89.0, category: "Confeitaria", description: "Uma sobremesa delicada e surpreendente. A base amanteigada sustenta um creme aveludado de limão siciliano com o toque floral da lavanda orgânica. Decorada com flores comestíveis do nosso jardim.", city: "São Paulo, SP" },
+  { id: "3", name: "Pão de Centeio com Nozes", producer: "Grão Fermentado", price: 28.0, category: "Padaria", description: "Pão de fermentação natural (levain) com 48h de maturação. O centeio traz notas terrosas que harmonizam perfeitamente com a crocância das nozes chilenas.", city: "Florianópolis, SC" },
+  { id: "4", name: "Kit Café da Manhã Especial", producer: "Casa Mato Verde", price: 145.0, category: "Kits", description: "Uma seleção de nossos melhores produtos para um despertar inesquecível. Inclui pão artesanal, geleia da estação, granola da casa e café especial.", city: "Belo Horizonte, MG" },
+  { id: "5", name: "Brigadeiro de Pistache", producer: "Ateliê das Flores", price: 12.0, category: "Confeitaria", description: "Brigadeiro gourmet feito com pistache italiano e chocolate branco belga. Textura impecável e sabor marcante.", city: "São Paulo, SP" },
+  { id: "6", name: "Focaccia de Ervas e Azeite", producer: "Grão Fermentado", price: 42.0, category: "Padaria", description: "Massa leve e aerada, generosamente regada com azeite extra virgem e finalizada com flor de sal e alecrim fresco.", city: "Florianópolis, SC" },
+  { id: "7", name: "Café Especial Torra Média", producer: "Sítio Primavera", price: 54.0, category: "Cafés", description: "Café arábica de altitude com notas de caramelo e chocolate. Torra média que preserva a doçura natural do grão.", city: "Espírito Santo do Pinhal, SP" },
+  { id: "8", name: "Vinho Artesanal de Jabuticaba", producer: "Vinícola Velha", price: 78.0, category: "Bebidas", description: "Fermentado de jabuticaba produzido seguindo tradições familiares. Sabor frutado, equilibrado e com final persistente.", city: "Bento Gonçalves, RS" },
+  { id: "9", name: "Lasanha Artesanal Congelada", producer: "Massa & Cia", price: 45.0, category: "Congelados", description: "Massa fresca produzida com ovos caipiras e farinha italiana. Molho de tomate artesanal e queijos selecionados.", city: "Curitiba, PR" },
 ];
 
 export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
@@ -42,7 +42,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
   const [loadingCep, setLoadingCep] = useState(false);
   const [cepError, setCepError] = useState("");
 
-  const product = ALL_PRODUCTS.find((p) => p.id === Number(id)) || ALL_PRODUCTS[0];
+  const product = ALL_PRODUCTS.find((p) => p.id === id) || ALL_PRODUCTS[0];
   
   const relatedProducts = useMemo(() => {
     return ALL_PRODUCTS
