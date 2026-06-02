@@ -88,60 +88,48 @@ export default function Home() {
     <div className="bg-cream min-h-screen">
       <main>
         {/* ── HERO ───────────────────────────────────────────────────────────── */}
-        <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden">
+        <section className="w-full min-h-[100vh] bg-gradient-to-br from-[#BC6A4D] via-[#6B7D5A] to-[#C55A3A] flex flex-col items-center justify-between pt-16 sm:pt-20 lg:pt-24 pb-12 lg:pb-16 px-5 sm:px-8">
 
-          {/* Background image */}
-          <Image
-            src="/logo_nova.jpeg"
-            alt="FEITORIA — Curadoria de sabores, marcas e histórias"
-            fill
-            className="object-cover object-center"
-            priority
-          />
+          {/* 1 — Texto topo */}
+          <div className="flex flex-col items-center text-center gap-4 pt-10 lg:pt-14">
+            <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.4em] uppercase text-cream/65 font-semibold drop-shadow-sm">
+              Artesanal · Local · Singular
+            </span>
+            <h1 className="font-serif text-[2.6rem] sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] text-cream font-normal leading-[1.06] drop-shadow-md">
+              Descubra quem faz.
+            </h1>
+            <p className="font-sans text-[0.85rem] sm:text-[0.95rem] text-cream/70 tracking-wide drop-shadow-sm">
+              Pequenos produtores. Grandes histórias.
+            </p>
+          </div>
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#BC6A4D]/70 via-[#6B7D5A]/50 to-[#C55A3A]/40" />
+          {/* 2 — Imagem centralizada */}
+          <div className="flex items-center justify-center flex-1 py-8 lg:py-10 w-full">
+            <Image
+              src="/logo_nova.jpeg"
+              alt="FEITORIA"
+              width={500}
+              height={400}
+              className="object-contain w-full max-w-[280px] sm:max-w-[380px] lg:max-w-[500px] drop-shadow-2xl"
+              priority
+            />
+          </div>
 
-          {/* Content */}
-          <div className="relative z-10 w-full pt-16 sm:pt-20 lg:pt-28">
-            <div className="max-w-7xl mx-auto px-5 sm:px-8">
-              <div className="max-w-xl py-16 lg:py-24 flex flex-col gap-6 sm:gap-7 lg:gap-8">
-
-                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-cream/70 font-semibold">
-                  Artesanal · Local · Singular
-                </span>
-
-                <div className="flex flex-col gap-4">
-                  <h1 className="font-serif text-[2.4rem] sm:text-5xl lg:text-[3.4rem] xl:text-[4rem] text-cream leading-[1.08] font-normal">
-                    Curadoria de sabores, marcas e histórias.
-                  </h1>
-                  <p className="font-serif text-lg sm:text-2xl text-cream/85 italic font-normal">
-                    Descubra quem faz.
-                  </p>
-                </div>
-
-                <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-cream/75 leading-relaxed max-w-sm">
-                  Uma plataforma que conecta você a pequenos produtores de alimentos artesanais do Brasil — cada produto com um rosto, uma história, um propósito.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                  <a
-                    href="/produtos"
-                    className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:bg-sand transition-colors"
-                  >
-                    Explorar Produtos
-                    <ArrowRight size={14} />
-                  </a>
-                  <a
-                    href="/produtoras"
-                    className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-cream hover:bg-cream/10 transition-colors"
-                  >
-                    Conheça as Produtoras
-                  </a>
-                </div>
-
-              </div>
-            </div>
+          {/* 3 — Botões base */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+            <a
+              href="/produtos"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:bg-sand transition-colors"
+            >
+              Explorar Produtos
+              <ArrowRight size={14} />
+            </a>
+            <a
+              href="/produtoras"
+              className="flex-1 inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-cream hover:bg-cream/10 transition-colors"
+            >
+              Conheça as Produtoras
+            </a>
           </div>
 
         </section>
