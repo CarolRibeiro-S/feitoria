@@ -88,26 +88,42 @@ export default function Home() {
     <div className="bg-cream min-h-screen">
       <main>
         {/* ── HERO ───────────────────────────────────────────────────────────── */}
-        <section className="pt-16 sm:pt-20 lg:pt-28 bg-gradient-to-br from-[#BC6A4D] via-[#6B7D5A] to-[#C55A3A]">
-          <div className="max-w-7xl mx-auto px-5 sm:px-8">
-            <div className="grid lg:grid-cols-2 gap-10 xl:gap-20 items-stretch min-h-[85vh]">
+        <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden">
 
-              {/* Copy */}
-              <div className="flex flex-col gap-6 sm:gap-7 lg:gap-8 order-2 lg:order-1 self-center py-12 lg:py-20">
+          {/* Background image */}
+          <Image
+            src="/logo_nova.jpeg"
+            alt="FEITORIA — Curadoria de sabores, marcas e histórias"
+            fill
+            className="object-cover object-center"
+            priority
+          />
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#BC6A4D]/70 via-[#6B7D5A]/50 to-[#C55A3A]/40" />
+
+          {/* Content */}
+          <div className="relative z-10 w-full pt-16 sm:pt-20 lg:pt-28">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8">
+              <div className="max-w-xl py-16 lg:py-24 flex flex-col gap-6 sm:gap-7 lg:gap-8">
+
                 <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-cream/70 font-semibold">
                   Artesanal · Local · Singular
                 </span>
+
                 <div className="flex flex-col gap-4">
-                  <h1 className="font-serif text-[2.2rem] sm:text-5xl lg:text-[3.4rem] xl:text-[4rem] text-cream leading-[1.1] sm:leading-[1.08] font-normal">
+                  <h1 className="font-serif text-[2.4rem] sm:text-5xl lg:text-[3.4rem] xl:text-[4rem] text-cream leading-[1.08] font-normal">
                     Curadoria de sabores, marcas e histórias.
                   </h1>
-                  <p className="font-serif text-lg sm:text-2xl text-cream/80 italic font-normal">
+                  <p className="font-serif text-lg sm:text-2xl text-cream/85 italic font-normal">
                     Descubra quem faz.
                   </p>
                 </div>
+
                 <p className="font-sans text-[0.88rem] sm:text-[0.92rem] text-cream/75 leading-relaxed max-w-sm">
                   Uma plataforma que conecta você a pequenos produtores de alimentos artesanais do Brasil — cada produto com um rosto, uma história, um propósito.
                 </p>
+
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <a
                     href="/produtos"
@@ -117,28 +133,17 @@ export default function Home() {
                     <ArrowRight size={14} />
                   </a>
                   <a
-                    href="/produtos"
-                    className="inline-flex items-center justify-center gap-2 border border-cream/40 text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-cream/70 transition-colors"
+                    href="/produtoras"
+                    className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-cream hover:bg-cream/10 transition-colors"
                   >
                     Conheça as Produtoras
                   </a>
                 </div>
-              </div>
 
-              {/* Image */}
-              <div className="relative flex items-center justify-center w-full h-full order-1 lg:order-2">
-                <Image
-                  src="/logo_nova.jpeg"
-                  alt="FEITORIA"
-                  width={500}
-                  height={350}
-                  className="object-contain rounded-lg shadow-sm"
-                  priority
-                />
               </div>
-
             </div>
           </div>
+
         </section>
 
         {/* ── CATEGORIAS ─────────────────────────────────────────────────────── */}
