@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import ImageUpload from "@/components/ui/ImageUpload";
+import { supabase } from "@/lib/supabase-client";
+import { createProduto } from "@/app/actions/produtos";
 
 const CATEGORIAS = [
   "Confeitaria",
@@ -27,20 +30,45 @@ export default function NovoProdutoPage() {
   const [descricao, setDescricao] = useState("");
   const [preco, setPreco] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [foto, setFoto] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function getSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+      } else {
+        router.push("/login");
+      }
+    }
+    getSession();
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!userId) return;
+    
     setCarregando(true);
 
-    // TODO: conectar ao Supabase — inserir em tabela `produtos`
-    console.log("[NovoProduto] dados:", { nome, descricao, preco, categoria });
+    try {
+      await createProduto({
+        nome,
+        descricao,
+        preco: parseFloat(preco),
+        categoria,
+        foto,
+        produtora_id: userId,
+      });
 
-    // Simula delay de save
-    await new Promise((r) => setTimeout(r, 800));
-
-    setCarregando(false);
-    router.push("/dashboard/produtos");
+      router.push("/dashboard/produtos");
+    } catch (err) {
+      console.error("Erro ao salvar produto:", err);
+      alert("Erro ao salvar produto. Tente novamente.");
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
@@ -68,11 +96,13 @@ export default function NovoProdutoPage() {
         {/* Foto */}
         <div className="flex flex-col gap-2">
           <span className={labelCls}>Foto do produto</span>
-          <div className="border border-dashed border-sand hover:border-espresso/30 transition-colors h-36 flex flex-col items-center justify-center gap-2 cursor-pointer text-espresso/30 hover:text-espresso/50">
-            <Upload size={22} strokeWidth={1.4} />
-            <span className="font-sans text-xs tracking-wide">Clique para enviar ou arraste a imagem</span>
-            <span className="font-sans text-[0.65rem] text-espresso/25">JPG, PNG ou WEBP · máx. 5 MB</span>
-          </div>
+          {userId && (
+            <ImageUpload
+              bucket="produtos"
+              path={`${userId}/${Date.now()}_foto.jpg`}
+              onUpload={(url) => setFoto(url)}
+            />
+          )}
         </div>
 
         {/* Nome */}
@@ -140,7 +170,7 @@ export default function NovoProdutoPage() {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            disabled={carregando}
+            disabled={carregando || !foto}
             className="flex-1 sm:flex-none sm:px-10 bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase py-4 hover:bg-caramel transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {carregando ? "Salvando..." : "Salvar produto"}

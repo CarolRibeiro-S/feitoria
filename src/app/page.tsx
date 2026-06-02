@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   MapPin,
@@ -6,43 +9,81 @@ import {
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
+import { supabase } from "@/lib/supabase-client";
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+interface Producer {
+  id: string;
+  nome_marca: string;
+  cidade: string;
+  estado: string;
+  descricao: string;
+  foto_perfil_url: string | null;
+  categoria_principal?: string;
+}
 
-const PRODUCERS = [
-  {
-    id: 1,
-    name: "Ateliê das Flores",
-    city: "São Paulo, SP",
-    category: "Confeitaria",
-    bio: "Doces artesanais feitos com amor e flores comestíveis colhidas da própria horta.",
-  },
-  {
-    id: 2,
-    name: "Casa Mato Verde",
-    city: "Belo Horizonte, MG",
-    category: "Empório",
-    bio: "Conservas, geleias e especiarias produzidas com ingredientes de pequenos agricultores.",
-  },
-  {
-    id: 3,
-    name: "Grão Fermentado",
-    city: "Florianópolis, SC",
-    category: "Padaria",
-    bio: "Pães de fermentação natural com grãos locais e métodos ancestrais.",
-  },
-];
-
-const PRODUCTS = [
-  { id: 1, name: "Geleia de Damasco com Cardamomo", producer: "Casa Mato Verde", price: 34.9, category: "Empório" },
-  { id: 2, name: "Torta de Lavanda e Limão Siciliano", producer: "Ateliê das Flores", price: 89.0, category: "Confeitaria" },
-  { id: 3, name: "Pão de Centeio com Nozes", producer: "Grão Fermentado", price: 28.0, category: "Padaria" },
-  { id: 4, name: "Kit Café da Manhã Especial", producer: "Casa Mato Verde", price: 145.0, category: "Kits" },
-  { id: 5, name: "Brigadeiro de Pistache", producer: "Ateliê das Flores", price: 12.0, category: "Confeitaria" },
-  { id: 6, name: "Focaccia de Ervas e Azeite", producer: "Grão Fermentado", price: 42.0, category: "Padaria" },
-];
+interface Product {
+  id: string;
+  nome: string;
+  preco: number;
+  categoria: string;
+  foto: string | null;
+  produtoras: {
+    nome_marca: string;
+  };
+}
 
 export default function Home() {
+  const [producers, setProducers] = useState<Producer[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        console.log("[Home] Buscando dados...");
+        
+        // Fetch 3 most recent active producers
+        const { data: producersData, error: producersError } = await supabase
+          .from("produtoras")
+          .select("id, nome_marca, cidade, estado, descricao, foto_perfil_url")
+          .eq("ativo", true)
+          .order("criado_em", { ascending: false })
+          .limit(3);
+
+        if (producersError) console.error("[Home] Erro produtoras:", producersError);
+
+        // Fetch 6 most recent active products
+        const { data: productsData, error: productsError } = await supabase
+          .from("produtos")
+          .select(`
+            id, 
+            nome, 
+            preco, 
+            categoria, 
+            foto,
+            produtoras (
+              nome_marca
+            )
+          `)
+          .eq("disponivel", true)
+          .order("criado_em", { ascending: false })
+          .limit(6);
+
+        if (productsError) console.error("[Home] Erro produtos:", productsError);
+
+        if (producersData) setProducers(producersData as any);
+        if (productsData) setProducts(productsData as any);
+      } catch (err) {
+        console.error("[Home] Erro inesperado:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <div className="bg-cream min-h-screen">
       <main>
@@ -76,7 +117,7 @@ export default function Home() {
                     <ArrowRight size={14} />
                   </a>
                   <a
-                    href="#"
+                    href="/produtos"
                     className="inline-flex items-center justify-center gap-2 border border-espresso/25 text-espresso font-sans text-[0.7rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-7 py-4 hover:border-espresso/60 transition-colors"
                   >
                     Conheça as Produtoras
@@ -145,7 +186,7 @@ export default function Home() {
                 </h2>
               </div>
               <a
-                href="#"
+                href="/produtos"
                 className="font-sans text-[0.65rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
               >
                 Ver todas as produtoras <ArrowRight size={11} />
@@ -153,27 +194,49 @@ export default function Home() {
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-6">
-              {PRODUCERS.map((p) => (
+              {loading ? (
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="flex flex-col bg-sand animate-pulse">
+                    <div className="aspect-[3/2] bg-sand/60" />
+                    <div className="p-5 flex flex-col gap-3">
+                      <div className="h-2 w-20 bg-sand/80" />
+                      <div className="h-4 w-40 bg-sand/80" />
+                      <div className="h-2 w-full bg-sand/80" />
+                      <div className="h-2 w-2/3 bg-sand/80" />
+                    </div>
+                  </div>
+                ))
+              ) : producers.map((p) => (
                 <div key={p.id} className="group flex flex-col bg-sand hover:bg-sand/70 transition-colors">
-                  <div className="aspect-[3/2] overflow-hidden">
-                    <ImagePlaceholder className="w-full h-full group-hover:scale-[1.02] transition-transform duration-500" />
+                  <div className="aspect-[3/2] overflow-hidden relative">
+                    {p.foto_perfil_url ? (
+                      <Image
+                        src={p.foto_perfil_url}
+                        alt={p.nome_marca}
+                        fill
+                        className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                      />
+                    ) : (
+                      <ImagePlaceholder className="w-full h-full group-hover:scale-[1.02] transition-transform duration-500" />
+                    )}
                   </div>
                   <div className="p-5 flex flex-col gap-3 flex-1">
                     <div>
                       <span className="font-sans text-[0.6rem] sm:text-[0.62rem] tracking-[0.28em] uppercase text-caramel font-semibold">
-                        {p.category}
+                        {/* Categoria principal pode ser fixa ou vinda do DB */}
+                        ARTESANAL
                       </span>
-                      <h3 className="font-serif text-[1.15rem] sm:text-[1.25rem] text-espresso mt-1 font-normal">{p.name}</h3>
+                      <h3 className="font-serif text-[1.15rem] sm:text-[1.25rem] text-espresso mt-1 font-normal">{p.nome_marca}</h3>
                     </div>
                     <div className="flex items-center gap-1.5 text-espresso/45">
                       <MapPin size={11} strokeWidth={1.8} />
-                      <span className="font-sans text-[0.7rem] sm:text-[0.72rem]">{p.city}</span>
+                      <span className="font-sans text-[0.7rem] sm:text-[0.72rem]">{p.cidade}, {p.estado}</span>
                     </div>
-                    <p className="font-sans text-[0.8rem] sm:text-[0.83rem] text-espresso/65 leading-relaxed flex-1">
-                      {p.bio}
+                    <p className="font-sans text-[0.8rem] sm:text-[0.83rem] text-espresso/65 leading-relaxed flex-1 line-clamp-3">
+                      {p.descricao}
                     </p>
                     <a
-                      href="#"
+                      href={`/produtos?produtora=${p.id}`}
                       className="font-sans text-[0.65rem] sm:text-[0.7rem] font-semibold tracking-[0.18em] uppercase text-espresso border-b border-espresso/25 pb-px self-start hover:border-terracota hover:text-terracota transition-colors mt-1"
                     >
                       Conhecer →
@@ -208,24 +271,44 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-6 lg:gap-6">
-              {PRODUCTS.map((product) => (
+              {loading ? (
+                [...Array(6)].map((_, i) => (
+                  <div key={i} className="flex flex-col bg-cream animate-pulse">
+                    <div className="aspect-square bg-sand/40" />
+                    <div className="p-4 flex flex-col gap-2">
+                      <div className="h-2 w-16 bg-sand/60" />
+                      <div className="h-4 w-full bg-sand/60" />
+                      <div className="h-3 w-2/3 bg-sand/60" />
+                    </div>
+                  </div>
+                ))
+              ) : products.map((product) => (
                 <div key={product.id} className="group flex flex-col bg-cream">
-                  <div className="aspect-square overflow-hidden">
-                    <ImagePlaceholder className="w-full h-full group-hover:scale-[1.03] transition-transform duration-500" />
+                  <div className="aspect-square overflow-hidden relative">
+                    {product.foto ? (
+                      <Image
+                        src={product.foto}
+                        alt={product.nome}
+                        fill
+                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                      />
+                    ) : (
+                      <ImagePlaceholder className="w-full h-full group-hover:scale-[1.03] transition-transform duration-500" />
+                    )}
                   </div>
                   <div className="p-3.5 sm:p-5 flex flex-col gap-1.5 sm:gap-2">
                     <span className="font-sans text-[0.55rem] sm:text-[0.62rem] tracking-[0.2em] sm:tracking-[0.28em] uppercase text-caramel/80 font-semibold">
-                      {product.category}
+                      {product.categoria}
                     </span>
                     <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
-                      {product.name}
+                      {product.nome}
                     </h3>
                     <span className="font-sans text-[0.65rem] sm:text-[0.75rem] text-espresso/45">
-                      por {product.producer}
+                      por {product.produtoras?.nome_marca}
                     </span>
                     <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
                       <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
-                        R$ {product.price.toFixed(2).replace(".", ",")}
+                        R$ {product.preco.toFixed(2).replace(".", ",")}
                       </span>
                       <button
                         aria-label="Adicionar ao carrinho"
@@ -252,7 +335,7 @@ export default function Home() {
               "Cada produto carrega<br className="hidden sm:block" /> uma história única."
             </blockquote>
             <a
-              href="#"
+              href="/produtos"
               className="inline-flex items-center justify-center gap-2 border border-cream/25 text-cream font-sans text-[0.68rem] sm:text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-7 sm:px-8 py-4 hover:bg-cream/8 transition-colors mt-2"
             >
               Descubra Quem Faz

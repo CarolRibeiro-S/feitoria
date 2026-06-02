@@ -19,7 +19,7 @@ type ItemPedido = {
 type Pedido = {
   id: string;
   numero: string;
-  created_at: string;
+  criado_em: string;
   status: string;
   tipo_entrega: string;
   forma_pagamento: string;
@@ -76,7 +76,7 @@ export default function PedidosPage() {
       .from("pedidos")
       .select("*, itens_pedido(*)")
       .eq("usuario_id", userId)
-      .order("created_at", { ascending: false });
+      .order("criado_em", { ascending: false });
 
     if (error) {
       console.error("[Pedidos] Erro ao buscar pedidos:", error);
@@ -177,7 +177,7 @@ export default function PedidosPage() {
                       </span>
                     </div>
                     <p className="font-sans text-xs text-espresso/45 mt-1">
-                      {formatDate(pedido.created_at)}
+                      {formatDate(pedido.criado_em)}
                     </p>
                   </div>
 
