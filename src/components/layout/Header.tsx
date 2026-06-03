@@ -84,8 +84,8 @@ export function Header({ onOpenCart }: HeaderProps) {
             <Image
               src="/logo_f.png"
               alt="FEITORIA"
-              width={150}
-              height={150}
+              width={145}
+              height={145}
               className="object-contain"
               style={{ mixBlendMode: 'multiply' }}
             />
