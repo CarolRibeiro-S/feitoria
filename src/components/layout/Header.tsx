@@ -36,20 +36,22 @@ export function FeitoriaLogo({ light = false }: { light?: boolean }) {
 function LeafIcon() {
   return (
     <svg
-      width="32"
-      height="32"
-      viewBox="0 0 24 24"
+      width="28"
+      height="28"
+      viewBox="0 0 40 40"
       fill="none"
       stroke="#6B7D5A"
       strokeWidth="1.2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M12 22 C12 22 12 12 12 6" />
-      <path d="M12 6 C12 6 6 8 6 14 C6 14 10 13 12 6Z" />
-      <path d="M12 6 C12 6 18 8 18 14 C18 14 14 13 12 6Z" />
-      <path d="M12 13 C12 13 8 14 7 18 C7 18 11 17 12 13Z" />
-      <path d="M12 13 C12 13 16 14 17 18 C17 18 13 17 12 13Z" />
+      <path d="M20 38 C20 38 20 20 20 10" />
+      <path d="M20 10 C20 10 10 4 6 8 C10 14 18 14 20 10Z" />
+      <path d="M20 10 C20 10 28 2 34 6 C30 12 22 12 20 10Z" />
+      <path d="M20 18 C20 18 14 14 10 18 C13 22 19 20 20 18Z" />
+      <path d="M20 18 C20 18 26 14 30 18 C27 22 21 20 20 18Z" />
+      <path d="M20 26 C20 26 16 22 13 25 C15 28 19 27 20 26Z" />
+      <path d="M20 26 C20 26 24 22 27 25 C25 28 21 27 20 26Z" />
     </svg>
   );
 }
