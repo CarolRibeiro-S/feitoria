@@ -33,6 +33,24 @@ export function FeitoriaLogo({ light = false }: { light?: boolean }) {
   );
 }
 
+function LeafIcon() {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#C55A3A"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 2C12 2 4 6 4 13a8 8 0 0016 0C20 6 12 2 12 2z" />
+      <path d="M12 2v20" />
+    </svg>
+  );
+}
+
 interface HeaderProps {
   onOpenCart?: () => void;
 }
@@ -68,7 +86,7 @@ export function Header({ onOpenCart }: HeaderProps) {
         <div className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 lg:px-8">
 
           {/* LEFT — hamburger */}
-          <div className="flex-1 flex items-start">
+          <div className="flex-1 flex items-center">
             <button
               aria-label="Abrir menu"
               onClick={() => setDrawerOpen(true)}
@@ -78,28 +96,19 @@ export function Header({ onOpenCart }: HeaderProps) {
             </button>
           </div>
 
-          {/* CENTER — brand name */}
-          <Link
-            href="/"
-            className="font-serif text-base sm:text-lg tracking-[0.22em] uppercase text-espresso hover:text-caramel transition-colors select-none"
-          >
-            Feitoria
+          {/* CENTER — leaf icon */}
+          <Link href="/" aria-label="Feitoria">
+            <LeafIcon />
           </Link>
 
           {/* RIGHT — icons + auth */}
           <div className="flex-1 flex items-center justify-end gap-0.5 sm:gap-1">
 
-            <button
-              aria-label="Buscar"
-              className="text-espresso/65 hover:text-espresso transition-colors p-2"
-            >
+            <button aria-label="Buscar" className="text-espresso/65 hover:text-espresso transition-colors p-2">
               <Search size={20} strokeWidth={1.5} />
             </button>
 
-            <button
-              aria-label="Favoritos"
-              className="text-espresso/65 hover:text-espresso transition-colors p-2"
-            >
+            <button aria-label="Favoritos" className="text-espresso/65 hover:text-espresso transition-colors p-2">
               <Heart size={20} strokeWidth={1.5} />
             </button>
 
@@ -116,7 +125,6 @@ export function Header({ onOpenCart }: HeaderProps) {
               )}
             </button>
 
-            {/* Auth — text button or user dropdown */}
             {!user ? (
               <Link
                 href="/login"
@@ -130,18 +138,13 @@ export function Header({ onOpenCart }: HeaderProps) {
                   onClick={() => setDropdownOpen((v) => !v)}
                   className="flex items-center gap-1.5 font-sans text-[0.73rem] font-medium text-espresso hover:text-caramel transition-colors py-1.5 px-1"
                 >
-                  <span className="max-w-[80px] sm:max-w-[110px] truncate">
-                    Olá, {firstName}
-                  </span>
+                  <span className="max-w-[80px] sm:max-w-[110px] truncate">Olá, {firstName}</span>
                   <UserIcon size={15} strokeWidth={1.8} className="text-espresso/40 flex-shrink-0" />
                 </button>
 
                 {dropdownOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-[-1]"
-                      onClick={() => setDropdownOpen(false)}
-                    />
+                    <div className="fixed inset-0 z-[-1]" onClick={() => setDropdownOpen(false)} />
                     <div className="absolute right-0 mt-2 w-44 bg-cream border border-sand shadow-lg py-1.5 flex flex-col">
                       <Link
                         href={panelHref}
@@ -184,10 +187,10 @@ export function Header({ onOpenCart }: HeaderProps) {
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Drawer top bar */}
+        {/* Drawer top — FEITORIA + close */}
         <div className="flex items-center justify-between px-6 h-14 sm:h-16 border-b border-sand flex-shrink-0">
-          <span className="font-sans text-[0.6rem] tracking-[0.3em] uppercase text-espresso/35 font-semibold">
-            Menu
+          <span className="font-serif text-base tracking-[0.2em] uppercase text-espresso">
+            Feitoria
           </span>
           <button
             aria-label="Fechar menu"
@@ -212,12 +215,12 @@ export function Header({ onOpenCart }: HeaderProps) {
           ))}
         </nav>
 
-        {/* Drawer footer */}
+        {/* Drawer footer — Seja uma Produtora */}
         <div className="px-6 py-7 border-t border-sand flex-shrink-0">
           <a
             href="/seja-produtora"
             onClick={() => setDrawerOpen(false)}
-            className="font-sans text-[0.68rem] font-semibold tracking-[0.22em] uppercase text-caramel hover:text-terracota transition-colors"
+            className="font-sans text-[0.68rem] font-semibold tracking-[0.22em] uppercase text-terracota hover:text-caramel transition-colors"
           >
             Seja uma Produtora →
           </a>
