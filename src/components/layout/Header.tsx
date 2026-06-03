@@ -81,14 +81,16 @@ export function Header({ onOpenCart }: HeaderProps) {
 
           {/* CENTER — logo */}
           <Link href="/" aria-label="Feitoria">
-            <Image
-              src="/logo_f.png"
-              alt="FEITORIA"
-              width={80}
-              height={80}
-              className="object-contain"
-              style={{ filter: 'brightness(0.7)' }}
-            />
+            <div className="w-12 h-12 overflow-hidden relative">
+              <Image
+                src="/logo_f.png"
+                alt="FEITORIA"
+                width={80}
+                height={80}
+                className="object-contain absolute top-1/2 left-1/2"
+                style={{ filter: 'brightness(0.7)', transform: 'translate(-45%, -50%) scale(2.2)' }}
+              />
+            </div>
           </Link>
 
           {/* RIGHT — icons + auth */}
