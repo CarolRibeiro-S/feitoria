@@ -38,18 +38,18 @@ function LeafIcon() {
     <svg
       width="32"
       height="32"
-      viewBox="0 0 32 32"
+      viewBox="0 0 24 24"
       fill="none"
       stroke="#6B7D5A"
       strokeWidth="1.2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M8 26 C10 22 14 18 20 10" />
-      <path d="M20 10 C16 8 10 10 8 16 C12 16 18 14 20 10Z" />
-      <path d="M20 10 C22 6 26 6 26 12 C22 12 20 10 20 10Z" />
-      <path d="M13 19 C11 17 9 18 9 20 C11 20 13 19 13 19Z" />
-      <path d="M16 15 C18 13 20 14 19 16 C17 16 16 15 16 15Z" />
+      <path d="M12 22 C12 22 12 12 12 6" />
+      <path d="M12 6 C12 6 6 8 6 14 C6 14 10 13 12 6Z" />
+      <path d="M12 6 C12 6 18 8 18 14 C18 14 14 13 12 6Z" />
+      <path d="M12 13 C12 13 8 14 7 18 C7 18 11 17 12 13Z" />
+      <path d="M12 13 C12 13 16 14 17 18 C17 18 13 17 12 13Z" />
     </svg>
   );
 }
