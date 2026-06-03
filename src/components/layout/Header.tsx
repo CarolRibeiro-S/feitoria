@@ -82,7 +82,7 @@ export function Header({ onOpenCart }: HeaderProps) {
           {/* CENTER — logo */}
           <Link href="/" aria-label="Feitoria" className="flex items-center justify-center h-full">
             <Image
-              src="/logo_f.png"
+              src="/logo_f2.png"
               alt="FEITORIA"
               width={44}
               height={44}
