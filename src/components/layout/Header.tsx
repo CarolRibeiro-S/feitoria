@@ -66,7 +66,7 @@ export function Header({ onOpenCart }: HeaderProps) {
     <>
       {/* ── HEADER BAR ─────────────────────────────────────────────────────── */}
       <header className="fixed top-0 inset-x-0 z-50 bg-cream border-b border-sand">
-        <div className="flex items-center justify-between h-20 sm:h-24 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 lg:px-8">
 
           {/* LEFT — hamburger */}
           <div className="flex-1 flex items-center">
@@ -178,7 +178,7 @@ export function Header({ onOpenCart }: HeaderProps) {
         }`}
       >
         {/* Drawer top — FEITORIA + close */}
-        <div className="flex items-center justify-between px-6 h-20 sm:h-24 border-b border-sand flex-shrink-0">
+        <div className="flex items-center justify-between px-6 h-14 sm:h-16 border-b border-sand flex-shrink-0">
           <span className="font-serif text-base tracking-[0.2em] uppercase text-espresso">
             Feitoria
           </span>
