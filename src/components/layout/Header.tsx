@@ -3,12 +3,23 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Heart, ShoppingBag, Menu, X, User as UserIcon, LogOut, LayoutDashboard, ClipboardList } from "lucide-react";
+import {
+  Search,
+  Heart,
+  ShoppingBag,
+  Menu,
+  X,
+  User as UserIcon,
+  LogOut,
+  LayoutDashboard,
+  ClipboardList,
+} from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import { User } from "@supabase/supabase-js";
 
+// Mantido para uso no Footer
 export function FeitoriaLogo({ light = false }: { light?: boolean }) {
   return (
     <Image
@@ -27,198 +38,191 @@ interface HeaderProps {
 }
 
 export function Header({ onOpenCart }: HeaderProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const { totalItems } = useCart();
 
   useEffect(() => {
-    // Busca usuário atual
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-
-    // Escuta mudanças na autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => setUser(session?.user ?? null)
+    );
     return () => subscription.unsubscribe();
   }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     setDropdownOpen(false);
-    window.location.href = "/"; // Redireciona para a home após logout
+    window.location.href = "/";
   }
 
-  const userTipo = user?.user_metadata?.tipo;
+  const userTipo  = user?.user_metadata?.tipo;
   const panelHref = userTipo === "produtora" ? "/dashboard" : "/pedidos";
+  const firstName = user?.user_metadata?.nome?.split(" ")[0];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-cream/96 backdrop-blur-sm border-b border-sand">
-      <div className="max-w-7xl mx-auto px-5 sm:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 lg:h-28">
+    <>
+      {/* ── HEADER BAR ─────────────────────────────────────────────────────── */}
+      <header className="fixed top-0 inset-x-0 z-50 bg-cream border-b border-sand">
+        <div className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 lg:px-8">
 
-          {/* Logo */}
-          <Link href="/" aria-label="Feitoria" className="flex-shrink-0">
-            <FeitoriaLogo />
+          {/* LEFT — hamburger */}
+          <div className="flex-1 flex items-start">
+            <button
+              aria-label="Abrir menu"
+              onClick={() => setDrawerOpen(true)}
+              className="text-espresso/65 hover:text-espresso transition-colors p-1 -ml-1"
+            >
+              <Menu size={20} strokeWidth={1.5} />
+            </button>
+          </div>
+
+          {/* CENTER — brand name */}
+          <Link
+            href="/"
+            className="font-serif text-base sm:text-lg tracking-[0.22em] uppercase text-espresso hover:text-caramel transition-colors select-none"
+          >
+            Feitoria
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="font-sans text-[0.78rem] font-medium tracking-wide text-espresso/70 hover:text-espresso transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
+          {/* RIGHT — icons + auth */}
+          <div className="flex-1 flex items-center justify-end gap-0.5 sm:gap-1">
 
-          {/* Action icons */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            
-            {/* Auth Button/Dropdown (Desktop) */}
-            <div className="hidden lg:flex items-center mr-2">
-              {!user ? (
-                <Link 
-                  href="/login"
-                  className="font-sans text-[0.78rem] font-medium tracking-wide text-espresso hover:text-terracota border-b border-transparent hover:border-terracota/30 pb-0.5 transition-all"
-                >
-                  Entrar
-                </Link>
-              ) : (
-                <div className="relative">
-                  <button 
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 font-sans text-[0.78rem] font-medium text-espresso hover:text-terracota transition-colors px-2 py-1"
-                  >
-                    <span className="max-w-[120px] truncate">Olá, {user.user_metadata?.nome?.split(" ")[0]}</span>
-                    <UserIcon size={16} strokeWidth={1.8} className="text-espresso/40" />
-                  </button>
-
-                  {dropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-[-1]" onClick={() => setDropdownOpen(false)} />
-                      <div className="absolute right-0 mt-3 w-48 bg-cream border border-sand shadow-xl py-2 flex flex-col">
-                        <Link 
-                          href={panelHref}
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-3 px-5 py-3 font-sans text-[0.78rem] text-espresso/70 hover:text-espresso hover:bg-sand/30 transition-colors"
-                        >
-                          {userTipo === "produtora" ? <LayoutDashboard size={16} /> : <ClipboardList size={16} />}
-                          Meu Painel
-                        </Link>
-                        <button 
-                          onClick={handleSignOut}
-                          className="flex items-center gap-3 px-5 py-3 font-sans text-[0.78rem] text-wine/70 hover:text-wine hover:bg-wine/5 transition-colors text-left"
-                        >
-                          <LogOut size={16} />
-                          Sair
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <button aria-label="Buscar" className="hidden md:flex text-espresso/60 hover:text-espresso transition-colors p-2">
-              <Search size={19} />
-            </button>
-            <button aria-label="Favoritos" className="hidden md:flex text-espresso/60 hover:text-espresso transition-colors p-2">
-              <Heart size={19} />
-            </button>
-            <button 
-              aria-label="Carrinho" 
-              className="text-espresso/60 hover:text-espresso transition-colors relative p-2"
-              onClick={onOpenCart}
+            <button
+              aria-label="Buscar"
+              className="text-espresso/65 hover:text-espresso transition-colors p-2"
             >
-              <ShoppingBag size={19} />
+              <Search size={20} strokeWidth={1.5} />
+            </button>
+
+            <button
+              aria-label="Favoritos"
+              className="text-espresso/65 hover:text-espresso transition-colors p-2"
+            >
+              <Heart size={20} strokeWidth={1.5} />
+            </button>
+
+            <button
+              aria-label="Carrinho"
+              onClick={onOpenCart}
+              className="text-espresso/65 hover:text-espresso transition-colors p-2 relative"
+            >
+              <ShoppingBag size={20} strokeWidth={1.5} />
               {totalItems > 0 && (
-                <span className="absolute top-0.5 right-0.5 bg-terracota text-cream text-[0.6rem] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-0.5 right-0.5 bg-terracota text-cream text-[0.55rem] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
                   {totalItems}
                 </span>
               )}
             </button>
-            <button
-              aria-label="Menu"
-              className="lg:hidden text-espresso p-2"
-              onClick={() => setMobileMenuOpen((v) => !v)}
-            >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+
+            {/* Auth — text button or user dropdown */}
+            {!user ? (
+              <Link
+                href="/login"
+                className="font-sans text-[0.73rem] font-medium text-espresso/65 hover:text-espresso transition-colors ml-2 whitespace-nowrap"
+              >
+                Entrar
+              </Link>
+            ) : (
+              <div className="relative ml-1">
+                <button
+                  onClick={() => setDropdownOpen((v) => !v)}
+                  className="flex items-center gap-1.5 font-sans text-[0.73rem] font-medium text-espresso hover:text-caramel transition-colors py-1.5 px-1"
+                >
+                  <span className="max-w-[80px] sm:max-w-[110px] truncate">
+                    Olá, {firstName}
+                  </span>
+                  <UserIcon size={15} strokeWidth={1.8} className="text-espresso/40 flex-shrink-0" />
+                </button>
+
+                {dropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-[-1]"
+                      onClick={() => setDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-44 bg-cream border border-sand shadow-lg py-1.5 flex flex-col">
+                      <Link
+                        href={panelHref}
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 hover:text-espresso hover:bg-sand/30 transition-colors"
+                      >
+                        {userTipo === "produtora"
+                          ? <LayoutDashboard size={14} strokeWidth={1.6} />
+                          : <ClipboardList size={14} strokeWidth={1.6} />
+                        }
+                        Meu painel
+                      </Link>
+                      <button
+                        onClick={handleSignOut}
+                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-wine/70 hover:text-wine hover:bg-wine/5 transition-colors text-left"
+                      >
+                        <LogOut size={14} strokeWidth={1.6} />
+                        Sair
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-cream border-t border-sand absolute w-full shadow-xl">
-          <nav className="max-w-7xl mx-auto px-5 py-6 flex flex-col gap-1">
-            {/* Auth (Mobile) */}
-            <div className="pb-4 mb-4 border-b border-sand/60">
-              {!user ? (
-                <Link 
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between font-sans text-sm font-semibold text-terracota py-2 tracking-wide"
-                >
-                  Entrar na conta
-                  <span className="text-xs">→</span>
-                </Link>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-beige/40 flex items-center justify-center text-espresso/60">
-                      <UserIcon size={16} />
-                    </div>
-                    <span className="font-sans text-sm font-medium text-espresso">Olá, {user.user_metadata?.nome}</span>
-                  </div>
-                  <Link 
-                    href={panelHref}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 py-3 font-sans text-sm text-espresso/70"
-                  >
-                    {userTipo === "produtora" ? <LayoutDashboard size={18} /> : <ClipboardList size={18} />}
-                    Meu Painel
-                  </Link>
-                  <button 
-                    onClick={handleSignOut}
-                    className="flex items-center gap-3 py-3 font-sans text-sm text-wine/70 text-left"
-                  >
-                    <LogOut size={18} />
-                    Sair da conta
-                  </button>
-                </div>
-              )}
-            </div>
+      {/* ── DRAWER OVERLAY ─────────────────────────────────────────────────── */}
+      <div
+        className={`fixed inset-0 bg-espresso/40 z-[60] transition-opacity duration-300 ${
+          drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setDrawerOpen(false)}
+      />
 
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-sans text-sm font-medium text-espresso py-3.5 border-b border-sand/60 last:border-0 tracking-wide flex items-center justify-between"
-              >
-                {link.name}
-                <span className="text-espresso/20 text-xs">→</span>
-              </a>
-            ))}
-            <div className="flex gap-4 pt-6 mt-2">
-              <button className="flex items-center gap-2 bg-sand/30 px-4 py-3 text-espresso/70 font-sans text-[0.75rem] flex-1 justify-center">
-                <Search size={17} /> Buscar
-              </button>
-              <button className="flex items-center gap-2 bg-sand/30 px-4 py-3 text-espresso/70 font-sans text-[0.75rem] flex-1 justify-center">
-                <Heart size={17} /> Favoritos
-              </button>
-            </div>
-          </nav>
+      {/* ── DRAWER PANEL ───────────────────────────────────────────────────── */}
+      <div
+        className={`fixed top-0 left-0 h-full w-[280px] bg-cream z-[70] flex flex-col transform transition-transform duration-300 ease-in-out ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Drawer top bar */}
+        <div className="flex items-center justify-between px-6 h-14 sm:h-16 border-b border-sand flex-shrink-0">
+          <span className="font-sans text-[0.6rem] tracking-[0.3em] uppercase text-espresso/35 font-semibold">
+            Menu
+          </span>
+          <button
+            aria-label="Fechar menu"
+            onClick={() => setDrawerOpen(false)}
+            className="text-espresso/50 hover:text-espresso transition-colors p-1 -mr-1"
+          >
+            <X size={20} strokeWidth={1.5} />
+          </button>
         </div>
-      )}
-    </header>
+
+        {/* Nav links */}
+        <nav className="flex-1 flex flex-col px-6 py-6 overflow-y-auto">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.name}
+              href={link.href}
+              onClick={() => setDrawerOpen(false)}
+              className="font-serif text-xl text-espresso hover:text-caramel transition-colors py-4 border-b border-sand/50 last:border-0 leading-tight"
+            >
+              {link.name}
+            </a>
+          ))}
+        </nav>
+
+        {/* Drawer footer */}
+        <div className="px-6 py-7 border-t border-sand flex-shrink-0">
+          <a
+            href="/seja-produtora"
+            onClick={() => setDrawerOpen(false)}
+            className="font-sans text-[0.68rem] font-semibold tracking-[0.22em] uppercase text-caramel hover:text-terracota transition-colors"
+          >
+            Seja uma Produtora →
+          </a>
+        </div>
+      </div>
+    </>
   );
 }
