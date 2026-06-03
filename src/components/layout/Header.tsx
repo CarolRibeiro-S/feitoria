@@ -84,9 +84,10 @@ export function Header({ onOpenCart }: HeaderProps) {
             <Image
               src="/logo_f.png"
               alt="FEITORIA"
-              width={48}
-              height={48}
+              width={80}
+              height={80}
               className="object-contain"
+              style={{ filter: 'brightness(0.7)' }}
             />
           </Link>
 
