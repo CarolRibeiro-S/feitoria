@@ -33,28 +33,6 @@ export function FeitoriaLogo({ light = false }: { light?: boolean }) {
   );
 }
 
-function LeafIcon() {
-  return (
-    <svg
-      width="28"
-      height="28"
-      viewBox="0 0 40 40"
-      fill="none"
-      stroke="#6B7D5A"
-      strokeWidth="1.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 38 C20 38 20 20 20 10" />
-      <path d="M20 10 C20 10 10 4 6 8 C10 14 18 14 20 10Z" />
-      <path d="M20 10 C20 10 28 2 34 6 C30 12 22 12 20 10Z" />
-      <path d="M20 18 C20 18 14 14 10 18 C13 22 19 20 20 18Z" />
-      <path d="M20 18 C20 18 26 14 30 18 C27 22 21 20 20 18Z" />
-      <path d="M20 26 C20 26 16 22 13 25 C15 28 19 27 20 26Z" />
-      <path d="M20 26 C20 26 24 22 27 25 C25 28 21 27 20 26Z" />
-    </svg>
-  );
-}
 
 interface HeaderProps {
   onOpenCart?: () => void;
@@ -101,9 +79,15 @@ export function Header({ onOpenCart }: HeaderProps) {
             </button>
           </div>
 
-          {/* CENTER — leaf icon */}
+          {/* CENTER — logo */}
           <Link href="/" aria-label="Feitoria">
-            <LeafIcon />
+            <Image
+              src="/logo_f.png"
+              alt="FEITORIA"
+              width={48}
+              height={48}
+              className="object-contain"
+            />
           </Link>
 
           {/* RIGHT — icons + auth */}
