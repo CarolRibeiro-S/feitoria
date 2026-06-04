@@ -95,7 +95,7 @@ export default function Home() {
             src="/logo_nova.jpeg"
             alt="FEITORIA"
             fill
-            className="object-cover object-center"
+            className="object-cover object-[50%_30%] sm:object-center"
             priority
           />
 
