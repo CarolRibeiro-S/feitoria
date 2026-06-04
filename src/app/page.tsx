@@ -102,14 +102,14 @@ export default function Home() {
           {/* Overlay gradiente esquerda → transparente */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
 
-          {/* Conteúdo — lado direito, centralizado verticalmente */}
-          <div className="absolute right-6 sm:right-12 lg:right-16 top-1/2 -translate-y-1/2 flex flex-col items-end gap-5 max-w-xs sm:max-w-sm lg:max-w-md text-right bg-black/35 backdrop-blur-[4px] rounded-2xl p-8 border border-white/10">
+          {/* Conteúdo — bottom no mobile, direita-centro no desktop */}
+          <div className="absolute bottom-8 inset-x-4 sm:inset-x-auto sm:bottom-auto sm:right-12 lg:right-16 sm:top-1/2 sm:-translate-y-1/2 flex flex-col items-center sm:items-end gap-4 sm:gap-5 max-w-full sm:max-w-sm lg:max-w-md text-center sm:text-right bg-black/35 backdrop-blur-[4px] rounded-2xl p-6 sm:p-8 border border-white/10">
 
             <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-widest uppercase text-cream/70 font-semibold drop-shadow-sm">
               Artesanal · Local · Singular
             </span>
 
-            <h1 className="font-serif text-[2.4rem] sm:text-5xl lg:text-[3.6rem] xl:text-[4.2rem] text-cream font-normal leading-[1.06] drop-shadow-md">
+            <h1 className="font-serif text-[2rem] sm:text-5xl lg:text-[3.6rem] xl:text-[4.2rem] text-cream font-normal leading-[1.06] drop-shadow-md">
               Descubra quem faz.
             </h1>
 
@@ -117,19 +117,19 @@ export default function Home() {
               Pequenos produtores. Grandes histórias.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="flex flex-row sm:flex-row gap-3 pt-1 w-full sm:w-auto justify-center sm:justify-end">
               <a
                 href="/produtos"
-                className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.68rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-6 py-3.5 hover:bg-sand transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.65rem] sm:text-[0.72rem] font-semibold tracking-[0.15em] sm:tracking-[0.18em] uppercase px-4 sm:px-6 py-3 sm:py-3.5 hover:bg-sand transition-colors"
               >
-                Explorar Produtos
-                <ArrowRight size={13} />
+                Explorar
+                <ArrowRight size={12} />
               </a>
               <a
                 href="/produtoras"
-                className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.68rem] sm:text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-6 py-3.5 hover:border-cream hover:bg-cream/10 transition-colors"
+                className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.65rem] sm:text-[0.72rem] font-semibold tracking-[0.15em] sm:tracking-[0.18em] uppercase px-4 sm:px-6 py-3 sm:py-3.5 hover:border-cream hover:bg-cream/10 transition-colors"
               >
-                Conheça as Produtoras
+                Produtoras
               </a>
             </div>
 
