@@ -118,24 +118,24 @@ export default function ProdutoraPage({
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="w-full flex min-h-[320px] sm:min-h-[380px]">
 
-        {/* Left column — 60% dark */}
-        <div className="flex flex-col justify-between w-full sm:w-[60%] bg-espresso px-8 sm:px-12 pt-20 sm:pt-24 lg:pt-28 pb-10 sm:pb-12">
+        {/* Left column — 60% sand claro */}
+        <div className="flex flex-col justify-between w-[60%] bg-[#E9E2D6] px-8 sm:px-12 pt-20 sm:pt-24 lg:pt-28 pb-10 sm:pb-12">
           <Link
             href="/produtoras"
-            className="inline-flex items-center gap-2 text-cream/50 hover:text-cream font-sans text-[0.65rem] tracking-widest uppercase transition-colors mb-8 sm:mb-10 self-start"
+            className="inline-flex items-center gap-2 text-espresso/45 hover:text-espresso font-sans text-[0.65rem] tracking-widest uppercase transition-colors mb-8 sm:mb-10 self-start"
           >
             <ChevronLeft size={13} /> Todas as produtoras
           </Link>
 
           <div>
-            <span className="font-sans text-[0.55rem] sm:text-[0.6rem] tracking-[0.38em] uppercase text-cream/40 font-semibold">
+            <span className="font-sans text-[0.55rem] sm:text-[0.6rem] tracking-[0.38em] uppercase text-espresso/35 font-semibold">
               Produtora
             </span>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-cream font-normal leading-tight mt-2">
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-espresso font-normal leading-tight mt-2">
               {produtora.nome_marca}
             </h1>
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5">
-              <div className="flex items-center gap-1.5 text-cream/55">
+              <div className="flex items-center gap-1.5 text-espresso/60">
                 <MapPin size={13} strokeWidth={1.8} />
                 <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
                   {produtora.cidade}, {produtora.estado}
@@ -146,7 +146,7 @@ export default function ProdutoraPage({
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
+                  className="flex items-center gap-1.5 text-espresso/60 hover:text-espresso transition-colors"
                 >
                   <ExternalLink size={13} strokeWidth={1.8} />
                   <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
@@ -159,7 +159,7 @@ export default function ProdutoraPage({
                   href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
+                  className="flex items-center gap-1.5 text-espresso/60 hover:text-espresso transition-colors"
                 >
                   <Phone size={13} strokeWidth={1.8} />
                   <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
@@ -171,22 +171,26 @@ export default function ProdutoraPage({
           </div>
         </div>
 
-        {/* Right column — 40% cream, logo colorful */}
-        <div className="hidden sm:flex sm:w-[40%] bg-cream items-center justify-center p-10 lg:p-14">
+        {/* Right column — 40% cream, logo colorful, same height */}
+        <div className="flex w-[40%] bg-cream relative">
           {produtora.foto_perfil ? (
-            <div className="relative w-full h-full min-h-[200px]">
-              <Image
-                src={produtora.foto_perfil}
-                alt={produtora.nome_marca}
-                fill
-                className="object-contain"
-                priority
-              />
+            <div className="absolute inset-0 p-6 lg:p-8">
+              <div className="relative w-full h-full">
+                <Image
+                  src={produtora.foto_perfil}
+                  alt={produtora.nome_marca}
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
             </div>
           ) : (
-            <span className="font-serif text-8xl text-espresso/10 select-none">
-              {produtora.nome_marca.charAt(0)}
-            </span>
+            <div className="flex items-center justify-center w-full h-full">
+              <span className="font-serif text-8xl text-espresso/10 select-none">
+                {produtora.nome_marca.charAt(0)}
+              </span>
+            </div>
           )}
         </div>
 

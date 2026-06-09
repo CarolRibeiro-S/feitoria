@@ -35,6 +35,7 @@ interface ProductDetail {
   categoria: string;
   variacoes?: Variacao[] | null;
   produtoras: {
+    id: string;
     nome_marca: string;
     descricao: string;
     cidade: string;
@@ -49,6 +50,7 @@ interface RelatedProduct {
   foto: string | null;
   categoria: string;
   produtoras: {
+    id: string;
     nome_marca: string;
   };
 }
@@ -82,7 +84,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
         // 1. Busca produto principal com join de produtora
         const { data: produto, error: produtoError } = await supabase
           .from("produtos")
-          .select("*, produtoras(nome_marca, descricao, cidade, estado)")
+          .select("*, produtoras(id, nome_marca, descricao, cidade, estado)")
           .eq("id", id)
           .single();
 
@@ -94,7 +96,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
         // 2. Busca produtos relacionados (mesma categoria, exceto o atual)
         const { data: relacionados, error: relacionadosError } = await supabase
           .from("produtos")
-          .select("*, produtoras(nome_marca)")
+          .select("*, produtoras(id, nome_marca)")
           .eq("categoria", produto.categoria)
           .neq("id", id)
           .eq("disponivel", true)
@@ -278,7 +280,12 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                   </span>
                   <div className="flex flex-col gap-2">
                     <h3 className="font-serif text-lg sm:text-xl text-espresso font-normal">
-                      {product.produtoras.nome_marca}
+                      <Link
+                        href={`/produtoras/${product.produtoras.id}`}
+                        className="hover:text-terracota transition-colors underline decoration-espresso/20 underline-offset-4 hover:decoration-terracota"
+                      >
+                        {product.produtoras.nome_marca}
+                      </Link>
                     </h3>
                     <p className="font-sans text-sm text-espresso/60 italic leading-relaxed">
                       {product.produtoras.descricao}
@@ -479,9 +486,12 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                       <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
                         {p.nome}
                       </h3>
-                      <span className="font-sans text-[0.65rem] sm:text-[0.75rem] text-espresso/45">
+                      <Link
+                        href={`/produtoras/${p.produtoras?.id}`}
+                        className="font-sans text-[0.65rem] sm:text-[0.75rem] text-espresso/45 hover:text-espresso hover:underline underline-offset-2 transition-colors"
+                      >
                         por {p.produtoras?.nome_marca}
-                      </span>
+                      </Link>
                       <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
                         <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
                           R$ {p.preco.toFixed(2).replace(".", ",")}

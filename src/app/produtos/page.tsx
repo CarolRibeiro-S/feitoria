@@ -14,6 +14,7 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ProductWithProducer {
   id: string;
@@ -25,6 +26,7 @@ interface ProductWithProducer {
   disponivel: boolean;
   variacoes?: { sabor: string; preco: number }[] | null;
   produtoras: {
+    id: string;
     nome_marca: string;
     cidade: string;
     estado: string;
@@ -60,6 +62,7 @@ export default function ProdutosPage() {
             disponivel,
             variacoes,
             produtoras (
+              id,
               nome_marca,
               cidade,
               estado
@@ -262,9 +265,13 @@ export default function ProdutosPage() {
                         <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
                           {product.nome}
                         </h3>
-                        <span className="font-sans text-[0.65rem] sm:text-[0.7rem] text-espresso/50 tracking-tight">
+                        <Link
+                          href={`/produtoras/${product.produtoras?.id}`}
+                          className="font-sans text-[0.65rem] sm:text-[0.7rem] text-espresso/50 tracking-tight hover:text-espresso hover:underline underline-offset-2 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           por {product.produtoras?.nome_marca}
-                        </span>
+                        </Link>
                         <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
                           <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
                             R$ {product.preco?.toFixed(2).replace(".", ",")}
