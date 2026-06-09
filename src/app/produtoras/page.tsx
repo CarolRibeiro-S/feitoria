@@ -61,7 +61,10 @@ export default function ProdutorasPage() {
             </p>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {produtoras.map((p) => (
+              {produtoras.map((p) => {
+                const photoSrc = p.foto_perfil ||
+                  (p.nome_marca.toLowerCase().includes("ju fiche") ? "/logo_jufiche.jpeg" : null);
+                return (
                 <Link
                   key={p.id}
                   href={`/produtoras/${p.id}`}
@@ -69,9 +72,9 @@ export default function ProdutorasPage() {
                 >
                   {/* Photo */}
                   <div className="aspect-[4/3] overflow-hidden relative bg-beige flex items-center justify-center">
-                    {p.foto_perfil ? (
+                    {photoSrc ? (
                       <Image
-                        src={p.foto_perfil}
+                        src={photoSrc}
                         alt={p.nome_marca}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -111,7 +114,8 @@ export default function ProdutorasPage() {
                     </span>
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           )}
 

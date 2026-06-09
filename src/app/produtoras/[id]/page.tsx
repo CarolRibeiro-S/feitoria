@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, use, useEffect } from "react";
-import {
-  MapPin,
-  Instagram,
-  Phone,
-  ChevronLeft,
-  ArrowRight,
-  Plus,
-  Loader2,
-  Image as ImageIcon,
-} from "lucide-react";
+import { MapPin, ExternalLink, Phone, ChevronLeft, ArrowRight, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 import { useCart } from "@/lib/cart-context";
 import Image from "next/image";
@@ -112,15 +103,24 @@ export default function ProdutoraPage({
     );
   }
 
-  const instagramHandle = produtora.instagram
-    ? produtora.instagram.startsWith("@")
-      ? produtora.instagram
-      : `@${produtora.instagram}`
+  const instagramUrl = produtora.instagram?.startsWith("http")
+    ? produtora.instagram
+    : produtora.instagram
+      ? `https://instagram.com/${produtora.instagram.replace(/^@/, "")}`
+      : null;
+  const instagramLabel = produtora.instagram
+    ? produtora.instagram.startsWith("http")
+      ? `@${produtora.instagram.replace(/\/$/, "").split("/").pop()}`
+      : produtora.instagram.startsWith("@")
+        ? produtora.instagram
+        : `@${produtora.instagram}`
     : null;
 
-  const whatsappLink = produtora.whatsapp
-    ? `https://wa.me/${produtora.whatsapp.replace(/\D/g, "")}`
-    : null;
+  const whatsappLink = produtora.whatsapp?.startsWith("http")
+    ? produtora.whatsapp
+    : produtora.whatsapp
+      ? `https://wa.me/${produtora.whatsapp.replace(/\D/g, "")}`
+      : null;
 
   return (
     <div className="bg-cream min-h-screen">
@@ -183,16 +183,16 @@ export default function ProdutoraPage({
                   {produtora.cidade}, {produtora.estado}
                 </span>
               </div>
-              {instagramHandle && (
+              {instagramUrl && instagramLabel && (
                 <a
-                  href={`https://instagram.com/${instagramHandle.replace("@", "")}`}
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
                 >
-                  <Instagram size={13} strokeWidth={1.8} />
+                  <ExternalLink size={13} strokeWidth={1.8} />
                   <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
-                    {instagramHandle}
+                    {instagramLabel}
                   </span>
                 </a>
               )}
@@ -263,7 +263,7 @@ export default function ProdutoraPage({
                         className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                       />
                     ) : (
-                      <ImageIcon size={32} className="text-espresso/20" />
+                      <div className="w-10 h-10 rounded-full bg-espresso/10" />
                     )}
                     <div className="absolute inset-0 bg-espresso/5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none lg:pointer-events-auto">
                       <Link
