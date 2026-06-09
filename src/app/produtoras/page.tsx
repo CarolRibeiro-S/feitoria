@@ -12,7 +12,7 @@ interface Produtora {
   cidade: string;
   estado: string;
   descricao: string;
-  foto_perfil_url: string | null;
+  foto_perfil: string | null;
 }
 
 export default function ProdutorasPage() {
@@ -23,7 +23,7 @@ export default function ProdutorasPage() {
     async function fetchProdutoras() {
       const { data } = await supabase
         .from("produtoras")
-        .select("id, nome_marca, cidade, estado, descricao, foto_perfil_url")
+        .select("id, nome_marca, cidade, estado, descricao, foto_perfil")
         .eq("ativo", true)
         .order("nome_marca");
       if (data) setProdutoras(data as any);
@@ -69,9 +69,9 @@ export default function ProdutorasPage() {
                 >
                   {/* Photo */}
                   <div className="aspect-[4/3] overflow-hidden relative bg-beige flex items-center justify-center">
-                    {p.foto_perfil_url ? (
+                    {p.foto_perfil ? (
                       <Image
-                        src={p.foto_perfil_url}
+                        src={p.foto_perfil}
                         alt={p.nome_marca}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

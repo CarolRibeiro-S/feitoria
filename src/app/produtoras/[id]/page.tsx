@@ -22,7 +22,7 @@ interface Produtora {
   cidade: string;
   estado: string;
   descricao: string;
-  foto_perfil_url: string | null;
+  foto_perfil: string | null;
   instagram: string | null;
   whatsapp?: string | null;
 }
@@ -55,7 +55,7 @@ export default function ProdutoraPage({
       try {
         const { data: p, error: pErr } = await supabase
           .from("produtoras")
-          .select("id, nome_marca, cidade, estado, descricao, foto_perfil_url, instagram, whatsapp")
+          .select("id, nome_marca, cidade, estado, descricao, foto_perfil, instagram, whatsapp")
           .eq("id", id)
           .single();
 
@@ -129,9 +129,9 @@ export default function ProdutoraPage({
       <section className="relative w-full min-h-[65vh] sm:min-h-[75vh] overflow-hidden flex items-end">
 
         {/* Background photo */}
-        {produtora.foto_perfil_url ? (
+        {produtora.foto_perfil ? (
           <Image
-            src={produtora.foto_perfil_url}
+            src={produtora.foto_perfil}
             alt={produtora.nome_marca}
             fill
             className="object-cover object-center"
