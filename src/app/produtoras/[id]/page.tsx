@@ -39,7 +39,6 @@ export default function ProdutoraPage({
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [decorativeLogo, setDecorativeLogo] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -69,15 +68,6 @@ export default function ProdutoraPage({
     }
     fetchData();
   }, [id]);
-
-  // Check for decorative logo in storage (no DB column needed)
-  useEffect(() => {
-    if (!produtora) return;
-    const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/produtoras/logos/${produtora.id}.jpeg`;
-    fetch(logoUrl, { method: "HEAD" })
-      .then((r) => { if (r.ok) setDecorativeLogo(logoUrl); })
-      .catch(() => {});
-  }, [produtora]);
 
   if (loading) {
     return (
@@ -126,58 +116,48 @@ export default function ProdutoraPage({
     <div className="bg-cream min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative w-full min-h-[65vh] sm:min-h-[75vh] overflow-hidden flex items-end">
+      <section className="relative w-full min-h-[280px] sm:min-h-[340px] overflow-hidden">
 
-        {/* Background photo */}
+        {/* Full-width background photo */}
         {produtora.foto_perfil ? (
           <Image
             src={produtora.foto_perfil}
-            alt={produtora.nome_marca}
+            alt=""
             fill
             className="object-cover object-center"
             priority
+            aria-hidden="true"
           />
         ) : (
-          <div className="absolute inset-0 bg-sand" />
+          <div className="absolute inset-0 bg-espresso" />
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/25 to-transparent" />
-
-        {/* Decorative logo — producers that have a logo uploaded to storage */}
-        {decorativeLogo && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-            <img
-              src={decorativeLogo}
-              alt=""
-              aria-hidden="true"
-              className="w-[420px] sm:w-[520px] max-w-[75%] object-contain"
-              style={{ opacity: 0.15, mixBlendMode: "luminosity" }}
-            />
-          </div>
-        )}
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/30" />
 
         {/* Back link */}
-        <div className="absolute top-0 inset-x-0 pt-20 sm:pt-24 lg:pt-32 px-5 sm:px-8">
+        <div className="absolute top-0 inset-x-0 z-10 pt-20 sm:pt-24 lg:pt-28 px-8 sm:px-12">
           <Link
             href="/produtoras"
-            className="inline-flex items-center gap-2 text-cream/55 hover:text-cream font-sans text-[0.68rem] tracking-widest uppercase transition-colors"
+            className="inline-flex items-center gap-2 text-cream/60 hover:text-cream font-sans text-[0.68rem] tracking-widest uppercase transition-colors"
           >
             <ChevronLeft size={14} /> Todas as produtoras
           </Link>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 pb-12 sm:pb-16 lg:pb-24">
-          <div className="max-w-2xl">
-            <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-[0.35em] uppercase text-cream/45 font-semibold">
+        {/* Two-column content */}
+        <div className="relative z-10 w-full min-h-[280px] sm:min-h-[340px] px-8 sm:px-12 grid grid-cols-1 sm:grid-cols-2 gap-8 items-center pt-32 sm:pt-36 pb-12 sm:pb-14">
+
+          {/* Left: text info */}
+          <div>
+            <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-[0.35em] uppercase text-cream/50 font-semibold">
               Produtora
             </span>
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl xl:text-7xl text-cream font-normal leading-[1.1] mt-2">
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-cream font-normal leading-tight mt-2">
               {produtora.nome_marca}
             </h1>
-            <div className="flex flex-wrap items-center gap-5 sm:gap-7 mt-4 sm:mt-5">
-              <div className="flex items-center gap-1.5 text-cream/55">
+            <div className="flex flex-wrap items-center gap-5 sm:gap-6 mt-4">
+              <div className="flex items-center gap-1.5 text-cream/65">
                 <MapPin size={13} strokeWidth={1.8} />
                 <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
                   {produtora.cidade}, {produtora.estado}
@@ -188,7 +168,7 @@ export default function ProdutoraPage({
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
+                  className="flex items-center gap-1.5 text-cream/65 hover:text-cream transition-colors"
                 >
                   <ExternalLink size={13} strokeWidth={1.8} />
                   <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
@@ -201,7 +181,7 @@ export default function ProdutoraPage({
                   href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
+                  className="flex items-center gap-1.5 text-cream/65 hover:text-cream transition-colors"
                 >
                   <Phone size={13} strokeWidth={1.8} />
                   <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
@@ -211,16 +191,30 @@ export default function ProdutoraPage({
               )}
             </div>
           </div>
-        </div>
 
+          {/* Right: logo colorful above overlay */}
+          {produtora.foto_perfil && (
+            <div className="hidden sm:flex items-center justify-center">
+              <div className="relative w-52 h-52 lg:w-64 lg:h-64">
+                <Image
+                  src={produtora.foto_perfil}
+                  alt={produtora.nome_marca}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          )}
+
+        </div>
       </section>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-20 lg:py-28">
+      <main className="w-full px-8 sm:px-12 py-16 sm:py-20 lg:py-24">
 
         {/* ── NOSSA HISTÓRIA ───────────────────────────────────────────── */}
         {produtora.descricao && (
-          <section className="max-w-3xl mb-20 sm:mb-24 lg:mb-32">
+          <section className="w-full mb-16 sm:mb-20 lg:mb-24">
             <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
               Nossa história
             </span>
@@ -250,7 +244,7 @@ export default function ProdutoraPage({
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-6 lg:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 sm:gap-6">
               {produtos.map((p) => (
                 <div key={p.id} className="group flex flex-col bg-cream">
                   <div className="aspect-square overflow-hidden relative bg-[#DCC8B2] flex items-center justify-center">
@@ -259,7 +253,7 @@ export default function ProdutoraPage({
                         src={p.foto}
                         alt={p.nome}
                         fill
-                        sizes="(max-width: 640px) 50vw, 33vw"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                       />
                     ) : (
