@@ -1,12 +1,13 @@
-import { 
-  Cake, 
-  Wheat, 
-  Coffee, 
-  ShoppingBasket, 
-  Wine, 
-  Gift, 
+import {
+  Cake,
+  Cookie,
+  Wheat,
+  Coffee,
+  ShoppingBasket,
+  Wine,
+  Gift,
   Snowflake,
-  type LucideIcon 
+  type LucideIcon
 } from "lucide-react";
 
 export const NAV_LINKS = [
@@ -18,6 +19,7 @@ export const NAV_LINKS = [
 
 export const CATEGORIES: { name: string; Icon: LucideIcon }[] = [
   { name: "Confeitaria", Icon: Cake },
+  { name: "Cookies", Icon: Cookie },
   { name: "Padaria", Icon: Wheat },
   { name: "Cafés", Icon: Coffee },
   { name: "Empório", Icon: ShoppingBasket },
