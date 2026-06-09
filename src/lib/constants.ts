@@ -11,10 +11,9 @@ import {
 
 export const NAV_LINKS = [
   { name: "Produtos", href: "/produtos" },
-  { name: "Produtoras", href: "#" },
-  { name: "Descubra Quem Faz", href: "#" },
-  { name: "Cursos & Experiências", href: "#" },
-  { name: "Kits", href: "#" },
+  { name: "Descubra Quem Faz", href: "/produtoras" },
+  { name: "Cursos & Experiências", href: "/cursos" },
+  { name: "Kits", href: "/kits" },
 ];
 
 export const CATEGORIES: { name: string; Icon: LucideIcon }[] = [
