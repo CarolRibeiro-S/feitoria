@@ -3,23 +3,12 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import {
-  MapPin,
   ArrowRight,
   Plus,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { supabase } from "@/lib/supabase-client";
-
-interface Producer {
-  id: string;
-  nome_marca: string;
-  cidade: string;
-  estado: string;
-  descricao: string;
-  foto_perfil_url: string | null;
-  categoria_principal?: string;
-}
 
 interface Product {
   id: string;
@@ -33,7 +22,6 @@ interface Product {
 }
 
 export default function Home() {
-  const [producers, setProducers] = useState<Producer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,26 +29,13 @@ export default function Home() {
     async function fetchData() {
       try {
         setLoading(true);
-        console.log("[Home] Buscando dados...");
-        
-        // Fetch 3 most recent active producers
-        const { data: producersData, error: producersError } = await supabase
-          .from("produtoras")
-          .select("id, nome_marca, cidade, estado, descricao, foto_perfil_url")
-          .eq("ativo", true)
-          .order("criado_em", { ascending: false })
-          .limit(3);
-
-        if (producersError) console.error("[Home] Erro produtoras:", producersError);
-
-        // Fetch 6 most recent active products
         const { data: productsData, error: productsError } = await supabase
           .from("produtos")
           .select(`
-            id, 
-            nome, 
-            preco, 
-            categoria, 
+            id,
+            nome,
+            preco,
+            categoria,
             foto,
             produtoras (
               nome_marca
@@ -71,8 +46,6 @@ export default function Home() {
           .limit(6);
 
         if (productsError) console.error("[Home] Erro produtos:", productsError);
-
-        if (producersData) setProducers(producersData as any);
         if (productsData) setProducts(productsData as any);
       } catch (err) {
         console.error("[Home] Erro inesperado:", err);
@@ -165,83 +138,6 @@ export default function Home() {
                 </a>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── DESCUBRA QUEM FAZ ──────────────────────────────────────────────── */}
-        <section className="bg-cream py-14 lg:py-24">
-          <div className="max-w-7xl mx-auto px-5 sm:px-8">
-
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 lg:mb-12">
-              <div>
-                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
-                  As mãos por trás
-                </span>
-                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-espresso mt-2 font-normal">
-                  Descubra Quem Faz
-                </h2>
-              </div>
-              <a
-                href="/produtos"
-                className="font-sans text-[0.65rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
-              >
-                Ver todas as produtoras <ArrowRight size={11} />
-              </a>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-6">
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="flex flex-col bg-sand animate-pulse">
-                    <div className="aspect-[3/2] bg-sand/60" />
-                    <div className="p-5 flex flex-col gap-3">
-                      <div className="h-2 w-20 bg-sand/80" />
-                      <div className="h-4 w-40 bg-sand/80" />
-                      <div className="h-2 w-full bg-sand/80" />
-                      <div className="h-2 w-2/3 bg-sand/80" />
-                    </div>
-                  </div>
-                ))
-              ) : producers.map((p) => (
-                <div key={p.id} className="group flex flex-col bg-sand hover:bg-sand/70 transition-colors">
-                  <div className="aspect-[3/2] overflow-hidden relative">
-                    {p.foto_perfil_url ? (
-                      <Image
-                        src={p.foto_perfil_url}
-                        alt={p.nome_marca}
-                        fill
-                        className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                      />
-                    ) : (
-                      <ImagePlaceholder className="w-full h-full group-hover:scale-[1.02] transition-transform duration-500" />
-                    )}
-                  </div>
-                  <div className="p-5 flex flex-col gap-3 flex-1">
-                    <div>
-                      <span className="font-sans text-[0.6rem] sm:text-[0.62rem] tracking-[0.28em] uppercase text-caramel font-semibold">
-                        {/* Categoria principal pode ser fixa ou vinda do DB */}
-                        ARTESANAL
-                      </span>
-                      <h3 className="font-serif text-[1.15rem] sm:text-[1.25rem] text-espresso mt-1 font-normal">{p.nome_marca}</h3>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-espresso/45">
-                      <MapPin size={11} strokeWidth={1.8} />
-                      <span className="font-sans text-[0.7rem] sm:text-[0.72rem]">{p.cidade}, {p.estado}</span>
-                    </div>
-                    <p className="font-sans text-[0.8rem] sm:text-[0.83rem] text-espresso/65 leading-relaxed flex-1 line-clamp-3">
-                      {p.descricao}
-                    </p>
-                    <a
-                      href={`/produtos?produtora=${p.id}`}
-                      className="font-sans text-[0.65rem] sm:text-[0.7rem] font-semibold tracking-[0.18em] uppercase text-espresso border-b border-espresso/25 pb-px self-start hover:border-terracota hover:text-terracota transition-colors mt-1"
-                    >
-                      Conhecer →
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-
           </div>
         </section>
 
