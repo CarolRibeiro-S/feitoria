@@ -116,50 +116,28 @@ export default function ProdutoraPage({
     <div className="bg-cream min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative w-full min-h-[280px] sm:min-h-[340px] overflow-hidden">
+      <section className="w-full flex min-h-[320px] sm:min-h-[380px]">
 
-        {/* Full-width background photo */}
-        {produtora.foto_perfil ? (
-          <Image
-            src={produtora.foto_perfil}
-            alt=""
-            fill
-            className="object-cover object-center"
-            priority
-            aria-hidden="true"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-espresso" />
-        )}
-
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/30" />
-
-        {/* Back link */}
-        <div className="absolute top-0 inset-x-0 z-10 pt-20 sm:pt-24 lg:pt-28 px-8 sm:px-12">
+        {/* Left column — 60% dark */}
+        <div className="flex flex-col justify-between w-full sm:w-[60%] bg-espresso px-8 sm:px-12 pt-20 sm:pt-24 lg:pt-28 pb-10 sm:pb-12">
           <Link
             href="/produtoras"
-            className="inline-flex items-center gap-2 text-cream/60 hover:text-cream font-sans text-[0.68rem] tracking-widest uppercase transition-colors"
+            className="inline-flex items-center gap-2 text-cream/50 hover:text-cream font-sans text-[0.65rem] tracking-widest uppercase transition-colors mb-8 sm:mb-10 self-start"
           >
-            <ChevronLeft size={14} /> Todas as produtoras
+            <ChevronLeft size={13} /> Todas as produtoras
           </Link>
-        </div>
 
-        {/* Two-column content */}
-        <div className="relative z-10 w-full min-h-[280px] sm:min-h-[340px] px-8 sm:px-12 grid grid-cols-1 sm:grid-cols-2 gap-8 items-center pt-32 sm:pt-36 pb-12 sm:pb-14">
-
-          {/* Left: text info */}
           <div>
-            <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-[0.35em] uppercase text-cream/50 font-semibold">
+            <span className="font-sans text-[0.55rem] sm:text-[0.6rem] tracking-[0.38em] uppercase text-cream/40 font-semibold">
               Produtora
             </span>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-cream font-normal leading-tight mt-2">
               {produtora.nome_marca}
             </h1>
-            <div className="flex flex-wrap items-center gap-5 sm:gap-6 mt-4">
-              <div className="flex items-center gap-1.5 text-cream/65">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5">
+              <div className="flex items-center gap-1.5 text-cream/55">
                 <MapPin size={13} strokeWidth={1.8} />
-                <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
+                <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
                   {produtora.cidade}, {produtora.estado}
                 </span>
               </div>
@@ -168,10 +146,10 @@ export default function ProdutoraPage({
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cream/65 hover:text-cream transition-colors"
+                  className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
                 >
                   <ExternalLink size={13} strokeWidth={1.8} />
-                  <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
+                  <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
                     {instagramLabel}
                   </span>
                 </a>
@@ -181,32 +159,37 @@ export default function ProdutoraPage({
                   href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-cream/65 hover:text-cream transition-colors"
+                  className="flex items-center gap-1.5 text-cream/55 hover:text-cream transition-colors"
                 >
                   <Phone size={13} strokeWidth={1.8} />
-                  <span className="font-sans text-[0.78rem] sm:text-[0.82rem]">
+                  <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
                     WhatsApp
                   </span>
                 </a>
               )}
             </div>
           </div>
-
-          {/* Right: logo colorful above overlay */}
-          {produtora.foto_perfil && (
-            <div className="hidden sm:flex items-center justify-center">
-              <div className="relative w-52 h-52 lg:w-64 lg:h-64">
-                <Image
-                  src={produtora.foto_perfil}
-                  alt={produtora.nome_marca}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          )}
-
         </div>
+
+        {/* Right column — 40% cream, logo colorful */}
+        <div className="hidden sm:flex sm:w-[40%] bg-cream items-center justify-center p-10 lg:p-14">
+          {produtora.foto_perfil ? (
+            <div className="relative w-full h-full min-h-[200px]">
+              <Image
+                src={produtora.foto_perfil}
+                alt={produtora.nome_marca}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          ) : (
+            <span className="font-serif text-8xl text-espresso/10 select-none">
+              {produtora.nome_marca.charAt(0)}
+            </span>
+          )}
+        </div>
+
       </section>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
