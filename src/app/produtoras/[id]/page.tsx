@@ -200,12 +200,19 @@ export default function ProdutoraPage({
         {/* ── NOSSA HISTÓRIA ───────────────────────────────────────────── */}
         {produtora.descricao && (
           <section className="w-full mb-16 sm:mb-20 lg:mb-24">
-            <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
+            <h2 className="font-serif text-3xl md:text-4xl text-espresso font-normal">
               Nossa história
-            </span>
-            <p className="font-serif text-xl sm:text-2xl text-espresso mt-5 leading-[1.7] font-normal">
-              {produtora.descricao}
-            </p>
+            </h2>
+            <div className="mt-6 sm:mt-8">
+              {produtora.descricao
+                .split(/(?<=\.)\s+/)
+                .filter(Boolean)
+                .map((sentence, i) => (
+                  <p key={i} className="font-serif text-lg sm:text-xl text-espresso leading-[1.8] font-normal mb-4 last:mb-0">
+                    {sentence}
+                  </p>
+                ))}
+            </div>
           </section>
         )}
 
