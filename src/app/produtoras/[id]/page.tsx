@@ -200,10 +200,10 @@ export default function ProdutoraPage({
         {/* ── NOSSA HISTÓRIA ───────────────────────────────────────────── */}
         {produtora.descricao && (
           <section className="w-full mb-16 sm:mb-20 lg:mb-24">
-            <h2 className="font-serif text-3xl md:text-4xl text-espresso font-normal">
+            <h2 className="font-serif text-3xl md:text-4xl text-terracota font-normal">
               Nossa história
             </h2>
-            <div className="mt-6 sm:mt-8">
+            <div className="mt-6 sm:mt-8 text-center">
               {produtora.descricao
                 .split(/(?<=\.)\s+/)
                 .filter(Boolean)
