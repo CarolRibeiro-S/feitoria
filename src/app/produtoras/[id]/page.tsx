@@ -116,7 +116,7 @@ export default function ProdutoraPage({
     <div className="bg-cream min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="w-full flex min-h-[320px] sm:min-h-[380px]">
+      <section className="w-full flex items-stretch min-h-[320px] sm:min-h-[380px]">
 
         {/* Left column — 60% sand claro */}
         <div className="flex flex-col justify-between w-[60%] bg-[#E9E2D6] px-8 sm:px-12 pt-20 sm:pt-24 lg:pt-28 pb-10 sm:pb-12">
@@ -171,19 +171,17 @@ export default function ProdutoraPage({
           </div>
         </div>
 
-        {/* Right column — 40% cream, logo colorful, same height */}
-        <div className="flex w-[40%] bg-cream relative">
+        {/* Right column — 40% cream, logo fills completely */}
+        <div className="w-[40%] bg-cream relative min-h-[300px]">
           {produtora.foto_perfil ? (
-            <div className="absolute inset-0 p-6 lg:p-8">
-              <div className="relative w-full h-full">
-                <Image
-                  src={produtora.foto_perfil}
-                  alt={produtora.nome_marca}
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
+            <div className="relative w-full h-full min-h-[300px]">
+              <Image
+                src={produtora.foto_perfil}
+                alt={produtora.nome_marca}
+                fill
+                className="object-cover"
+                priority
+              />
             </div>
           ) : (
             <div className="flex items-center justify-center w-full h-full">
