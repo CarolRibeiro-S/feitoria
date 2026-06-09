@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -22,6 +23,7 @@ interface ProductWithProducer {
   foto: string | null;
   categoria: string;
   disponivel: boolean;
+  variacoes?: { sabor: string; preco: number }[] | null;
   produtoras: {
     nome_marca: string;
     cidade: string;
@@ -31,6 +33,7 @@ interface ProductWithProducer {
 
 export default function ProdutosPage() {
   const { addItem } = useCart();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<ProductWithProducer[]>([]);
@@ -48,13 +51,14 @@ export default function ProdutosPage() {
         const { data, error } = await supabase
           .from("produtos")
           .select(`
-            id, 
-            nome, 
-            descricao, 
-            preco, 
-            foto, 
-            categoria, 
+            id,
+            nome,
+            descricao,
+            preco,
+            foto,
+            categoria,
             disponivel,
+            variacoes,
             produtoras (
               nome_marca,
               cidade,
@@ -266,15 +270,21 @@ export default function ProdutosPage() {
                             R$ {product.preco?.toFixed(2).replace(".", ",")}
                           </span>
                           <button
-                            aria-label="Adicionar ao carrinho"
-                            onClick={() => addItem({
-                              id: product.id,
-                              name: product.nome,
-                              producer: product.produtoras?.nome_marca,
-                              price: product.preco,
-                              quantity: 1,
-                              image: product.foto,
-                            })}
+                            aria-label={product.variacoes?.length ? "Ver opções" : "Adicionar ao carrinho"}
+                            onClick={() => {
+                              if (product.variacoes?.length) {
+                                router.push(`/produtos/${product.id}?select_flavor=1`);
+                              } else {
+                                addItem({
+                                  id: product.id,
+                                  name: product.nome,
+                                  producer: product.produtoras?.nome_marca,
+                                  price: product.preco,
+                                  quantity: 1,
+                                  image: product.foto,
+                                });
+                              }
+                            }}
                             className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
                           >
                             <Plus size={12} className="sm:size-[14px]" />

@@ -21,6 +21,11 @@ import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
 import Link from "next/link";
 
+interface Variacao {
+  sabor: string;
+  preco: number;
+}
+
 interface ProductDetail {
   id: string;
   nome: string;
@@ -28,6 +33,7 @@ interface ProductDetail {
   preco: number;
   foto: string | null;
   categoria: string;
+  variacoes?: Variacao[] | null;
   produtoras: {
     nome_marca: string;
     descricao: string;
@@ -56,6 +62,10 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [selectedVariation, setSelectedVariation] = useState<Variacao | null>(null);
+  const [cartNotice, setCartNotice] = useState<string | null>(null);
+  const [selectFlavorBanner, setSelectFlavorBanner] = useState(false);
 
   // CEP States
   const [cep, setCep] = useState("");
@@ -105,15 +115,45 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
     fetchProductData();
   }, [id]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("select_flavor") === "1") {
+      setSelectFlavorBanner(true);
+      const t = setTimeout(() => setSelectFlavorBanner(false), 5000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  const hasVariacoes = (product?.variacoes?.length ?? 0) > 0;
+  const displayPrice = selectedVariation?.preco ?? product?.preco ?? 0;
+
+  const variationNote = (variacoes: Variacao[]) => {
+    const prices = [...new Set(variacoes.map((v) => v.preco))].sort((a, b) => a - b);
+    if (prices.length < 2) return null;
+    const low = prices[0];
+    const high = prices[prices.length - 1];
+    const lowSabores = variacoes.filter((v) => v.preco === low).map((v) => v.sabor);
+    const fmt = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
+    if (lowSabores.includes("Tradicional")) {
+      return `Sabor Tradicional ${fmt(low)} · Demais sabores ${fmt(high)}`;
+    }
+    return `A partir de ${fmt(low)}`;
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
+    if (hasVariacoes && !selectedVariation) {
+      setCartNotice("Por favor, selecione um sabor antes de adicionar ao carrinho.");
+      const t = setTimeout(() => setCartNotice(null), 4000);
+      return;
+    }
     addItem({
       id: product.id,
-      name: product.nome,
+      name: selectedVariation ? `${product.nome} — ${selectedVariation.sabor}` : product.nome,
       producer: product.produtoras.nome_marca,
-      price: product.preco,
+      price: displayPrice,
       quantity: quantity,
-      image: product.foto
+      image: product.foto,
     });
   };
 
@@ -218,7 +258,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                 </h1>
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5 sm:mt-6">
                   <span className="font-serif text-2xl sm:text-3xl text-espresso font-normal">
-                    R$ {product.preco.toFixed(2).replace(".", ",")}
+                    R$ {displayPrice.toFixed(2).replace(".", ",")}
                   </span>
                   <span className="hidden sm:block text-espresso/20">|</span>
                   <div className="flex items-center gap-1.5 text-espresso/45">
@@ -246,6 +286,59 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                   </div>
                 </div>
               </div>
+
+              {/* Select-flavor banner — shown when redirected from catalog */}
+              {selectFlavorBanner && (
+                <div className="flex items-center gap-3 px-5 py-3.5 bg-sand border border-caramel/30">
+                  <span className="w-1 h-4 bg-caramel flex-shrink-0" />
+                  <p className="font-sans text-[0.78rem] text-espresso/75 tracking-wide">
+                    Selecione um sabor para continuar.
+                  </p>
+                </div>
+              )}
+
+              {/* Variation selector */}
+              {hasVariacoes && product.variacoes && (
+                <div className="flex flex-col gap-2">
+                  <label className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+                    Escolha o sabor
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedVariation?.sabor ?? ""}
+                      onChange={(e) => {
+                        const v = product.variacoes!.find((v) => v.sabor === e.target.value) ?? null;
+                        setSelectedVariation(v);
+                        setCartNotice(null);
+                      }}
+                      className="w-full appearance-none bg-sand/30 border border-espresso/10 px-4 py-3 font-sans text-[0.85rem] text-espresso focus:outline-none focus:border-caramel transition-colors cursor-pointer pr-10"
+                    >
+                      <option value="" disabled>Selecione um sabor...</option>
+                      {product.variacoes.map((v) => (
+                        <option key={v.sabor} value={v.sabor}>{v.sabor}</option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-espresso/30">
+                      ▾
+                    </span>
+                  </div>
+                  {variationNote(product.variacoes) && (
+                    <p className="font-sans text-[0.68rem] text-espresso/40 tracking-wide">
+                      {variationNote(product.variacoes)}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Cart notice */}
+              {cartNotice && (
+                <div className="flex items-center gap-3 px-5 py-3.5 bg-terracota/5 border border-terracota/20">
+                  <span className="w-1 h-4 bg-terracota flex-shrink-0" />
+                  <p className="font-sans text-[0.78rem] text-terracota tracking-wide">
+                    {cartNotice}
+                  </p>
+                </div>
+              )}
 
               <div className="pt-6 sm:pt-8 border-t border-sand flex flex-col sm:flex-row items-center gap-4">
                 {/* Quantity */}
