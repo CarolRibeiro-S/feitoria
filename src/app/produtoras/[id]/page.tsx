@@ -116,28 +116,61 @@ export default function ProdutoraPage({
     <div className="bg-cream min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="w-full flex items-stretch min-h-[320px] sm:min-h-[380px]">
+      {/* Mobile: empilhado (foto em cima, info em baixo) | Desktop: duas colunas */}
+      <section className="w-full flex flex-col sm:flex-row sm:items-stretch">
 
-        {/* Left column — 60% sand claro */}
-        <div className="flex flex-col justify-between w-[60%] bg-[#E9E2D6] px-8 sm:px-12 pt-20 sm:pt-24 lg:pt-28 pb-10 sm:pb-12">
+        {/* Foto — topo no mobile, direita no desktop */}
+        <div className="relative w-full sm:w-[40%] order-1 sm:order-2 bg-cream min-h-[240px] sm:min-h-[380px]">
+          {/* Back link overlay — mobile only */}
+          <div className="absolute top-0 inset-x-0 z-10 pt-[72px] px-5 sm:hidden">
+            <Link
+              href="/produtoras"
+              className="inline-flex items-center gap-1.5 bg-espresso/50 backdrop-blur-sm text-cream px-3 py-1.5 font-sans text-[0.6rem] tracking-widest uppercase transition-colors rounded-sm"
+            >
+              <ChevronLeft size={12} /> Produtoras
+            </Link>
+          </div>
+
+          {produtora.foto_perfil ? (
+            <div className="relative w-full h-full min-h-[240px] sm:min-h-[380px]">
+              <Image
+                src={produtora.foto_perfil}
+                alt={produtora.nome_marca}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full min-h-[240px]">
+              <span className="font-serif text-8xl text-espresso/10 select-none">
+                {produtora.nome_marca.charAt(0)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Info — baixo no mobile, esquerda no desktop */}
+        <div className="flex flex-col justify-between w-full sm:w-[60%] order-2 sm:order-1 bg-[#E9E2D6] px-5 sm:px-10 lg:px-12 pt-7 sm:pt-24 lg:pt-28 pb-8 sm:pb-12">
+          {/* Back link — desktop only */}
           <Link
             href="/produtoras"
-            className="inline-flex items-center gap-2 text-espresso/45 hover:text-espresso font-sans text-[0.65rem] tracking-widest uppercase transition-colors mb-8 sm:mb-10 self-start"
+            className="hidden sm:inline-flex items-center gap-2 text-espresso/45 hover:text-espresso font-sans text-[0.65rem] tracking-widest uppercase transition-colors mb-8 self-start"
           >
             <ChevronLeft size={13} /> Todas as produtoras
           </Link>
 
           <div>
-            <span className="font-sans text-[0.55rem] sm:text-[0.6rem] tracking-[0.38em] uppercase text-espresso/35 font-semibold">
+            <span className="font-sans text-[0.55rem] tracking-[0.38em] uppercase text-espresso/35 font-semibold">
               Produtora
             </span>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-espresso font-normal leading-tight mt-2">
+            <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl text-espresso font-normal leading-tight mt-2">
               {produtora.nome_marca}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-5 mt-4">
               <div className="flex items-center gap-1.5 text-espresso/60">
-                <MapPin size={13} strokeWidth={1.8} />
-                <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
+                <MapPin size={12} strokeWidth={1.8} />
+                <span className="font-sans text-[0.72rem] sm:text-[0.8rem]">
                   {produtora.cidade}, {produtora.estado}
                 </span>
               </div>
@@ -148,8 +181,8 @@ export default function ProdutoraPage({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-espresso/60 hover:text-espresso transition-colors"
                 >
-                  <ExternalLink size={13} strokeWidth={1.8} />
-                  <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
+                  <ExternalLink size={12} strokeWidth={1.8} />
+                  <span className="font-sans text-[0.72rem] sm:text-[0.8rem]">
                     {instagramLabel}
                   </span>
                 </a>
@@ -161,8 +194,8 @@ export default function ProdutoraPage({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-espresso/60 hover:text-espresso transition-colors"
                 >
-                  <Phone size={13} strokeWidth={1.8} />
-                  <span className="font-sans text-[0.75rem] sm:text-[0.8rem]">
+                  <Phone size={12} strokeWidth={1.8} />
+                  <span className="font-sans text-[0.72rem] sm:text-[0.8rem]">
                     WhatsApp
                   </span>
                 </a>
@@ -171,44 +204,23 @@ export default function ProdutoraPage({
           </div>
         </div>
 
-        {/* Right column — 40% cream, logo fills completely */}
-        <div className="w-[40%] bg-cream relative min-h-[300px]">
-          {produtora.foto_perfil ? (
-            <div className="relative w-full h-full min-h-[300px]">
-              <Image
-                src={produtora.foto_perfil}
-                alt={produtora.nome_marca}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center w-full h-full">
-              <span className="font-serif text-8xl text-espresso/10 select-none">
-                {produtora.nome_marca.charAt(0)}
-              </span>
-            </div>
-          )}
-        </div>
-
       </section>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
-      <main className="w-full px-8 sm:px-12 py-16 sm:py-20 lg:py-24">
+      <main className="w-full px-5 sm:px-8 lg:px-12 py-12 sm:py-20 lg:py-24">
 
         {/* ── NOSSA HISTÓRIA ───────────────────────────────────────────── */}
         {produtora.descricao && (
-          <section className="w-full mb-16 sm:mb-20 lg:mb-24">
-            <h2 className="font-serif text-3xl md:text-4xl text-terracota font-normal">
+          <section className="w-full mb-12 sm:mb-20 lg:mb-24">
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl text-terracota font-normal">
               Nossa história
             </h2>
-            <div className="mt-6 sm:mt-8 text-center">
+            <div className="mt-5 sm:mt-8 text-center">
               {produtora.descricao
                 .split(/(?<=\.)\s+/)
                 .filter(Boolean)
                 .map((sentence, i) => (
-                  <p key={i} className="font-serif text-lg sm:text-xl text-espresso leading-[1.8] font-normal mb-4 last:mb-0">
+                  <p key={i} className="font-serif text-base sm:text-lg lg:text-xl text-espresso leading-[1.8] font-normal mb-3 sm:mb-4 last:mb-0">
                     {sentence}
                   </p>
                 ))}
@@ -219,24 +231,24 @@ export default function ProdutoraPage({
         {/* ── NOSSOS PRODUTOS ──────────────────────────────────────────── */}
         {produtos.length > 0 && (
           <section>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-12 pb-6 border-b border-sand">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-8 sm:mb-12 pb-5 sm:pb-6 border-b border-sand">
               <div>
-                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
+                <span className="font-sans text-[0.58rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
                   Catálogo
                 </span>
-                <h2 className="font-serif text-2xl sm:text-3xl text-espresso mt-2 font-normal">
+                <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl text-espresso mt-1.5 sm:mt-2 font-normal">
                   Nossos Produtos
                 </h2>
               </div>
               <Link
                 href="/produtos"
-                className="font-sans text-[0.65rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
+                className="font-sans text-[0.62rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
               >
                 Ver catálogo completo <ArrowRight size={11} />
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-5 sm:gap-y-8">
               {produtos.map((p) => (
                 <div key={p.id} className="group flex flex-col bg-cream">
                   <div className="aspect-square overflow-hidden relative bg-[#DCC8B2] flex items-center justify-center">
@@ -249,7 +261,7 @@ export default function ProdutoraPage({
                         className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-espresso/10" />
+                      <div className="w-8 h-8 rounded-full bg-espresso/10" />
                     )}
                     <div className="absolute inset-0 bg-espresso/5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none lg:pointer-events-auto">
                       <Link
@@ -261,15 +273,15 @@ export default function ProdutoraPage({
                     </div>
                   </div>
 
-                  <div className="p-3.5 sm:p-5 flex flex-col gap-1.5 sm:gap-2">
-                    <span className="font-sans text-[0.55rem] sm:text-[0.62rem] tracking-[0.2em] sm:tracking-[0.28em] uppercase text-caramel/80 font-semibold">
+                  <div className="p-3 sm:p-4 flex flex-col gap-1 sm:gap-1.5">
+                    <span className="font-sans text-[0.52rem] sm:text-[0.6rem] tracking-[0.2em] uppercase text-caramel/80 font-semibold">
                       {p.categoria}
                     </span>
-                    <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2">
+                    <h3 className="font-sans text-[0.78rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2">
                       {p.nome}
                     </h3>
-                    <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
-                      <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-sand">
+                      <span className="font-serif text-[0.95rem] sm:text-[1.1rem] text-espresso font-normal">
                         R$ {p.preco.toFixed(2).replace(".", ",")}
                       </span>
                       {p.variacoes?.length ? (
@@ -278,7 +290,7 @@ export default function ProdutoraPage({
                           className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
                           aria-label="Escolher sabor"
                         >
-                          <Plus size={12} className="sm:size-[14px]" />
+                          <Plus size={12} />
                         </Link>
                       ) : (
                         <button
@@ -295,7 +307,7 @@ export default function ProdutoraPage({
                           }
                           className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
                         >
-                          <Plus size={12} className="sm:size-[14px]" />
+                          <Plus size={12} />
                         </button>
                       )}
                     </div>
