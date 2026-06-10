@@ -139,6 +139,7 @@ export default function ProdutoraPage({
                 fill
                 className="object-cover"
                 priority
+                unoptimized={produtora.foto_perfil?.startsWith("/")}
               />
             </div>
           ) : (
