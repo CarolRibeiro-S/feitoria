@@ -1,101 +1,183 @@
 "use client";
 
-import { 
-  Users, 
-  ShoppingBag, 
-  TrendingUp, 
-  Wallet,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreHorizontal
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, ShoppingBag, TrendingUp, Wallet, MoreHorizontal } from "lucide-react";
+import { supabase } from "@/lib/supabase-client";
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+interface RecentOrder {
+  id: string;
+  numero: string;
+  nome_cliente: string;
+  total: number;
+  status: string;
+  criado_em: string;
+  itens_pedido: { produtor: string }[];
+}
 
-const STATS = [
-  { label: "Produtoras Ativas", value: "32", change: "+4", isUp: true, icon: Users, color: "text-espresso" },
-  { label: "Pedidos Hoje", value: "12", change: "+15%", isUp: true, icon: ShoppingBag, color: "text-terracota" },
-  { label: "Receita do Mês", value: "R$ 14.280,50", change: "+8%", isUp: true, icon: Wallet, color: "text-olive" },
-  { label: "Comissão Acumulada", value: "R$ 2.142,00", change: "-2%", isUp: false, icon: TrendingUp, color: "text-espresso" },
-];
+interface ChartDay {
+  day: string;
+  barPct: number;
+  total: number;
+}
 
-const RECENT_ORDERS = [
-  { id: "#1245", client: "Ana Beatriz", producer: "Ateliê das Flores", value: 89.0, status: "Confirmado", date: "31/05/2026" },
-  { id: "#1244", client: "Carlos Eduardo", producer: "Grão Fermentado", value: 42.0, status: "Em preparo", date: "31/05/2026" },
-  { id: "#1243", client: "Mariana Silva", producer: "Casa Mato Verde", value: 145.0, status: "Confirmado", date: "30/05/2026" },
-  { id: "#1242", client: "João Pedro", producer: "Sítio Primavera", value: 54.0, status: "Entregue", date: "30/05/2026" },
-  { id: "#1241", client: "Julia Costa", producer: "Ateliê das Flores", value: 12.0, status: "Cancelado", date: "29/05/2026" },
-];
+const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-const SALES_CHART = [
-  { day: "Seg", value: 40 },
-  { day: "Ter", value: 65 },
-  { day: "Qua", value: 45 },
-  { day: "Qui", value: 80 },
-  { day: "Sex", value: 95 },
-  { day: "Sáb", value: 70 },
-  { day: "Dom", value: 55 },
-];
+function fmtBRL(v: number) {
+  return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  pendente: "Pendente",
+  confirmado: "Confirmado",
+  em_preparo: "Em preparo",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+};
+
+function statusColor(s: string) {
+  if (s === "confirmado") return "bg-olive/10 text-olive";
+  if (s === "em_preparo") return "bg-blue-50 text-blue-600";
+  if (s === "entregue") return "bg-espresso/10 text-espresso";
+  if (s === "cancelado") return "bg-terracota/10 text-terracota";
+  return "bg-amber-100 text-amber-600";
+}
 
 export default function AdminOverview() {
+  const [produtorasAtivas, setProdutorasAtivas] = useState<number>(0);
+  const [pedidosHoje, setPedidosHoje] = useState<number>(0);
+  const [receitaMes, setReceitaMes] = useState<number>(0);
+  const [comissaoTotal, setComissaoTotal] = useState<number>(0);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [chartData, setChartData] = useState<ChartDay[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchAll(); }, []);
+
+  async function fetchAll() {
+    try {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+      const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+      const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).toISOString();
+
+      const [
+        { count: activeCount },
+        { count: todayCount },
+        { data: monthRows },
+        { data: nonCancelledRows },
+        { data: recentRows },
+        { data: weekRows },
+      ] = await Promise.all([
+        supabase.from("produtoras").select("*", { count: "exact", head: true }).eq("ativo", true),
+        supabase.from("pedidos").select("*", { count: "exact", head: true }).gte("criado_em", todayStart).lt("criado_em", tomorrowStart),
+        supabase.from("pedidos").select("total").gte("criado_em", monthStart).lt("criado_em", nextMonthStart),
+        supabase.from("pedidos").select("total").neq("status", "cancelado"),
+        supabase.from("pedidos").select("id, numero, nome_cliente, total, status, criado_em, itens_pedido(produtor)").order("criado_em", { ascending: false }).limit(5),
+        supabase.from("pedidos").select("criado_em, total").gte("criado_em", sevenDaysAgo).order("criado_em", { ascending: true }),
+      ]);
+
+      setProdutorasAtivas(activeCount ?? 0);
+      setPedidosHoje(todayCount ?? 0);
+      setReceitaMes((monthRows ?? []).reduce((s, o) => s + (o.total ?? 0), 0));
+      setComissaoTotal((nonCancelledRows ?? []).reduce((s, o) => s + (o.total ?? 0) * 0.1, 0));
+      setRecentOrders((recentRows ?? []) as RecentOrder[]);
+
+      // Build 7-day chart
+      const dayMap: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        dayMap[d.toISOString().slice(0, 10)] = 0;
+      }
+      (weekRows ?? []).forEach((o) => {
+        const date = (o.criado_em as string).slice(0, 10);
+        if (date in dayMap) dayMap[date] += o.total ?? 0;
+      });
+      const entries = Object.entries(dayMap);
+      const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+      setChartData(
+        entries.map(([date, total]) => ({
+          day: DAYS_PT[new Date(date + "T12:00:00").getDay()],
+          barPct: Math.max(Math.round((total / maxVal) * 92), total > 0 ? 4 : 2),
+          total,
+        }))
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const stats = [
+    { label: "Produtoras Ativas", value: String(produtorasAtivas), icon: Users, color: "text-espresso" },
+    { label: "Pedidos Hoje", value: String(pedidosHoje), icon: ShoppingBag, color: "text-terracota" },
+    { label: "Receita do Mês", value: fmtBRL(receitaMes), icon: Wallet, color: "text-olive" },
+    { label: "Comissão Acumulada", value: fmtBRL(comissaoTotal), icon: TrendingUp, color: "text-espresso" },
+  ];
+
   return (
     <div className="flex flex-col gap-10">
-      
-      {/* ── Welcome ─────────────────────────────────────────────────────────── */}
+
       <div className="flex flex-col gap-1">
         <h2 className="font-serif text-3xl text-espresso">Visão Geral</h2>
         <p className="font-sans text-sm text-espresso/45">Bem-vindo ao centro de controle da Feitoria.</p>
       </div>
 
-      {/* ── Stats Grid ──────────────────────────────────────────────────────── */}
+      {/* ── Stats ───────────────────────────────────────────────────────────── */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="bg-cream border border-sand p-6 flex flex-col gap-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className={`w-10 h-10 rounded-full bg-sand/30 flex items-center justify-center ${stat.color}`}>
-                <stat.icon size={18} strokeWidth={2} />
-              </div>
-              <div className={`flex items-center gap-1 font-sans text-[0.65rem] font-bold ${stat.isUp ? "text-olive" : "text-terracota"}`}>
-                {stat.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                {stat.change}
-              </div>
+            <div className={`w-10 h-10 rounded-full bg-sand/30 flex items-center justify-center ${stat.color}`}>
+              <stat.icon size={18} strokeWidth={2} />
             </div>
             <div>
               <p className="font-sans text-[0.62rem] tracking-[0.15em] uppercase text-espresso/40 font-bold mb-1">{stat.label}</p>
-              <p className="font-serif text-2xl text-espresso font-medium">{stat.value}</p>
+              {loading
+                ? <div className="h-8 w-24 bg-sand/50 animate-pulse" />
+                : <p className="font-serif text-2xl text-espresso font-medium">{stat.value}</p>
+              }
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Charts & Main Area ──────────────────────────────────────────────── */}
+      {/* ── Chart + Recent Orders ────────────────────────────────────────────── */}
       <div className="grid lg:grid-cols-3 gap-8">
-        
-        {/* Sales Activity (Chart) */}
+
+        {/* Bar chart */}
         <div className="lg:col-span-1 bg-cream border border-sand p-8 flex flex-col shadow-sm">
           <div className="mb-8">
             <h3 className="font-serif text-xl text-espresso">Vendas (7 dias)</h3>
-            <p className="font-sans text-xs text-espresso/40 mt-1">Volume de transações diárias</p>
+            <p className="font-sans text-xs text-espresso/40 mt-1">Receita diária em reais</p>
           </div>
-          
           <div className="flex-1 flex items-end justify-between gap-2 h-48">
-            {SALES_CHART.map((item) => (
-              <div key={item.day} className="flex-1 flex flex-col items-center gap-3 group">
-                <div 
-                  className="w-full bg-sand group-hover:bg-terracota transition-colors duration-300 relative"
-                  style={{ height: `${item.value}%` }}
-                >
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-espresso text-cream text-[0.6rem] px-1.5 py-0.5 pointer-events-none">
-                    {item.value}
+            {loading
+              ? [...Array(7)].map((_, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-3">
+                    <div className="w-full bg-sand/30 animate-pulse" style={{ height: `${40 + i * 8}%` }} />
+                    <div className="h-2 w-5 bg-sand/30 animate-pulse" />
                   </div>
-                </div>
-                <span className="font-sans text-[0.6rem] uppercase tracking-tighter text-espresso/40 font-bold">{item.day}</span>
-              </div>
-            ))}
+                ))
+              : chartData.map((item) => (
+                  <div key={item.day} className="flex-1 flex flex-col items-center gap-3 group">
+                    <div
+                      className="w-full bg-sand group-hover:bg-terracota transition-colors duration-300 relative"
+                      style={{ height: `${item.barPct}%` }}
+                    >
+                      {item.total > 0 && (
+                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-espresso text-cream text-[0.6rem] px-1.5 py-0.5 pointer-events-none whitespace-nowrap">
+                          {fmtBRL(item.total)}
+                        </div>
+                      )}
+                    </div>
+                    <span className="font-sans text-[0.6rem] uppercase tracking-tighter text-espresso/40 font-bold">{item.day}</span>
+                  </div>
+                ))
+            }
           </div>
         </div>
 
-        {/* Recent Orders Table */}
+        {/* Recent orders */}
         <div className="lg:col-span-2 bg-cream border border-sand flex flex-col shadow-sm">
           <div className="p-8 border-b border-sand flex items-center justify-between">
             <div>
@@ -106,41 +188,51 @@ export default function AdminOverview() {
               <MoreHorizontal size={20} />
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-sand/50 bg-sand/5">
-                  <th className="px-8 py-4 font-sans text-[0.6rem] tracking-widest uppercase text-espresso/35 font-bold">ID</th>
-                  <th className="px-8 py-4 font-sans text-[0.6rem] tracking-widest uppercase text-espresso/35 font-bold">Cliente</th>
-                  <th className="px-8 py-4 font-sans text-[0.6rem] tracking-widest uppercase text-espresso/35 font-bold">Produtora</th>
-                  <th className="px-8 py-4 font-sans text-[0.6rem] tracking-widest uppercase text-espresso/35 font-bold">Valor</th>
-                  <th className="px-8 py-4 font-sans text-[0.6rem] tracking-widest uppercase text-espresso/35 font-bold">Status</th>
+                  {["ID", "Cliente", "Produtora", "Valor", "Status"].map((h) => (
+                    <th key={h} className="px-8 py-4 font-sans text-[0.6rem] tracking-widest uppercase text-espresso/35 font-bold">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="font-sans text-[0.82rem]">
-                {RECENT_ORDERS.map((order) => (
-                  <tr key={order.id} className="border-b border-sand/30 last:border-0 hover:bg-sand/10 transition-colors">
-                    <td className="px-8 py-5 text-espresso font-medium">{order.id}</td>
-                    <td className="px-8 py-5 text-espresso/70">{order.client}</td>
-                    <td className="px-8 py-5 text-espresso/70">{order.producer}</td>
-                    <td className="px-8 py-5 text-espresso font-medium">R$ {order.value.toFixed(2).replace(".", ",")}</td>
-                    <td className="px-8 py-5">
-                      <span className={`
-                        inline-flex px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider
-                        ${order.status === "Confirmado" ? "bg-olive/10 text-olive" : 
-                          order.status === "Em preparo" ? "bg-sand-dark/10 text-espresso/60" :
-                          order.status === "Entregue" ? "bg-espresso/10 text-espresso" :
-                          "bg-terracota/10 text-terracota"}
-                      `}>
-                        {order.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {loading
+                  ? [...Array(5)].map((_, i) => (
+                      <tr key={i} className="border-b border-sand/30 last:border-0">
+                        {[1,2,3,4,5].map((j) => (
+                          <td key={j} className="px-8 py-5">
+                            <div className="h-3 bg-sand/40 animate-pulse rounded w-20" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  : recentOrders.map((o) => (
+                      <tr key={o.id} className="border-b border-sand/30 last:border-0 hover:bg-sand/10 transition-colors">
+                        <td className="px-8 py-5 text-espresso font-medium">{o.numero}</td>
+                        <td className="px-8 py-5 text-espresso/70">{o.nome_cliente}</td>
+                        <td className="px-8 py-5 text-espresso/70">{o.itens_pedido?.[0]?.produtor ?? "—"}</td>
+                        <td className="px-8 py-5 text-espresso font-medium">R$ {o.total.toFixed(2).replace(".", ",")}</td>
+                        <td className="px-8 py-5">
+                          <span className={`inline-flex px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider ${statusColor(o.status)}`}>
+                            {STATUS_LABEL[o.status] ?? o.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                }
               </tbody>
             </table>
           </div>
+
+          {!loading && recentOrders.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="font-serif text-lg text-espresso/30 italic">Nenhum pedido ainda.</p>
+            </div>
+          )}
+
           <div className="p-5 text-center border-t border-sand">
             <a href="/admin/pedidos" className="font-sans text-[0.65rem] tracking-[0.15em] uppercase text-caramel font-bold hover:text-terracota transition-colors">
               Ver todos os pedidos
@@ -149,7 +241,6 @@ export default function AdminOverview() {
         </div>
 
       </div>
-
     </div>
   );
 }

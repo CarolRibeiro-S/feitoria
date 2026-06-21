@@ -1,43 +1,82 @@
 "use client";
 
-import { useState } from "react";
-import { 
-  Search, 
-  MoreHorizontal,
-  ChevronDown,
-  Calendar,
-  User,
-  Store
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Calendar, User, Store } from "lucide-react";
+import { supabase } from "@/lib/supabase-client";
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+interface Pedido {
+  id: string;
+  numero: string;
+  nome_cliente: string;
+  total: number;
+  status: string;
+  criado_em: string;
+  itens_pedido: { produtor: string }[];
+}
 
-const ALL_ORDERS = [
-  { id: "#1245", client: "Ana Beatriz", producer: "Ateliê das Flores", product: "Torta de Lavanda", value: 89.0, status: "Confirmado", date: "31/05/2026" },
-  { id: "#1244", client: "Carlos Eduardo", producer: "Grão Fermentado", product: "Pão de Centeio", value: 42.0, status: "Em preparo", date: "31/05/2026" },
-  { id: "#1243", client: "Mariana Silva", producer: "Casa Mato Verde", product: "Kit Café Especial", value: 145.0, status: "Pendente", date: "30/05/2026" },
-  { id: "#1242", client: "João Pedro", producer: "Sítio Primavera", product: "Café Especial", value: 54.0, status: "Entregue", date: "30/05/2026" },
-  { id: "#1241", client: "Julia Costa", producer: "Ateliê das Flores", product: "Brigadeiro Pistache", value: 12.0, status: "Cancelado", date: "29/05/2026" },
-  { id: "#1240", client: "Ricardo Gomes", producer: "Massa & Cia", product: "Lasanha Artesanal", value: 45.0, status: "Entregue", date: "28/05/2026" },
-];
+const STATUS_LABELS: Record<string, string> = {
+  pendente: "Pendente",
+  confirmado: "Confirmado",
+  em_preparo: "Em preparo",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+};
 
-const STATUS_OPTIONS = ["Todos", "Pendente", "Confirmado", "Em preparo", "Entregue", "Cancelado"];
+const FILTER_OPTIONS = ["Todos", "pendente", "confirmado", "em_preparo", "entregue", "cancelado"];
+
+function statusColor(s: string) {
+  if (s === "confirmado") return "bg-olive/10 text-olive";
+  if (s === "em_preparo") return "bg-blue-50 text-blue-600";
+  if (s === "entregue") return "bg-espresso/10 text-espresso";
+  if (s === "cancelado") return "bg-terracota/10 text-terracota";
+  return "bg-amber-100 text-amber-600";
+}
 
 export default function AdminOrders() {
+  const [orders, setOrders] = useState<Pedido[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
+  const [updating, setUpdating] = useState<string | null>(null);
 
-  const filteredOrders = ALL_ORDERS.filter(o => {
+  useEffect(() => { fetchOrders(); }, []);
+
+  async function fetchOrders() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("pedidos")
+      .select("id, numero, nome_cliente, total, status, criado_em, itens_pedido(produtor)")
+      .order("criado_em", { ascending: false });
+
+    if (error) console.error("[AdminPedidos] Erro:", error);
+    setOrders((data ?? []) as Pedido[]);
+    setLoading(false);
+  }
+
+  async function updateStatus(id: string, newStatus: string) {
+    setUpdating(id);
+    const { error } = await supabase.from("pedidos").update({ status: newStatus }).eq("id", id);
+    if (error) {
+      console.error("[AdminPedidos] Erro ao atualizar status:", error);
+    } else {
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o)));
+    }
+    setUpdating(null);
+  }
+
+  const filtered = orders.filter((o) => {
     const matchesStatus = statusFilter === "Todos" || o.status === statusFilter;
-    const matchesSearch = o.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          o.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          o.producer.toLowerCase().includes(searchQuery.toLowerCase());
+    const term = searchQuery.toLowerCase();
+    const matchesSearch =
+      o.numero.toLowerCase().includes(term) ||
+      o.nome_cliente.toLowerCase().includes(term) ||
+      (o.itens_pedido?.[0]?.produtor ?? "").toLowerCase().includes(term);
     return matchesStatus && matchesSearch;
   });
 
   return (
     <div className="flex flex-col gap-8">
-      
+
       {/* ── Filters ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="relative w-full md:max-w-xs">
@@ -52,24 +91,24 @@ export default function AdminOrders() {
         </div>
 
         <div className="flex items-center gap-3 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-          {STATUS_OPTIONS.map((status) => (
+          {FILTER_OPTIONS.map((s) => (
             <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
+              key={s}
+              onClick={() => setStatusFilter(s)}
               className={`
                 flex-shrink-0 px-4 py-2 font-sans text-[0.65rem] font-bold uppercase tracking-widest border transition-all duration-200
-                ${statusFilter === status 
-                  ? "bg-espresso text-cream border-espresso" 
+                ${statusFilter === s
+                  ? "bg-espresso text-cream border-espresso"
                   : "bg-cream text-espresso/40 border-sand hover:border-espresso/30"}
               `}
             >
-              {status}
+              {s === "Todos" ? "Todos" : STATUS_LABELS[s]}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── Orders Table ────────────────────────────────────────────────────── */}
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
       <div className="bg-cream border border-sand shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -80,59 +119,70 @@ export default function AdminOrders() {
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Produtora</th>
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Valor</th>
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Status</th>
-                <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold text-right">Ações</th>
+                <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold text-right">Alterar Status</th>
               </tr>
             </thead>
             <tbody className="font-sans text-[0.82rem]">
-              {filteredOrders.map((o) => (
-                <tr key={o.id} className="border-b border-sand/30 last:border-0 hover:bg-sand/10 transition-colors">
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="text-espresso font-semibold">{o.id}</span>
-                      <div className="flex items-center gap-1.5 text-[0.65rem] text-espresso/40 mt-1">
-                        <Calendar size={10} />
-                        {o.date}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2 text-espresso/70">
-                      <User size={12} className="text-espresso/20" />
-                      {o.client}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-2 text-espresso/70">
-                      <Store size={12} className="text-espresso/20" />
-                      {o.producer}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-espresso font-medium">
-                    R$ {o.value.toFixed(2).replace(".", ",")}
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`
-                      inline-flex px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-wider
-                      ${o.status === "Confirmado" ? "bg-olive/10 text-olive" : 
-                        o.status === "Pendente" ? "bg-amber-100 text-amber-600" :
-                        o.status === "Em preparo" ? "bg-blue-50 text-blue-600" :
-                        o.status === "Entregue" ? "bg-espresso/10 text-espresso" :
-                        "bg-terracota/10 text-terracota"}
-                    `}>
-                      {o.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <button className="p-2 text-espresso/30 hover:text-espresso transition-colors">
-                      <MoreHorizontal size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {loading
+                ? [...Array(6)].map((_, i) => (
+                    <tr key={i} className="border-b border-sand/30 last:border-0">
+                      {[1, 2, 3, 4, 5, 6].map((j) => (
+                        <td key={j} className="px-8 py-5">
+                          <div className="h-4 bg-sand/40 animate-pulse rounded w-20" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : filtered.map((o) => (
+                    <tr key={o.id} className="border-b border-sand/30 last:border-0 hover:bg-sand/10 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="text-espresso font-semibold">{o.numero}</span>
+                          <div className="flex items-center gap-1.5 text-[0.65rem] text-espresso/40 mt-1">
+                            <Calendar size={10} />
+                            {new Date(o.criado_em).toLocaleDateString("pt-BR")}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-2 text-espresso/70">
+                          <User size={12} className="text-espresso/20" />
+                          {o.nome_cliente}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-2 text-espresso/70">
+                          <Store size={12} className="text-espresso/20" />
+                          {o.itens_pedido?.[0]?.produtor ?? "—"}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-espresso font-medium">
+                        R$ {o.total.toFixed(2).replace(".", ",")}
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`inline-flex px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-wider ${statusColor(o.status)}`}>
+                          {STATUS_LABELS[o.status] ?? o.status}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <select
+                          value={o.status}
+                          disabled={updating === o.id}
+                          onChange={(e) => updateStatus(o.id, e.target.value)}
+                          className="bg-cream border border-sand font-sans text-[0.72rem] text-espresso px-2 py-1.5 focus:outline-none focus:border-espresso/40 disabled:opacity-40 cursor-pointer"
+                        >
+                          {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                            <option key={val} value={val}>{label}</option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  ))
+              }
             </tbody>
           </table>
         </div>
-        {filteredOrders.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="py-20 text-center">
             <p className="font-serif text-xl text-espresso/30 italic">Nenhum pedido encontrado.</p>
           </div>
