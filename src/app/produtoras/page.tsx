@@ -6,6 +6,12 @@ import { supabase } from "@/lib/supabase-client";
 import Image from "next/image";
 import Link from "next/link";
 
+const logoSvgMap: Record<string, string> = {
+  'Ju Fiche — Cozinha Artesanal': '/logo_jufiche.svg',
+  "Cookie's Everest": '/logo_angela.svg',
+  'Chef Koala': '/logo_koala.svg',
+}
+
 interface Produtora {
   id: string;
   nome_marca: string;
@@ -62,8 +68,8 @@ export default function ProdutorasPage() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {produtoras.map((p) => {
-                const photoSrc = p.foto_perfil ||
-                  (p.nome_marca.toLowerCase().includes("ju fiche") ? "/logo_jufiche.jpeg" : null);
+                const svgSrc = logoSvgMap[p.nome_marca];
+                const photoSrc = p.foto_perfil ?? null;
                 return (
                 <Link
                   key={p.id}
@@ -71,15 +77,23 @@ export default function ProdutorasPage() {
                   className="group flex flex-col bg-sand hover:bg-sand/70 transition-colors"
                 >
                   {/* Photo */}
-                  <div className="aspect-[4/3] overflow-hidden relative bg-beige flex items-center justify-center">
-                    {photoSrc ? (
+                  <div className="aspect-[4/3] overflow-hidden relative bg-[#E9E2D6] flex items-center justify-center">
+                    {svgSrc ? (
+                      <Image
+                        src={svgSrc}
+                        alt={p.nome_marca}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-contain p-10 group-hover:scale-[1.02] transition-transform duration-500"
+                      />
+                    ) : photoSrc ? (
                       <Image
                         src={photoSrc}
                         alt={p.nome_marca}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
-                        unoptimized={photoSrc?.startsWith("/")}
+                        unoptimized={photoSrc.startsWith("/")}
                       />
                     ) : (
                       <span className="font-serif text-6xl text-espresso/10 select-none">

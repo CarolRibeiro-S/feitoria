@@ -7,6 +7,12 @@ import { useCart } from "@/lib/cart-context";
 import Image from "next/image";
 import Link from "next/link";
 
+const logoSvgMap: Record<string, string> = {
+  'Ju Fiche — Cozinha Artesanal': '/logo_jufiche.svg',
+  "Cookie's Everest": '/logo_angela.svg',
+  'Chef Koala': '/logo_koala.svg',
+}
+
 interface Produtora {
   id: string;
   nome_marca: string;
@@ -111,6 +117,8 @@ export default function ProdutoraPage({
       ? `https://wa.me/${produtora.whatsapp.replace(/\D/g, "")}`
       : null;
 
+  const logoSvg = logoSvgMap[produtora.nome_marca];
+
   return (
     <div className="bg-cream min-h-screen">
 
@@ -171,9 +179,17 @@ export default function ProdutoraPage({
           </div>
         </div>
 
-        {/* Coluna direita — imagem */}
-        <div className="w-full sm:w-1/2 h-full relative bg-[#E9E2D6]">
-          {produtora.foto_perfil ? (
+        {/* Coluna direita — logo */}
+        <div className="w-full sm:w-1/2 h-full relative bg-[#E9E2D6] flex items-center justify-center p-12">
+          {logoSvg ? (
+            <Image
+              src={logoSvg}
+              alt={produtora.nome_marca}
+              width={280}
+              height={280}
+              className="object-contain"
+            />
+          ) : produtora.foto_perfil ? (
             <Image
               src={produtora.foto_perfil}
               alt={produtora.nome_marca}
