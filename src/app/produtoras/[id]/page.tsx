@@ -126,7 +126,7 @@ export default function ProdutoraPage({
       <section className="flex flex-col sm:flex-row h-[400px] w-full">
 
         {/* Coluna esquerda — texto */}
-        <div className="w-full sm:w-1/2 h-full p-8 sm:p-12 flex flex-col justify-center bg-[#E9E2D6]">
+        <div className="w-full sm:w-3/5 h-full p-8 sm:p-12 flex flex-col justify-center bg-[#E9E2D6]">
           {/* Back link — desktop only */}
           <Link
             href="/produtoras"
@@ -180,31 +180,23 @@ export default function ProdutoraPage({
         </div>
 
         {/* Coluna direita — logo */}
-        <div className="w-full sm:w-1/2 h-full relative bg-[#E9E2D6]">
+        <div className="w-full sm:w-2/5 h-full flex items-center justify-center overflow-hidden bg-[#E9E2D6]">
           {logoSvg ? (
-            <Image
+            <img
               src={logoSvg}
               alt={produtora.nome_marca}
-              fill
-              className="object-cover"
-              priority
-              unoptimized
+              className="max-h-full max-w-full w-auto h-auto object-contain"
             />
           ) : produtora.foto_perfil ? (
-            <Image
+            <img
               src={produtora.foto_perfil}
               alt={produtora.nome_marca}
-              fill
-              className="object-contain p-8"
-              priority
-              unoptimized={produtora.foto_perfil?.startsWith("/")}
+              className="max-h-full max-w-full w-auto h-auto object-contain"
             />
           ) : (
-            <div className="flex items-center justify-center w-full h-full">
-              <span className="font-serif text-8xl text-espresso/10 select-none">
-                {produtora.nome_marca.charAt(0)}
-              </span>
-            </div>
+            <span className="font-serif text-8xl text-espresso/10 select-none">
+              {produtora.nome_marca.charAt(0)}
+            </span>
           )}
         </div>
 
