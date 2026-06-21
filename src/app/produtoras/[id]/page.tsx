@@ -13,6 +13,14 @@ const logoSvgMap: Record<string, string> = {
   'Chef Koala': '/logo_koala.jpg',
 }
 
+// Classes da <img> por produtora — permite dimensões e fit individuais
+const logoConfigMap: Record<string, string> = {
+  'Ju Fiche — Cozinha Artesanal': 'w-full h-full object-contain object-center',
+  "Cookie's Everest":             'w-full h-full object-contain object-center',
+  'Chef Koala':                   'w-[344px] h-full object-contain',
+}
+const defaultLogoClass = 'w-full h-full object-contain object-center';
+
 interface Produtora {
   id: string;
   nome_marca: string;
@@ -118,12 +126,13 @@ export default function ProdutoraPage({
       : null;
 
   const logoSvg = logoSvgMap[produtora.nome_marca];
+  const logoClass = logoConfigMap[produtora.nome_marca] ?? defaultLogoClass;
 
   return (
     <div className="bg-cream min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="flex flex-col sm:flex-row h-[400px] w-full">
+      <section className="flex flex-col sm:flex-row h-[320px] w-full mt-14 sm:mt-16">
 
         {/* Coluna esquerda — texto */}
         <div className="w-full sm:w-3/5 h-full p-8 sm:p-12 flex flex-col justify-center bg-[#E9E2D6]">
@@ -180,23 +189,25 @@ export default function ProdutoraPage({
         </div>
 
         {/* Coluna direita — logo */}
-        <div className="w-full sm:w-2/5 h-full flex items-center justify-center overflow-hidden bg-[#E9E2D6]">
+        <div className="w-full sm:w-2/5 h-full bg-[#E9E2D6] overflow-hidden flex items-center justify-center">
           {logoSvg ? (
             <img
               src={logoSvg}
               alt={produtora.nome_marca}
-              className="max-h-full max-w-full w-auto h-auto object-contain"
+              className={logoClass}
             />
           ) : produtora.foto_perfil ? (
             <img
               src={produtora.foto_perfil}
               alt={produtora.nome_marca}
-              className="max-h-full max-w-full w-auto h-auto object-contain"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <span className="font-serif text-8xl text-espresso/10 select-none">
-              {produtora.nome_marca.charAt(0)}
-            </span>
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="font-serif text-8xl text-espresso/10 select-none">
+                {produtora.nome_marca.charAt(0)}
+              </span>
+            </div>
           )}
         </div>
 

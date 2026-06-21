@@ -11,11 +11,11 @@ import { criarPedido } from "@/app/actions/checkout";
 
 const FRETE = 15.0;
 
-const ENDERECO_PRODUTORA = {
-  rua: "Rua das Flores, 120",
-  bairro: "Santa Teresa",
-  cidade: "São Paulo",
-  estado: "SP",
+const ENDERECO_RETIRADA = {
+  rua: "Mercearia Colaborativa",
+  bairro: "412 Norte ou 208 Sul",
+  cidade: "Brasília",
+  estado: "DF",
 };
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -467,9 +467,9 @@ export default function CheckoutPage() {
               <>
                 <div className="bg-sand px-5 py-4 flex flex-col gap-1">
                   <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/45 font-semibold mb-1">Endereço de retirada</p>
-                  <p className="font-sans text-sm text-espresso">{ENDERECO_PRODUTORA.rua}</p>
+                  <p className="font-sans text-sm text-espresso">{ENDERECO_RETIRADA.rua}</p>
                   <p className="font-sans text-xs text-espresso/60">
-                    {ENDERECO_PRODUTORA.bairro} · {ENDERECO_PRODUTORA.cidade}, {ENDERECO_PRODUTORA.estado}
+                    {ENDERECO_RETIRADA.bairro} · {ENDERECO_RETIRADA.cidade}, {ENDERECO_RETIRADA.estado}
                   </p>
                 </div>
 
@@ -688,7 +688,7 @@ export default function CheckoutPage() {
                   </p>
                 ) : (
                   <p className="font-sans text-xs text-espresso/70">
-                    {ENDERECO_PRODUTORA.rua}<br />
+                    {ENDERECO_RETIRADA.rua} — {ENDERECO_RETIRADA.bairro}<br />
                     {dataRetirada && <>em {new Date(dataRetirada + "T12:00").toLocaleDateString("pt-BR")} {horaRetirada && `às ${horaRetirada}`}</>}
                   </p>
                 )}

@@ -12,6 +12,13 @@ const logoSvgMap: Record<string, string> = {
   'Chef Koala': '/logo_koala.jpg',
 }
 
+const logoConfigMap: Record<string, { fit: string; position: string; padding: string }> = {
+  'Ju Fiche — Cozinha Artesanal': { fit: 'object-contain', position: 'object-center', padding: 'p-0'  },
+  "Cookie's Everest":             { fit: 'object-contain', position: 'object-center', padding: 'p-0'  },
+  'Chef Koala':                   { fit: 'object-contain', position: 'object-center', padding: 'p-6'  },
+}
+const defaultLogoConfig = { fit: 'object-contain', position: 'object-center', padding: 'p-0' };
+
 interface Produtora {
   id: string;
   nome_marca: string;
@@ -69,6 +76,7 @@ export default function ProdutorasPage() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {produtoras.map((p) => {
                 const svgSrc = logoSvgMap[p.nome_marca];
+                const logoConfig = logoConfigMap[p.nome_marca] ?? defaultLogoConfig;
                 const photoSrc = p.foto_perfil ?? null;
                 return (
                 <Link
@@ -77,14 +85,14 @@ export default function ProdutorasPage() {
                   className="group flex flex-col bg-sand hover:bg-sand/70 transition-colors"
                 >
                   {/* Photo */}
-                  <div className="aspect-[4/3] overflow-hidden relative bg-[#E9E2D6] flex items-center justify-center">
+                  <div className={`aspect-[4/3] overflow-hidden relative bg-[#E9E2D6] flex items-center justify-center ${logoConfig.padding}`}>
                     {svgSrc ? (
                       <Image
                         src={svgSrc}
                         alt={p.nome_marca}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        className={`${logoConfig.fit} ${logoConfig.position} group-hover:scale-[1.02] transition-transform duration-500`}
                         unoptimized
                       />
                     ) : photoSrc ? (
