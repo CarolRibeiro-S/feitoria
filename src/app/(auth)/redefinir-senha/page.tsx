@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,6 +18,27 @@ export default function RedefinirSenhaPage() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+
+  useEffect(() => {
+    // Handles both implicit flow (#access_token in hash) and PKCE flow
+    // (session already set by /auth/callback before redirect here).
+    // onAuthStateChange processes the URL hash automatically when present.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "PASSWORD_RECOVERY" || (session && event === "SIGNED_IN")) {
+          setSessionReady(true);
+        }
+      }
+    );
+
+    // Also check for an existing active session (PKCE flow: callback already ran)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setSessionReady(true);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -86,8 +107,20 @@ export default function RedefinirSenhaPage() {
         </div>
       )}
 
+      {/* Aguardando sessão */}
+      {!sessionReady && !sucesso && (
+        <div className="flex flex-col gap-5">
+          <div className="h-12 bg-sand/40 animate-pulse" />
+          <div className="h-12 bg-sand/40 animate-pulse" />
+          <div className="h-12 bg-sand/40 animate-pulse" />
+          <p className="font-sans text-[0.75rem] text-espresso/40 text-center">
+            Verificando link de recuperação...
+          </p>
+        </div>
+      )}
+
       {/* Form */}
-      {!sucesso && (
+      {sessionReady && !sucesso && (
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label htmlFor="nova-senha" className={labelCls}>Nova senha</label>
