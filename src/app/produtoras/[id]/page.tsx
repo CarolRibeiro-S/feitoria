@@ -8,9 +8,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 const logoSvgMap: Record<string, string> = {
-  'Ju Fiche — Cozinha Artesanal': '/logo_jufiche.svg',
-  "Cookie's Everest": '/logo_angela.svg',
-  'Chef Koala': '/logo_koala.svg',
+  'Ju Fiche — Cozinha Artesanal': '/logo_jufiche.jpeg',
+  "Cookie's Everest": '/logo_angela.jpeg',
+  'Chef Koala': '/logo_koala.jpg',
 }
 
 interface Produtora {
@@ -188,6 +188,7 @@ export default function ProdutoraPage({
               width={280}
               height={280}
               className="object-contain"
+              unoptimized
             />
           ) : produtora.foto_perfil ? (
             <Image
