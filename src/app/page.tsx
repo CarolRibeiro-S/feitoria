@@ -1,61 +1,8 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Image from "next/image";
-import {
-  ArrowRight,
-  Plus,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
-import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
-import { supabase } from "@/lib/supabase-client";
-
-interface Product {
-  id: string;
-  nome: string;
-  preco: number;
-  categoria: string;
-  foto: string | null;
-  produtoras: {
-    nome_marca: string;
-  };
-}
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const { data: productsData, error: productsError } = await supabase
-          .from("produtos")
-          .select(`
-            id,
-            nome,
-            preco,
-            categoria,
-            foto,
-            produtoras (
-              nome_marca
-            )
-          `)
-          .eq("disponivel", true)
-          .order("criado_em", { ascending: false })
-          .limit(6);
-
-        if (productsError) console.error("[Home] Erro produtos:", productsError);
-        if (productsData) setProducts(productsData as any);
-      } catch (err) {
-        console.error("[Home] Erro inesperado:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
 
   return (
     <div className="bg-cream min-h-screen">
@@ -138,82 +85,6 @@ export default function Home() {
                 </a>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── PRODUTOS EM DESTAQUE ───────────────────────────────────────────── */}
-        <section className="bg-sand py-14 lg:py-24">
-          <div className="max-w-7xl mx-auto px-5 sm:px-8">
-
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 lg:mb-12">
-              <div>
-                <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
-                  Selecionados com cuidado
-                </span>
-                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-espresso mt-2 font-normal">
-                  Produtos em Destaque
-                </h2>
-              </div>
-              <a
-                href="/produtos"
-                className="font-sans text-[0.65rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5 self-start sm:self-auto pb-1"
-              >
-                Ver todos <ArrowRight size={11} />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-6 lg:gap-6">
-              {loading ? (
-                [...Array(6)].map((_, i) => (
-                  <div key={i} className="flex flex-col bg-cream animate-pulse">
-                    <div className="aspect-square bg-sand/40" />
-                    <div className="p-4 flex flex-col gap-2">
-                      <div className="h-2 w-16 bg-sand/60" />
-                      <div className="h-4 w-full bg-sand/60" />
-                      <div className="h-3 w-2/3 bg-sand/60" />
-                    </div>
-                  </div>
-                ))
-              ) : products.map((product) => (
-                <div key={product.id} className="group flex flex-col bg-cream">
-                  <div className="aspect-square overflow-hidden relative">
-                    {product.foto ? (
-                      <Image
-                        src={product.foto}
-                        alt={product.nome}
-                        fill
-                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                      />
-                    ) : (
-                      <ImagePlaceholder className="w-full h-full group-hover:scale-[1.03] transition-transform duration-500" />
-                    )}
-                  </div>
-                  <div className="p-3.5 sm:p-5 flex flex-col gap-1.5 sm:gap-2">
-                    <span className="font-sans text-[0.55rem] sm:text-[0.62rem] tracking-[0.2em] sm:tracking-[0.28em] uppercase text-caramel/80 font-semibold">
-                      {product.categoria}
-                    </span>
-                    <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
-                      {product.nome}
-                    </h3>
-                    <span className="font-sans text-[0.65rem] sm:text-[0.75rem] text-espresso/45">
-                      por {product.produtoras?.nome_marca}
-                    </span>
-                    <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
-                      <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
-                        R$ {product.preco.toFixed(2).replace(".", ",")}
-                      </span>
-                      <button
-                        aria-label="Adicionar ao carrinho"
-                        className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
-                      >
-                        <Plus size={12} className="sm:size-[14px]" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
           </div>
         </section>
 
