@@ -117,10 +117,10 @@ export default function ProdutoraPage({
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       {/* Mobile: empilhado (foto em cima, info em baixo) | Desktop: duas colunas */}
-      <section className="w-full flex flex-col sm:flex-row sm:items-stretch">
+      <section className="w-full flex flex-col sm:flex-row items-stretch min-h-[400px]">
 
         {/* Foto — topo no mobile, direita no desktop */}
-        <div className="relative w-full sm:w-[40%] order-1 sm:order-2 bg-cream min-h-[240px] sm:min-h-[380px]">
+        <div className="relative w-full sm:w-2/5 h-[300px] sm:h-auto order-1 sm:order-2 bg-cream">
           {/* Back link overlay — mobile only */}
           <div className="absolute top-0 inset-x-0 z-10 pt-[72px] px-5 sm:hidden">
             <Link
@@ -132,20 +132,16 @@ export default function ProdutoraPage({
           </div>
 
           {produtora.foto_perfil ? (
-            <div className="relative w-full h-full min-h-[240px] sm:min-h-[380px] flex items-center justify-center p-6">
-              <div className="relative w-full h-full">
-                <Image
-                  src={produtora.foto_perfil}
-                  alt={produtora.nome_marca}
-                  fill
-                  className="object-contain"
-                  priority
-                  unoptimized={produtora.foto_perfil?.startsWith("/")}
-                />
-              </div>
-            </div>
+            <Image
+              src={produtora.foto_perfil}
+              alt={produtora.nome_marca}
+              fill
+              className="object-cover"
+              priority
+              unoptimized={produtora.foto_perfil?.startsWith("/")}
+            />
           ) : (
-            <div className="flex items-center justify-center w-full h-full min-h-[240px]">
+            <div className="flex items-center justify-center w-full h-full">
               <span className="font-serif text-8xl text-espresso/10 select-none">
                 {produtora.nome_marca.charAt(0)}
               </span>
@@ -154,7 +150,7 @@ export default function ProdutoraPage({
         </div>
 
         {/* Info — baixo no mobile, esquerda no desktop */}
-        <div className="flex flex-col justify-between w-full sm:w-[60%] order-2 sm:order-1 bg-[#E9E2D6] px-5 sm:px-10 lg:px-12 pt-7 sm:pt-24 lg:pt-28 pb-8 sm:pb-12">
+        <div className="flex flex-col justify-center w-full sm:w-3/5 order-2 sm:order-1 bg-[#E9E2D6] p-8 sm:p-12">
           {/* Back link — desktop only */}
           <Link
             href="/produtoras"
