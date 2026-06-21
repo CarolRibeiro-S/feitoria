@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Supabase SSR exige que a resposta seja construída assim para poder setar cookies
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -14,7 +13,6 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Propaga cookies tanto na request quanto na response (refresh de sessão)
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -27,24 +25,49 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Atualiza a sessão — nunca usar getSession() no middleware (não confia no JWT local)
+  // Nunca usar getSession() no middleware — não confia no JWT local
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
-  // ── Proteção de /dashboard e /admin — qualquer usuário autenticado ──────
+  // ── Rotas protegidas ─────────────────────────────────────────────────────────
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
+
+    // Busca tipo autoritativo da tabela usuarios (necessário para admins promovidos via SQL)
+    const { data: record } = await supabase
+      .from('usuarios')
+      .select('tipo')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    // Fallback para user_metadata caso RLS bloqueie a leitura da tabela
+    const tipo: string = record?.tipo ?? user.user_metadata?.tipo ?? ''
+
+    if (pathname.startsWith('/admin') && tipo !== 'admin') {
+      return NextResponse.redirect(new URL('/?acesso=negado', request.url))
+    }
+
+    if (pathname.startsWith('/dashboard') && tipo !== 'produtora') {
+      return NextResponse.redirect(new URL('/?acesso=negado', request.url))
+    }
   }
 
-  // ── Redireciona usuário já logado para fora das páginas de auth ────────────
+  // ── Redireciona usuário já logado para fora das páginas de auth ──────────────
   if (user && (pathname === '/login' || pathname === '/cadastro')) {
-    const tipo = user.user_metadata?.tipo
-    return NextResponse.redirect(
-      new URL(tipo === 'produtora' ? '/dashboard' : '/', request.url)
-    )
+    const { data: record } = await supabase
+      .from('usuarios')
+      .select('tipo')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const tipo: string = record?.tipo ?? user.user_metadata?.tipo ?? ''
+
+    if (tipo === 'produtora') return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (tipo === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   return response
