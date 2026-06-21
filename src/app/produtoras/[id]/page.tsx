@@ -132,15 +132,17 @@ export default function ProdutoraPage({
           </div>
 
           {produtora.foto_perfil ? (
-            <div className="relative w-full h-full min-h-[240px] sm:min-h-[380px]">
-              <Image
-                src={produtora.foto_perfil}
-                alt={produtora.nome_marca}
-                fill
-                className="object-cover"
-                priority
-                unoptimized={produtora.foto_perfil?.startsWith("/")}
-              />
+            <div className="relative w-full h-full min-h-[240px] sm:min-h-[380px] flex items-center justify-center p-12">
+              <div className="relative w-full max-w-[280px] aspect-square">
+                <Image
+                  src={produtora.foto_perfil}
+                  alt={produtora.nome_marca}
+                  fill
+                  className="object-contain"
+                  priority
+                  unoptimized={produtora.foto_perfil?.startsWith("/")}
+                />
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center w-full h-full min-h-[240px]">
