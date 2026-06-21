@@ -132,8 +132,8 @@ export default function ProdutoraPage({
           </div>
 
           {produtora.foto_perfil ? (
-            <div className="relative w-full h-full min-h-[240px] sm:min-h-[380px] flex items-center justify-center p-12">
-              <div className="relative w-full max-w-[280px] aspect-square">
+            <div className="relative w-full h-full min-h-[240px] sm:min-h-[380px] flex items-center justify-center p-6">
+              <div className="relative w-full h-full">
                 <Image
                   src={produtora.foto_perfil}
                   alt={produtora.nome_marca}
