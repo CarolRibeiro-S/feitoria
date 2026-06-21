@@ -180,14 +180,14 @@ export default function ProdutoraPage({
         </div>
 
         {/* Coluna direita — logo */}
-        <div className="w-full sm:w-1/2 h-full relative bg-[#E9E2D6] flex items-center justify-center p-12">
+        <div className="w-full sm:w-1/2 h-full relative bg-[#E9E2D6]">
           {logoSvg ? (
             <Image
               src={logoSvg}
               alt={produtora.nome_marca}
-              width={280}
-              height={280}
-              className="object-contain"
+              fill
+              className="object-cover"
+              priority
               unoptimized
             />
           ) : produtora.foto_perfil ? (
