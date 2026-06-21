@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useRef } from "react";
 import { MapPin, ExternalLink, Phone, ChevronLeft, ArrowRight, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 import { useCart } from "@/lib/cart-context";
@@ -39,6 +39,16 @@ export default function ProdutoraPage({
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const colLeftRef = useRef<HTMLDivElement>(null);
+  const colRightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!colLeftRef.current || !colRightRef.current) return;
+    const l = colLeftRef.current.getBoundingClientRect();
+    const r = colRightRef.current.getBoundingClientRect();
+    console.log("[DEBUG HERO] Coluna esquerda (texto):", Math.round(l.width), "x", Math.round(l.height), "px");
+    console.log("[DEBUG HERO] Coluna direita (imagem):", Math.round(r.width), "x", Math.round(r.height), "px");
+  }, [loading]);
 
   useEffect(() => {
     async function fetchData() {
@@ -120,7 +130,7 @@ export default function ProdutoraPage({
       <section className="w-full flex flex-col sm:flex-row items-stretch min-h-[400px]">
 
         {/* Foto — topo no mobile, direita no desktop */}
-        <div className="relative w-full sm:w-2/5 h-[300px] sm:h-auto order-1 sm:order-2 bg-cream">
+        <div ref={colRightRef} className="relative w-full sm:w-2/5 h-[300px] sm:h-auto order-1 sm:order-2 bg-cream">
           {/* Back link overlay — mobile only */}
           <div className="absolute top-0 inset-x-0 z-10 pt-[72px] px-5 sm:hidden">
             <Link
@@ -139,6 +149,10 @@ export default function ProdutoraPage({
               className="object-cover"
               priority
               unoptimized={produtora.foto_perfil?.startsWith("/")}
+              onLoad={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                console.log("[DEBUG HERO] Imagem natural:", img.naturalWidth, "x", img.naturalHeight, "px  |  src:", img.src);
+              }}
             />
           ) : (
             <div className="flex items-center justify-center w-full h-full">
@@ -150,7 +164,7 @@ export default function ProdutoraPage({
         </div>
 
         {/* Info — baixo no mobile, esquerda no desktop */}
-        <div className="flex flex-col justify-center w-full sm:w-3/5 order-2 sm:order-1 bg-[#E9E2D6] p-8 sm:p-12">
+        <div ref={colLeftRef} className="flex flex-col justify-center w-full sm:w-3/5 order-2 sm:order-1 bg-[#E9E2D6] p-8 sm:p-12">
           {/* Back link — desktop only */}
           <Link
             href="/produtoras"
