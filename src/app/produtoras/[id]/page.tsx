@@ -115,41 +115,10 @@ export default function ProdutoraPage({
     <div className="bg-cream min-h-screen">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      {/* Mobile: empilhado (foto em cima, info em baixo) | Desktop: duas colunas */}
-      <section className="w-full flex flex-col sm:flex-row items-stretch min-h-[400px]">
+      <section className="flex flex-col sm:flex-row h-[400px] w-full">
 
-        {/* Foto — topo no mobile, direita no desktop */}
-        <div className="relative w-full sm:w-2/5 h-[300px] sm:h-auto order-1 sm:order-2 bg-cream">
-          {/* Back link overlay — mobile only */}
-          <div className="absolute top-0 inset-x-0 z-10 pt-[72px] px-5 sm:hidden">
-            <Link
-              href="/produtoras"
-              className="inline-flex items-center gap-1.5 bg-espresso/50 backdrop-blur-sm text-cream px-3 py-1.5 font-sans text-[0.6rem] tracking-widest uppercase transition-colors rounded-sm"
-            >
-              <ChevronLeft size={12} /> Produtoras
-            </Link>
-          </div>
-
-          {produtora.foto_perfil ? (
-            <Image
-              src={produtora.foto_perfil}
-              alt={produtora.nome_marca}
-              fill
-              className="object-contain"
-              priority
-              unoptimized={produtora.foto_perfil?.startsWith("/")}
-            />
-          ) : (
-            <div className="flex items-center justify-center w-full h-full">
-              <span className="font-serif text-8xl text-espresso/10 select-none">
-                {produtora.nome_marca.charAt(0)}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Info — baixo no mobile, esquerda no desktop */}
-        <div className="flex flex-col justify-center w-full sm:w-3/5 order-2 sm:order-1 bg-[#E9E2D6] p-8 sm:p-12">
+        {/* Coluna esquerda — texto */}
+        <div className="w-full sm:w-1/2 h-full p-8 sm:p-12 flex flex-col justify-center bg-[#E9E2D6]">
           {/* Back link — desktop only */}
           <Link
             href="/produtoras"
@@ -200,6 +169,26 @@ export default function ProdutoraPage({
               )}
             </div>
           </div>
+        </div>
+
+        {/* Coluna direita — imagem */}
+        <div className="w-full sm:w-1/2 h-full relative bg-[#E9E2D6]">
+          {produtora.foto_perfil ? (
+            <Image
+              src={produtora.foto_perfil}
+              alt={produtora.nome_marca}
+              fill
+              className="object-contain p-8"
+              priority
+              unoptimized={produtora.foto_perfil?.startsWith("/")}
+            />
+          ) : (
+            <div className="flex items-center justify-center w-full h-full">
+              <span className="font-serif text-8xl text-espresso/10 select-none">
+                {produtora.nome_marca.charAt(0)}
+              </span>
+            </div>
+          )}
         </div>
 
       </section>
