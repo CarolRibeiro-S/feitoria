@@ -40,7 +40,7 @@ export function Footer() {
               {[
                 { name: "Nossa história",       href: "/nossa-historia" },
                 { name: "Cursos & Experiências", href: "/cursos"         },
-                { name: "Seja uma Produtora",   href: "#"               },
+                { name: "Seja uma Produtora",   href: "/cadastro"       },
                 { name: "Contato",              href: "/contato"        },
                 { name: "FAQ",                  href: "#"               },
               ].map((link) => (
