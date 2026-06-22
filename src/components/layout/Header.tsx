@@ -86,7 +86,7 @@ export function Header({ onOpenCart }: HeaderProps) {
               alt="FEITORIA"
               width={160}
               height={50}
-              className="w-[120px] sm:w-[160px] h-auto object-contain"
+              className="w-[120px] sm:w-[160px] h-auto object-contain -translate-x-4 sm:-translate-x-6"
               priority
             />
           </Link>
