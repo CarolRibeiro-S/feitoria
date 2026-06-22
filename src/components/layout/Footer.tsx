@@ -42,7 +42,7 @@ export function Footer() {
                 { name: "Cursos & Experiências", href: "/cursos"         },
                 { name: "Seja uma Produtora",   href: "/cadastro"       },
                 { name: "Contato",              href: "/contato"        },
-                { name: "FAQ",                  href: "#"               },
+                { name: "FAQ",                  href: "/faq"            },
               ].map((link) => (
                 <li key={link.name}>
                   <a href={link.href} className="font-sans text-[0.8rem] text-cream/55 hover:text-cream transition-colors">
