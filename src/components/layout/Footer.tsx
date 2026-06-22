@@ -37,10 +37,16 @@ export function Footer() {
               A Feitoria
             </h4>
             <ul className="flex flex-col gap-2.5">
-              {["Nossa história", "Seja uma Produtora", "Blog", "Contato", "FAQ"].map((link) => (
-                <li key={link}>
-                  <a href="#" className="font-sans text-[0.8rem] text-cream/55 hover:text-cream transition-colors">
-                    {link}
+              {[
+                { name: "Nossa história",       href: "/nossa-historia" },
+                { name: "Cursos & Experiências", href: "/cursos"         },
+                { name: "Seja uma Produtora",   href: "#"               },
+                { name: "Contato",              href: "/contato"        },
+                { name: "FAQ",                  href: "#"               },
+              ].map((link) => (
+                <li key={link.name}>
+                  <a href={link.href} className="font-sans text-[0.8rem] text-cream/55 hover:text-cream transition-colors">
+                    {link.name}
                   </a>
                 </li>
               ))}
