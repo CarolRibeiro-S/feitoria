@@ -4,6 +4,8 @@
 
 Marketplace de produtos artesanais que conecta pequenas produtoras a clientes que valorizam origem, qualidade e histórias reais.
 
+acesse: somosfeitoria.com.br
+
 ---
 
 ## Sobre o projeto
