@@ -82,12 +82,12 @@ export function Header({ onOpenCart }: HeaderProps) {
           {/* CENTER — logo */}
           <Link href="/" aria-label="Feitoria" className="flex items-center justify-center h-full">
             <Image
-              src="/logo_f2.png"
+              src="/logo_topo.jpeg"
               alt="FEITORIA"
-              width={85}
-              height={85}
-              className="object-contain"
-              style={{ mixBlendMode: 'multiply' }}
+              width={160}
+              height={50}
+              className="w-[120px] sm:w-[160px] h-auto object-contain"
+              priority
             />
           </Link>
 
