@@ -2,28 +2,59 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 
-const heroContent = (
-  <div className="absolute bottom-8 inset-x-4 sm:inset-x-auto sm:bottom-auto sm:right-12 lg:right-16 sm:top-1/2 sm:-translate-y-1/2 flex flex-col items-center sm:items-end gap-4 sm:gap-5 max-w-full sm:max-w-sm lg:max-w-md text-center sm:text-right bg-black/35 backdrop-blur-[4px] rounded-2xl p-6 sm:p-8 border border-white/10">
-    <span className="font-sans text-[0.58rem] sm:text-[0.62rem] tracking-widest uppercase text-cream/70 font-semibold drop-shadow-sm">
+// Conteúdo do hero mobile — centralizado vertical e horizontalmente
+const mobileHeroContent = (
+  <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-sm bg-black/35 backdrop-blur-[4px] rounded-2xl p-6 border border-white/10 gap-4">
+    <span className="font-sans text-[0.58rem] tracking-widest uppercase text-cream/70 font-semibold drop-shadow-sm">
       Artesanal · Local · Singular
     </span>
-    <h1 className="font-serif text-[2rem] sm:text-5xl lg:text-[3.6rem] xl:text-[4.2rem] text-cream font-normal leading-[1.06] drop-shadow-md">
+    <h1 className="font-serif text-[2rem] text-cream font-normal leading-[1.06] drop-shadow-md">
       Descubra quem faz.
     </h1>
-    <p className="font-sans text-[0.82rem] sm:text-[0.9rem] text-cream/80 tracking-wide drop-shadow-sm">
+    <p className="font-sans text-[0.82rem] text-cream/80 tracking-wide drop-shadow-sm">
       Pequenos produtores. Grandes histórias.
     </p>
-    <div className="flex flex-row gap-3 pt-1 w-full sm:w-auto justify-center sm:justify-end">
+    <div className="flex flex-row gap-3 pt-1 w-full justify-center">
       <a
         href="/produtos"
-        className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.65rem] sm:text-[0.72rem] font-semibold tracking-[0.15em] sm:tracking-[0.18em] uppercase px-4 sm:px-6 py-3 sm:py-3.5 hover:bg-sand transition-colors"
+        className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.65rem] font-semibold tracking-[0.15em] uppercase px-4 py-3 hover:bg-sand transition-colors"
       >
         Explorar
         <ArrowRight size={12} />
       </a>
       <a
         href="/produtoras"
-        className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.65rem] sm:text-[0.72rem] font-semibold tracking-[0.15em] sm:tracking-[0.18em] uppercase px-4 sm:px-6 py-3 sm:py-3.5 hover:border-cream hover:bg-cream/10 transition-colors"
+        className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.65rem] font-semibold tracking-[0.15em] uppercase px-4 py-3 hover:border-cream hover:bg-cream/10 transition-colors"
+      >
+        Produtoras
+      </a>
+    </div>
+  </div>
+);
+
+// Conteúdo do hero desktop — posicionado à direita com absolute
+const desktopHeroContent = (
+  <div className="absolute bottom-8 sm:bottom-auto sm:right-12 lg:right-16 sm:top-1/2 sm:-translate-y-1/2 flex flex-col items-end gap-5 max-w-sm lg:max-w-md text-right bg-black/35 backdrop-blur-[4px] rounded-2xl p-8 border border-white/10">
+    <span className="font-sans text-[0.62rem] tracking-widest uppercase text-cream/70 font-semibold drop-shadow-sm">
+      Artesanal · Local · Singular
+    </span>
+    <h1 className="font-serif text-5xl lg:text-[3.6rem] xl:text-[4.2rem] text-cream font-normal leading-[1.06] drop-shadow-md">
+      Descubra quem faz.
+    </h1>
+    <p className="font-sans text-[0.9rem] text-cream/80 tracking-wide drop-shadow-sm">
+      Pequenos produtores. Grandes histórias.
+    </p>
+    <div className="flex flex-row gap-3 pt-1 justify-end">
+      <a
+        href="/produtos"
+        className="inline-flex items-center justify-center gap-2 bg-cream text-espresso font-sans text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-6 py-3.5 hover:bg-sand transition-colors"
+      >
+        Explorar
+        <ArrowRight size={12} />
+      </a>
+      <a
+        href="/produtoras"
+        className="inline-flex items-center justify-center gap-2 border border-cream/50 text-cream font-sans text-[0.72rem] font-semibold tracking-[0.18em] uppercase px-6 py-3.5 hover:border-cream hover:bg-cream/10 transition-colors"
       >
         Produtoras
       </a>
@@ -37,7 +68,7 @@ export default function Home() {
     <div className="bg-cream min-h-screen">
       <main>
         {/* ── HERO MOBILE ────────────────────────────────────────────────────── */}
-        <section className="relative w-full min-h-[100vh] overflow-hidden block sm:hidden">
+        <section className="relative w-full h-screen flex items-center justify-center overflow-hidden sm:hidden">
           <Image
             src="/logo_mobile.jpeg"
             alt="FEITORIA"
@@ -45,8 +76,8 @@ export default function Home() {
             className="object-cover object-center"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-          {heroContent}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/50" />
+          {mobileHeroContent}
         </section>
 
         {/* ── HERO DESKTOP ───────────────────────────────────────────────────── */}
@@ -59,7 +90,7 @@ export default function Home() {
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-          {heroContent}
+          {desktopHeroContent}
         </section>
 
         {/* ── CATEGORIAS ─────────────────────────────────────────────────────── */}
