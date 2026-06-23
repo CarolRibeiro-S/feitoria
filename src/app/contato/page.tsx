@@ -8,12 +8,48 @@ const labelCls =
   "font-sans text-[0.62rem] tracking-[0.25em] uppercase text-espresso/55 font-semibold";
 
 export default function ContatoPage() {
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [assunto, setAssunto] = useState("");
+  const [mensagem, setMensagem] = useState("");
   const [enviado, setEnviado] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    {/* TODO: integrar com Formspree quando disponível */}
-    setEnviado(true);
+    setLoading(true);
+    setErro(null);
+
+    const formData = new FormData();
+    formData.append("_subject", `Contato FEITORIA: ${assunto}`);
+    formData.append("nome", nome);
+    formData.append("email", email);
+    formData.append("assunto", assunto);
+    formData.append("mensagem", mensagem);
+
+    try {
+      const response = await fetch("https://formspree.io/f/xvzjgdaw", {
+        method: "POST",
+        body: formData,
+        headers: { "Accept": "application/json" }
+      });
+
+      if (response.ok) {
+        setNome("");
+        setEmail("");
+        setAssunto("");
+        setMensagem("");
+        setEnviado(true);
+      } else {
+        setErro("Não foi possível enviar. Tente novamente ou fale conosco pelo WhatsApp.");
+      }
+    } catch (err) {
+      console.error("Formspree error:", err);
+      setErro("Não foi possível enviar. Tente novamente ou fale conosco pelo WhatsApp.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -34,12 +70,12 @@ export default function ContatoPage() {
       <main className="max-w-lg mx-auto px-5 sm:px-8 pb-32">
 
         {enviado ? (
-          <div className="text-center py-12 flex flex-col gap-4">
+          <div className="text-center py-12 flex flex-col gap-4 border border-sand px-8">
             <p className="font-serif text-2xl text-espresso font-normal">
               Mensagem enviada!
             </p>
-            <p className="font-sans text-sm text-espresso/55">
-              Obrigada pelo contato. Retornaremos em breve.
+            <p className="font-sans text-sm text-espresso/55 leading-relaxed">
+              Responderemos em breve.
             </p>
           </div>
         ) : (
@@ -52,6 +88,8 @@ export default function ContatoPage() {
                 type="text"
                 placeholder="Seu nome"
                 required
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
                 className={inputCls}
               />
             </div>
@@ -63,6 +101,8 @@ export default function ContatoPage() {
                 type="email"
                 placeholder="seu@email.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={inputCls}
               />
             </div>
@@ -74,6 +114,8 @@ export default function ContatoPage() {
                 type="text"
                 placeholder="Sobre o que você quer falar?"
                 required
+                value={assunto}
+                onChange={(e) => setAssunto(e.target.value)}
                 className={inputCls}
               />
             </div>
@@ -85,15 +127,22 @@ export default function ContatoPage() {
                 rows={6}
                 placeholder="Escreva sua mensagem..."
                 required
+                value={mensagem}
+                onChange={(e) => setMensagem(e.target.value)}
                 className={`${inputCls} resize-none`}
               />
             </div>
 
+            {erro && (
+              <p className="font-sans text-[0.8rem] text-wine text-center">{erro}</p>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase py-4 mt-2 hover:bg-caramel transition-colors"
+              disabled={loading}
+              className="w-full bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase py-4 mt-2 hover:bg-caramel transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Enviar mensagem
+              {loading ? "Enviando..." : "Enviar mensagem"}
             </button>
 
           </form>

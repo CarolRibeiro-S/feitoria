@@ -56,14 +56,54 @@ export default function SejaProdutoraPage() {
     setLoading(true);
     setErro(null);
 
-    const { error } = await supabase
-      .from("solicitacoes_produtoras")
-      .insert([form]);
+    const formData = new FormData();
+    formData.append("_subject", "Nova solicitação — Seja uma Produtora");
+    formData.append("nome_completo", form.nome_completo);
+    formData.append("nome_marca", form.nome_marca);
+    formData.append("whatsapp", form.whatsapp);
+    formData.append("email", form.email);
+    formData.append("cidade", form.cidade);
+    formData.append("estado", form.estado);
+    formData.append("categoria", form.categoria);
+    formData.append("descricao_negocio", form.descricao_negocio);
 
-    if (error) {
-      setErro("Algo deu errado. Tente novamente ou entre em contato pelo Instagram.");
+    const [supabaseResult, formspreeResult] = await Promise.allSettled([
+      supabase.from("solicitacoes_produtoras").insert([form]),
+      fetch("https://formspree.io/f/xvzjgdaw", {
+        method: "POST",
+        body: formData,
+        headers: { "Accept": "application/json" }
+      })
+    ]);
+
+    let supabaseSuccess = false;
+    if (supabaseResult.status === "fulfilled") {
+      const { error } = supabaseResult.value;
+      if (!error) {
+        supabaseSuccess = true;
+      } else {
+        console.error("Supabase insert error:", error);
+      }
     } else {
+      console.error("Supabase insert rejected:", supabaseResult.reason);
+    }
+
+    let formspreeSuccess = false;
+    if (formspreeResult.status === "fulfilled") {
+      const res = formspreeResult.value;
+      if (res.ok) {
+        formspreeSuccess = true;
+      } else {
+        console.error("Formspree response error:", res.statusText);
+      }
+    } else {
+      console.error("Formspree post rejected:", formspreeResult.reason);
+    }
+
+    if (supabaseSuccess || formspreeSuccess) {
       setEnviado(true);
+    } else {
+      setErro("Algo deu errado. Tente novamente ou entre em contato pelo Instagram.");
     }
     setLoading(false);
   }
