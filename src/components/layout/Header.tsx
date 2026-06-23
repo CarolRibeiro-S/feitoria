@@ -208,7 +208,7 @@ export function Header({ onOpenCart }: HeaderProps) {
         {/* Drawer footer — Seja uma Produtora */}
         <div className="px-6 py-7 border-t border-sand flex-shrink-0">
           <a
-            href="/cadastro"
+            href="/seja-produtora"
             onClick={() => setDrawerOpen(false)}
             className="font-sans text-[0.68rem] font-semibold tracking-[0.22em] uppercase text-terracota hover:text-caramel transition-colors"
           >
