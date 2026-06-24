@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, CheckCircle2, XCircle, Eye, MoreVertical, MapPin } from "lucide-react";
+import { Search, Eye, MapPin, Pencil } from "lucide-react";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { supabase } from "@/lib/supabase-client";
 
@@ -18,6 +18,37 @@ function resolveStatus(ativo: boolean | null): "Ativa" | "Suspensa" | "Pendente"
   if (ativo === true) return "Ativa";
   if (ativo === false) return "Suspensa";
   return "Pendente";
+}
+
+function ToggleAtivo({
+  ativo,
+  busy,
+  onToggle,
+}: {
+  ativo: boolean | null;
+  busy: boolean;
+  onToggle: () => void;
+}) {
+  const on = ativo === true;
+  return busy ? (
+    <div className="w-9 h-5 flex items-center justify-center">
+      <div className="w-3 h-3 border border-espresso/30 border-t-espresso/60 rounded-full animate-spin" />
+    </div>
+  ) : (
+    <button
+      title={on ? "Desativar" : "Ativar"}
+      onClick={onToggle}
+      className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+        on ? "bg-olive" : "bg-espresso/15"
+      }`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+          on ? "translate-x-5" : "translate-x-0.5"
+        }`}
+      />
+    </button>
+  );
 }
 
 export default function AdminProducers() {
@@ -41,13 +72,14 @@ export default function AdminProducers() {
     setLoading(false);
   }
 
-  async function setAtivo(id: string, ativo: boolean) {
+  async function toggleAtivo(id: string, ativoAtual: boolean | null) {
+    const novoAtivo = !ativoAtual;
     setUpdating(id);
-    const { error } = await supabase.from("produtoras").update({ ativo }).eq("id", id);
+    const { error } = await supabase.from("produtoras").update({ ativo: novoAtivo }).eq("id", id);
     if (error) {
       console.error("[AdminProdutoras] Erro ao atualizar:", error);
     } else {
-      setProdutoras((prev) => prev.map((p) => (p.id === id ? { ...p, ativo } : p)));
+      setProdutoras((prev) => prev.map((p) => (p.id === id ? { ...p, ativo: novoAtivo } : p)));
     }
     setUpdating(null);
   }
@@ -106,6 +138,7 @@ export default function AdminProducers() {
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Produtora</th>
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Localização</th>
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Status</th>
+                <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">Ativo</th>
                 <th className="px-8 py-5 font-sans text-[0.6rem] tracking-[0.2em] uppercase text-espresso/40 font-bold text-right">Ações</th>
               </tr>
             </thead>
@@ -113,7 +146,7 @@ export default function AdminProducers() {
               {loading
                 ? [...Array(5)].map((_, i) => (
                     <tr key={i} className="border-b border-sand/30 last:border-0">
-                      {[1, 2, 3, 4].map((j) => (
+                      {[1, 2, 3, 4, 5].map((j) => (
                         <td key={j} className="px-8 py-5">
                           <div className="h-4 bg-sand/40 animate-pulse rounded w-28" />
                         </td>
@@ -155,37 +188,30 @@ export default function AdminProducers() {
                           </span>
                         </td>
                         <td className="px-8 py-5">
+                          <ToggleAtivo
+                            ativo={p.ativo}
+                            busy={busy}
+                            onToggle={() => toggleAtivo(p.id, p.ativo)}
+                          />
+                        </td>
+                        <td className="px-8 py-5">
                           <div className="flex items-center justify-end gap-1">
-                            {status !== "Ativa" && (
-                              <button
-                                title="Aprovar"
-                                disabled={busy}
-                                onClick={() => setAtivo(p.id, true)}
-                                className="p-2 text-olive hover:bg-olive/5 transition-colors disabled:opacity-40"
-                              >
-                                <CheckCircle2 size={18} />
-                              </button>
-                            )}
-                            {status === "Ativa" && (
-                              <button
-                                title="Suspender"
-                                disabled={busy}
-                                onClick={() => setAtivo(p.id, false)}
-                                className="p-2 text-terracota/60 hover:text-terracota hover:bg-terracota/5 transition-colors disabled:opacity-40"
-                              >
-                                <XCircle size={18} />
-                              </button>
-                            )}
+                            <a
+                              href={`/admin/produtoras/${p.id}`}
+                              title="Editar"
+                              className="p-2 text-espresso/40 hover:text-espresso hover:bg-sand/40 transition-colors"
+                            >
+                              <Pencil size={16} />
+                            </a>
                             <a
                               href={`/produtoras/${p.id}`}
                               title="Ver Perfil"
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="p-2 text-espresso/40 hover:text-espresso hover:bg-sand/40 transition-colors"
                             >
-                              <Eye size={18} />
+                              <Eye size={16} />
                             </a>
-                            <button className="p-2 text-espresso/20 hover:text-espresso">
-                              <MoreVertical size={18} />
-                            </button>
                           </div>
                         </td>
                       </tr>
