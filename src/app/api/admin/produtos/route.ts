@@ -5,7 +5,7 @@ import { checkIsAdmin } from "@/lib/admin-auth";
 // GET /api/admin/produtos?produtora_id=... — list products for a producer
 export async function GET(request: NextRequest) {
   if (!(await checkIsAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const produtoraId = request.nextUrl.searchParams.get("produtora_id");
   if (!produtoraId)
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/produtos — create a new product
 export async function POST(request: NextRequest) {
   if (!(await checkIsAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
   const { error } = await supabaseAdmin.from("produtos").insert(body);

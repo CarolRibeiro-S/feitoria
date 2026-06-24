@@ -7,7 +7,7 @@ import { checkIsAdmin } from "@/lib/admin-auth";
 // Returns the action_link so the admin can copy/share it directly.
 export async function POST(request: NextRequest) {
   if (!(await checkIsAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { email } = await request.json();
   if (!email)

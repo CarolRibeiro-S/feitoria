@@ -1,8 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-// Verifies the current request has a valid admin session.
-// Used in API Route Handlers to guard admin endpoints.
+// Verifies the current request carries a valid admin session.
+// Authorization is based EXCLUSIVELY on usuarios.tipo from the database.
+// user_metadata is intentionally NOT used: it is writable by the user
+// themselves via supabase.auth.updateUser() and must never be trusted
+// for privilege checks. Use app_metadata (service-role only) if a
+// metadata-level flag is ever needed in the future.
 export async function checkIsAdmin(): Promise<boolean> {
   const cookieStore = await cookies();
 
@@ -26,7 +30,7 @@ export async function checkIsAdmin(): Promise<boolean> {
     .eq("id", user.id)
     .maybeSingle();
 
-  // Mirror the middleware fallback: autoritativo via DB, fallback via user_metadata
-  const tipo: string = record?.tipo ?? (user.user_metadata?.tipo as string) ?? "";
-  return tipo === "admin";
+  // No fallback. If the DB record is missing or RLS blocks the read,
+  // access is denied. Admins must have tipo='admin' in the usuarios table.
+  return record?.tipo === "admin";
 }

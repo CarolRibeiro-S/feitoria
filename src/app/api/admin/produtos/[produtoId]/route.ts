@@ -8,7 +8,7 @@ type RouteParams = { params: Promise<{ produtoId: string }> };
 // GET /api/admin/produtos/[produtoId] — fetch a single product
 export async function GET(request: NextRequest, { params }: RouteParams) {
   if (!(await checkIsAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { produtoId } = await params;
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PATCH /api/admin/produtos/[produtoId] — update fields (nome, preco, disponivel, …)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   if (!(await checkIsAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { produtoId } = await params;
   const body = await request.json();
@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/admin/produtos/[produtoId]
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   if (!(await checkIsAdmin()))
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { produtoId } = await params;
 
