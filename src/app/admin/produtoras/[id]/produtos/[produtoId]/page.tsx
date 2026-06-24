@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase-client";
 import ImageUpload from "@/components/ui/ImageUpload";
 import { CATEGORIES } from "@/lib/constants";
 
@@ -37,19 +36,15 @@ export default function EditarProdutoPage() {
 
   async function fetchProduto() {
     setPageLoading(true);
-    const { data, error } = await supabase
-      .from("produtos")
-      .select("nome, descricao, preco, categoria, foto")
-      .eq("id", produtoId)
-      .single();
+    const res = await fetch(`/api/admin/produtos/${produtoId}`);
 
-    if (error || !data) {
+    if (!res.ok) {
       setNotFound(true);
       setPageLoading(false);
       return;
     }
 
-    const d = data as any;
+    const d = await res.json();
     setNomeProduto(d.nome ?? "");
     setForm({
       nome: d.nome ?? "",
@@ -91,18 +86,19 @@ export default function EditarProdutoPage() {
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    const { error } = await supabase
-      .from("produtos")
-      .update({
+    const res = await fetch(`/api/admin/produtos/${produtoId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         nome: form.nome.trim(),
         descricao: form.descricao.trim() || null,
         preco,
         categoria: form.categoria,
         foto: form.foto || null,
-      })
-      .eq("id", produtoId);
+      }),
+    });
 
-    if (error) {
+    if (!res.ok) {
       setErrorMsg("Erro ao salvar alterações.");
     } else {
       setNomeProduto(form.nome);

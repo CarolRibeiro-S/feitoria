@@ -83,6 +83,7 @@ export default function ProdutoraEditPage() {
   const [ativo, setAtivo] = useState<boolean | null>(null);
   const [togglingAtivo, setTogglingAtivo] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [resetLink, setResetLink] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
 
   // Mercado Pago
@@ -173,11 +174,18 @@ export default function ProdutoraEditPage() {
   async function handleResetPassword() {
     if (!email) return;
     setResetting(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/redefinir-senha`,
+    const res = await fetch("/api/admin/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
     });
-    if (!error) setResetSent(true);
-    else console.error("[ProdutoraEdit] resetPassword:", error);
+    if (res.ok) {
+      const json = await res.json();
+      setResetLink(json.action_link ?? null);
+      setResetSent(true);
+    } else {
+      console.error("[ProdutoraEdit] resetPassword:", await res.text());
+    }
     setResetting(false);
   }
 
@@ -206,23 +214,25 @@ export default function ProdutoraEditPage() {
   async function fetchProdutos() {
     if (produtosLoaded) return;
     setProdutosLoading(true);
-    const { data } = await supabase
-      .from("produtos")
-      .select("id, nome, categoria, preco, foto, disponivel")
-      .eq("produtora_id", id)
-      .order("criado_em", { ascending: false });
-    setProdutosTab((data ?? []) as ProdutoRow[]);
+    const res = await fetch(`/api/admin/produtos?produtora_id=${id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setProdutosTab(data as ProdutoRow[]);
+    } else {
+      console.error("[fetchProdutos]", await res.text());
+    }
     setProdutosLoaded(true);
     setProdutosLoading(false);
   }
 
   async function toggleProdutoAtivo(prodId: string, atual: boolean) {
     setTogglingProdId(prodId);
-    const { error } = await supabase
-      .from("produtos")
-      .update({ disponivel: !atual })
-      .eq("id", prodId);
-    if (!error) {
+    const res = await fetch(`/api/admin/produtos/${prodId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ disponivel: !atual }),
+    });
+    if (res.ok) {
       setProdutosTab((prev) =>
         prev.map((p) => (p.id === prodId ? { ...p, disponivel: !atual } : p))
       );
@@ -233,8 +243,8 @@ export default function ProdutoraEditPage() {
   async function deleteProduto(prod: ProdutoRow) {
     if (!confirm(`Tem certeza que deseja excluir "${prod.nome}"?`)) return;
     setDeletingProdId(prod.id);
-    const { error } = await supabase.from("produtos").delete().eq("id", prod.id);
-    if (!error) {
+    const res = await fetch(`/api/admin/produtos/${prod.id}`, { method: "DELETE" });
+    if (res.ok) {
       setProdutosTab((prev) => prev.filter((p) => p.id !== prod.id));
     }
     setDeletingProdId(null);
@@ -471,7 +481,11 @@ export default function ProdutoraEditPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setResetSent(false);
+                setResetLink(null);
+              }}
               placeholder="email@exemplo.com"
               className={inputCls}
             />
@@ -485,11 +499,36 @@ export default function ProdutoraEditPage() {
               Redefinição de senha
             </p>
             {resetSent ? (
-              <div className="bg-olive/5 border border-olive/20 px-5 py-4 flex items-center gap-3">
-                <KeyRound size={14} className="text-olive flex-shrink-0" />
-                <p className="font-sans text-[0.8rem] text-olive">
-                  Link enviado para <span className="font-semibold">{email}</span>.
-                </p>
+              <div className="flex flex-col gap-3">
+                <div className="bg-olive/5 border border-olive/20 px-5 py-4 flex items-center gap-3">
+                  <KeyRound size={14} className="text-olive flex-shrink-0" />
+                  <p className="font-sans text-[0.8rem] text-olive">
+                    Link gerado para <span className="font-semibold">{email}</span>.
+                  </p>
+                </div>
+                {resetLink && (
+                  <div className="flex flex-col gap-2">
+                    <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+                      Link de redefinição — copie e envie para a produtora
+                    </p>
+                    <div className="flex items-stretch gap-2">
+                      <input
+                        readOnly
+                        value={resetLink}
+                        className="flex-1 min-w-0 bg-transparent border border-sand px-3 py-2.5 font-sans text-[0.7rem] text-espresso/50 truncate"
+                      />
+                      <button
+                        onClick={() => navigator.clipboard.writeText(resetLink)}
+                        className="flex-shrink-0 px-4 py-2.5 bg-cream border border-sand text-espresso font-sans text-[0.65rem] uppercase tracking-widest hover:border-espresso/40 transition-colors"
+                      >
+                        Copiar
+                      </button>
+                    </div>
+                    <p className="font-sans text-[0.62rem] text-espresso/30">
+                      Expira em 24h. Redireciona para /redefinir-senha após uso.
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <button
@@ -498,7 +537,7 @@ export default function ProdutoraEditPage() {
                 className="self-start flex items-center gap-2 bg-cream border border-sand text-espresso font-sans text-[0.7rem] font-semibold tracking-[0.15em] uppercase px-6 py-3 hover:border-espresso/40 transition-colors disabled:opacity-40"
               >
                 <RefreshCw size={13} className={resetting ? "animate-spin" : ""} />
-                {resetting ? "Enviando..." : "Enviar link de redefinição"}
+                {resetting ? "Gerando link..." : "Gerar link de redefinição"}
               </button>
             )}
           </div>

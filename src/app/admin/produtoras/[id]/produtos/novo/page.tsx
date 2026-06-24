@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase-client";
 import ImageUpload from "@/components/ui/ImageUpload";
 import { CATEGORIES } from "@/lib/constants";
 
@@ -56,20 +55,28 @@ export default function NovoProdutoPage() {
     }
     setSaving(true);
     setErrorMsg(null);
-    const { error } = await supabase.from("produtos").insert({
-      nome: form.nome.trim(),
-      descricao: form.descricao.trim() || null,
-      preco,
-      categoria: form.categoria,
-      foto: form.foto || null,
-      produtora_id: id,
-      disponivel: true,
+
+    const res = await fetch("/api/admin/produtos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: form.nome.trim(),
+        descricao: form.descricao.trim() || null,
+        preco,
+        categoria: form.categoria,
+        foto: form.foto || null,
+        produtora_id: id,
+        disponivel: true,
+      }),
     });
-    if (error) {
-      setErrorMsg("Erro ao salvar produto.");
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: "Erro desconhecido." }));
+      setErrorMsg(err.error ?? "Erro ao salvar produto.");
       setSaving(false);
       return;
     }
+
     router.push(`/admin/produtoras/${id}`);
   }
 
