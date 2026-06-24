@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getUserTipo } from '@/lib/user-tipo'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
@@ -36,15 +37,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // Busca tipo autoritativo da tabela usuarios (necessário para admins promovidos via SQL)
-    const { data: record } = await supabase
-      .from('usuarios')
-      .select('tipo')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    // Fallback para user_metadata caso RLS bloqueie a leitura da tabela
-    const tipo: string = record?.tipo ?? user.user_metadata?.tipo ?? ''
+    const tipo = await getUserTipo(supabase, user.id)
 
     if (pathname.startsWith('/admin') && tipo !== 'admin') {
       return NextResponse.redirect(new URL('/?acesso=negado', request.url))
@@ -57,13 +50,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Redireciona usuário já logado para fora das páginas de auth ──────────────
   if (user && (pathname === '/login' || pathname === '/cadastro')) {
-    const { data: record } = await supabase
-      .from('usuarios')
-      .select('tipo')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    const tipo: string = record?.tipo ?? user.user_metadata?.tipo ?? ''
+    const tipo = await getUserTipo(supabase, user.id)
 
     if (tipo === 'produtora') return NextResponse.redirect(new URL('/dashboard', request.url))
     if (tipo === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
