@@ -13,6 +13,7 @@ import { CATEGORIES } from "@/lib/constants";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
+import { trackEvent } from "@/lib/track-event";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -41,6 +42,8 @@ export default function ProdutosPage() {
   const [products, setProducts] = useState<ProductWithProducer[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => { trackEvent("pageview", "/produtos"); }, []);
 
   useEffect(() => {
     async function fetchProducts() {
