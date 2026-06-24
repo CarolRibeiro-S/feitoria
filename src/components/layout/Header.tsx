@@ -17,6 +17,7 @@ import {
 import { NAV_LINKS } from "@/lib/constants";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
+import { getUserTipo } from "@/lib/user-tipo";
 import { User } from "@supabase/supabase-js";
 
 // Mantido para uso no Footer
@@ -42,12 +43,24 @@ export function Header({ onOpenCart }: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [userTipo, setUserTipo] = useState<string | null>(null);
   const { totalItems } = useCart();
 
+  async function loadTipo(u: User | null) {
+    setUserTipo(u ? await getUserTipo(supabase, u.id) : null);
+  }
+
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      loadTipo(user);
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setUser(session?.user ?? null)
+      (_event, session) => {
+        const u = session?.user ?? null;
+        setUser(u);
+        loadTipo(u);
+      }
     );
     return () => subscription.unsubscribe();
   }, []);
@@ -58,7 +71,6 @@ export function Header({ onOpenCart }: HeaderProps) {
     window.location.href = "/";
   }
 
-  const userTipo  = user?.user_metadata?.tipo;
   const panelHref = userTipo === "produtora" ? "/dashboard" : "/pedidos";
   const firstName = user?.user_metadata?.nome?.split(" ")[0];
 

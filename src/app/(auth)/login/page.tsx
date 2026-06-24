@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase-client";
+import { getUserTipo } from "@/lib/user-tipo";
 
 const inputCls =
   "w-full bg-transparent border border-sand focus:border-espresso/45 outline-none px-4 py-3 font-sans text-sm text-espresso placeholder:text-espresso/30 transition-colors";
@@ -34,9 +35,11 @@ export default function LoginPage() {
       return;
     }
 
-    // Usa user_metadata.tipo definido no cadastro para evitar query extra
-    const tipo = data.user.user_metadata?.tipo;
-    router.push(tipo === "produtora" ? "/dashboard" : "/");
+    const tipo = await getUserTipo(supabase, data.user.id);
+    router.push(
+      tipo === "produtora" ? "/dashboard" :
+      tipo === "admin"     ? "/admin"     : "/"
+    );
   }
 
   return (
