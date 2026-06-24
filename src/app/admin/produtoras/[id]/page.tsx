@@ -5,11 +5,14 @@ import { useParams } from "next/navigation";
 import {
   ArrowLeft, Save, RefreshCw, KeyRound,
   TrendingUp, ShoppingBag, Package,
+  Pencil, Trash2, Plus, Image as ImageIcon,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase-client";
+import ImageUpload from "@/components/ui/ImageUpload";
 
-type Aba = "info" | "acesso" | "mp" | "desempenho";
+type Aba = "info" | "acesso" | "mp" | "desempenho" | "produtos";
 
 interface ChartDay {
   day: string;
@@ -30,6 +33,15 @@ interface PerfState {
   chartData: ChartDay[];
 }
 
+interface ProdutoRow {
+  id: string;
+  nome: string;
+  categoria: string;
+  preco: number;
+  foto: string | null;
+  disponivel: boolean;
+}
+
 const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 function fmtBRL(v: number) {
@@ -42,10 +54,11 @@ const labelCls =
   "font-sans text-[0.62rem] tracking-[0.25em] uppercase text-espresso/55 font-semibold";
 
 const ABAS: { key: Aba; label: string }[] = [
-  { key: "info",      label: "Informações"  },
-  { key: "acesso",    label: "Acesso"        },
-  { key: "mp",        label: "Mercado Pago"  },
-  { key: "desempenho", label: "Desempenho"  },
+  { key: "info",       label: "Informações"  },
+  { key: "acesso",     label: "Acesso"        },
+  { key: "mp",         label: "Mercado Pago"  },
+  { key: "produtos",   label: "Produtos"      },
+  { key: "desempenho", label: "Desempenho"   },
 ];
 
 export default function ProdutoraEditPage() {
@@ -76,6 +89,13 @@ export default function ProdutoraEditPage() {
   const [mp, setMp] = useState({ mp_access_token: "", mp_user_id: "", mp_conectado: false });
   const [savingMp, setSavingMp] = useState(false);
   const [mpMsg, setMpMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  // Produtos
+  const [produtosTab, setProdutosTab] = useState<ProdutoRow[]>([]);
+  const [produtosLoading, setProdutosLoading] = useState(false);
+  const [produtosLoaded, setProdutosLoaded] = useState(false);
+  const [togglingProdId, setTogglingProdId] = useState<string | null>(null);
+  const [deletingProdId, setDeletingProdId] = useState<string | null>(null);
 
   // Desempenho
   const [perf, setPerf] = useState<PerfState>({
@@ -183,13 +203,48 @@ export default function ProdutoraEditPage() {
     setSavingMp(false);
   }
 
+  async function fetchProdutos() {
+    if (produtosLoaded) return;
+    setProdutosLoading(true);
+    const { data } = await supabase
+      .from("produtos")
+      .select("id, nome, categoria, preco, foto, disponivel")
+      .eq("produtora_id", id)
+      .order("criado_em", { ascending: false });
+    setProdutosTab((data ?? []) as ProdutoRow[]);
+    setProdutosLoaded(true);
+    setProdutosLoading(false);
+  }
+
+  async function toggleProdutoAtivo(prodId: string, atual: boolean) {
+    setTogglingProdId(prodId);
+    const { error } = await supabase
+      .from("produtos")
+      .update({ disponivel: !atual })
+      .eq("id", prodId);
+    if (!error) {
+      setProdutosTab((prev) =>
+        prev.map((p) => (p.id === prodId ? { ...p, disponivel: !atual } : p))
+      );
+    }
+    setTogglingProdId(null);
+  }
+
+  async function deleteProduto(prod: ProdutoRow) {
+    if (!confirm(`Tem certeza que deseja excluir "${prod.nome}"?`)) return;
+    setDeletingProdId(prod.id);
+    const { error } = await supabase.from("produtos").delete().eq("id", prod.id);
+    if (!error) {
+      setProdutosTab((prev) => prev.filter((p) => p.id !== prod.id));
+    }
+    setDeletingProdId(null);
+  }
+
   async function fetchDesempenho() {
     if (perfLoaded) return;
     setPerfLoading(true);
 
     const now = new Date();
-    const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).toISOString();
-
     const { data: prods } = await supabase
       .from("produtos")
       .select("id, nome, disponivel")
@@ -213,7 +268,6 @@ export default function ProdutoraEditPage() {
 
     const pedidoIds = [...new Set((itens ?? []).map((i: any) => i.pedido_id as string).filter(Boolean))];
 
-    // Aggregate top produtos
     const prodMap: Record<string, { nome: string; quantidade: number }> = {};
     for (const item of (itens ?? [])) {
       const prodId = (item as any).produto_id as string;
@@ -242,7 +296,6 @@ export default function ProdutoraEditPage() {
     const pedidosPendentes = (pedidosDados ?? [])
       .filter((p: any) => p.status === "pendente").length;
 
-    // Build 7-day chart
     const dayMap: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
@@ -268,6 +321,7 @@ export default function ProdutoraEditPage() {
   function handleAbaChange(a: Aba) {
     setAba(a);
     if (a === "desempenho") fetchDesempenho();
+    if (a === "produtos") fetchProdutos();
   }
 
   function field(key: keyof typeof form) {
@@ -292,7 +346,10 @@ export default function ProdutoraEditPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 h-64">
         <p className="font-serif text-xl text-espresso/30 italic">Produtora não encontrada.</p>
-        <Link href="/admin/produtoras" className="font-sans text-xs tracking-widest uppercase text-caramel hover:text-terracota transition-colors">
+        <Link
+          href="/admin/produtoras"
+          className="font-sans text-xs tracking-widest uppercase text-caramel hover:text-terracota transition-colors"
+        >
           ← Voltar à listagem
         </Link>
       </div>
@@ -302,7 +359,7 @@ export default function ProdutoraEditPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-8 max-w-2xl">
+    <div className="flex flex-col gap-8 max-w-4xl">
 
       {/* Header */}
       <div className="flex items-center gap-5">
@@ -319,12 +376,12 @@ export default function ProdutoraEditPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-sand -mb-2">
+      <div className="flex border-b border-sand -mb-2 overflow-x-auto scrollbar-hide">
         {ABAS.map((a) => (
           <button
             key={a.key}
             onClick={() => handleAbaChange(a.key)}
-            className={`px-5 py-3 font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase border-b-2 -mb-px transition-colors ${
+            className={`flex-shrink-0 px-5 py-3 font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase border-b-2 -mb-px transition-colors ${
               aba === a.key
                 ? "border-terracota text-terracota"
                 : "border-transparent text-espresso/40 hover:text-espresso"
@@ -337,7 +394,8 @@ export default function ProdutoraEditPage() {
 
       {/* ── ABA: INFORMAÇÕES ───────────────────────────────────────────────── */}
       {aba === "info" && (
-        <div className="flex flex-col gap-6 pt-2">
+        <div className="flex flex-col gap-6 pt-2 max-w-2xl">
+
           <div className="grid sm:grid-cols-2 gap-5">
             <div className="flex flex-col gap-2">
               <label className={labelCls}>Nome da Marca</label>
@@ -371,15 +429,19 @@ export default function ProdutoraEditPage() {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-5">
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>WhatsApp</label>
-              <input type="tel" placeholder="(61) 99999-9999" {...field("whatsapp")} className={inputCls} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className={labelCls}>URL da Foto de Perfil</label>
-              <input type="url" placeholder="https://..." {...field("foto_perfil")} className={inputCls} />
-            </div>
+          <div className="flex flex-col gap-2">
+            <label className={labelCls}>WhatsApp</label>
+            <input type="tel" placeholder="(61) 99999-9999" {...field("whatsapp")} className={inputCls} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className={labelCls}>Foto de Perfil</label>
+            <ImageUpload
+              bucket="produtoras"
+              path={`perfil-${id}`}
+              onUpload={(url) => setForm((p) => ({ ...p, foto_perfil: url }))}
+              defaultValue={form.foto_perfil || undefined}
+            />
           </div>
 
           <div className="flex items-center gap-4 pt-2 border-t border-sand">
@@ -402,9 +464,8 @@ export default function ProdutoraEditPage() {
 
       {/* ── ABA: ACESSO ────────────────────────────────────────────────────── */}
       {aba === "acesso" && (
-        <div className="flex flex-col gap-8 pt-2">
+        <div className="flex flex-col gap-8 pt-2 max-w-2xl">
 
-          {/* Email */}
           <div className="flex flex-col gap-2">
             <label className={labelCls}>E-mail da conta</label>
             <input
@@ -419,7 +480,6 @@ export default function ProdutoraEditPage() {
             </p>
           </div>
 
-          {/* Reset de senha */}
           <div className="flex flex-col gap-4 pt-2 border-t border-sand">
             <p className="font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase text-espresso/40 pt-4">
               Redefinição de senha
@@ -443,7 +503,6 @@ export default function ProdutoraEditPage() {
             )}
           </div>
 
-          {/* Toggle ativo */}
           <div className="flex flex-col gap-4 pt-2 border-t border-sand">
             <p className="font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase text-espresso/40 pt-4">
               Estado da conta
@@ -481,7 +540,7 @@ export default function ProdutoraEditPage() {
 
       {/* ── ABA: MERCADO PAGO ──────────────────────────────────────────────── */}
       {aba === "mp" && (
-        <div className="flex flex-col gap-8 pt-2">
+        <div className="flex flex-col gap-8 pt-2 max-w-2xl">
 
           <div className="bg-sand/20 border border-sand px-5 py-4">
             <p className="font-sans text-[0.78rem] text-espresso/60 leading-relaxed">
@@ -542,6 +601,128 @@ export default function ProdutoraEditPage() {
         </div>
       )}
 
+      {/* ── ABA: PRODUTOS ──────────────────────────────────────────────────── */}
+      {aba === "produtos" && (
+        <div className="flex flex-col gap-6 pt-2">
+
+          {/* Toolbar */}
+          <div className="flex items-center justify-between">
+            <p className="font-sans text-[0.65rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+              {produtosLoaded
+                ? `${produtosTab.length} ${produtosTab.length === 1 ? "produto" : "produtos"}`
+                : ""}
+            </p>
+            <Link
+              href={`/admin/produtoras/${id}/produtos/novo`}
+              className="flex items-center gap-2 bg-espresso text-cream font-sans text-[0.65rem] font-semibold tracking-[0.18em] uppercase px-5 py-2.5 hover:bg-terracota transition-colors"
+            >
+              <Plus size={12} />
+              Adicionar produto
+            </Link>
+          </div>
+
+          {/* Loading */}
+          {produtosLoading && (
+            <div className="flex items-center justify-center h-40">
+              <div className="w-5 h-5 border-2 border-sand border-t-espresso/40 rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Empty */}
+          {!produtosLoading && produtosLoaded && produtosTab.length === 0 && (
+            <p className="font-serif text-lg text-espresso/30 italic text-center py-16">
+              Nenhum produto cadastrado para esta produtora.
+            </p>
+          )}
+
+          {/* List */}
+          {!produtosLoading && produtosTab.length > 0 && (
+            <div className="bg-cream border border-sand divide-y divide-sand/50">
+              {produtosTab.map((prod) => {
+                const busyToggle = togglingProdId === prod.id;
+                const busyDelete = deletingProdId === prod.id;
+                return (
+                  <div key={prod.id} className="flex items-center gap-4 px-5 py-4 hover:bg-sand/10 transition-colors group">
+
+                    {/* Thumbnail */}
+                    <div className="w-10 h-10 flex-shrink-0 bg-sand/30 overflow-hidden">
+                      {prod.foto ? (
+                        <Image
+                          src={prod.foto}
+                          alt={prod.nome}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon size={14} className="text-espresso/20" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-sans text-[0.82rem] font-medium text-espresso truncate group-hover:text-terracota transition-colors">
+                        {prod.nome}
+                      </p>
+                      <p className="font-sans text-[0.65rem] text-espresso/40">
+                        {prod.categoria} · R$ {prod.preco.toFixed(2).replace(".", ",")}
+                      </p>
+                    </div>
+
+                    {/* Toggle disponível */}
+                    <div className="flex-shrink-0">
+                      {busyToggle ? (
+                        <div className="w-9 h-5 flex items-center justify-center">
+                          <div className="w-3 h-3 border border-espresso/30 border-t-espresso/60 rounded-full animate-spin" />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => toggleProdutoAtivo(prod.id, prod.disponivel)}
+                          title={prod.disponivel ? "Desativar" : "Ativar"}
+                          className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                            prod.disponivel ? "bg-olive" : "bg-espresso/15"
+                          }`}
+                        >
+                          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                            prod.disponivel ? "translate-x-5" : "translate-x-0.5"
+                          }`} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <Link
+                        href={`/admin/produtoras/${id}/produtos/${prod.id}`}
+                        title="Editar produto"
+                        className="p-2 text-espresso/35 hover:text-espresso hover:bg-sand/40 transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </Link>
+                      <button
+                        onClick={() => deleteProduto(prod)}
+                        disabled={busyDelete}
+                        title="Excluir produto"
+                        className="p-2 text-espresso/35 hover:text-wine hover:bg-wine/5 transition-colors disabled:opacity-40"
+                      >
+                        {busyDelete ? (
+                          <div className="w-3.5 h-3.5 border border-espresso/30 border-t-espresso/60 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                      </button>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── ABA: DESEMPENHO ────────────────────────────────────────────────── */}
       {aba === "desempenho" && (
         <div className="flex flex-col gap-8 pt-2">
@@ -551,12 +732,11 @@ export default function ProdutoraEditPage() {
             </div>
           ) : (
             <>
-              {/* Metric cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { label: "Total de Vendas",    value: fmtBRL(perf.totalVendas),     icon: TrendingUp,  color: "text-olive"    },
-                  { label: "Pedidos Pendentes",  value: String(perf.pedidosPendentes), icon: ShoppingBag, color: "text-terracota" },
-                  { label: "Produtos Ativos",    value: String(perf.produtosAtivos),   icon: Package,     color: "text-espresso" },
+                  { label: "Total de Vendas",    value: fmtBRL(perf.totalVendas),      icon: TrendingUp,  color: "text-olive"    },
+                  { label: "Pedidos Pendentes",  value: String(perf.pedidosPendentes),  icon: ShoppingBag, color: "text-terracota" },
+                  { label: "Produtos Ativos",    value: String(perf.produtosAtivos),    icon: Package,     color: "text-espresso" },
                 ].map((c) => (
                   <div key={c.label} className="bg-cream border border-sand p-5 flex flex-col gap-4 shadow-sm">
                     <div className={`w-8 h-8 rounded-full bg-sand/30 flex items-center justify-center ${c.color}`}>
@@ -570,7 +750,6 @@ export default function ProdutoraEditPage() {
                 ))}
               </div>
 
-              {/* Top produtos */}
               {perf.topProdutos.length > 0 && (
                 <div className="bg-cream border border-sand p-6 flex flex-col gap-4 shadow-sm">
                   <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/40 font-bold">
@@ -594,7 +773,6 @@ export default function ProdutoraEditPage() {
                 </div>
               )}
 
-              {/* 7-day chart */}
               {perf.chartData.length > 0 && (
                 <div className="bg-cream border border-sand p-6 flex flex-col gap-6 shadow-sm">
                   <div>
