@@ -9,7 +9,6 @@ import {
   Users,
   ShoppingBag,
   BarChart3,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -19,12 +18,11 @@ import {
 import { supabase } from "@/lib/supabase-client";
 
 const ADMIN_NAV = [
-  { label: "Visão Geral",    href: "/admin",                  icon: LayoutDashboard },
-  { label: "Solicitações",   href: "/admin/solicitacoes",     icon: ClipboardList   },
-  { label: "Produtoras",     href: "/admin/produtoras",       icon: Users           },
-  { label: "Pedidos",        href: "/admin/pedidos",          icon: ShoppingBag     },
-  { label: "Financeiro",     href: "/admin/financeiro",       icon: BarChart3       },
-  { label: "Configurações",  href: "/admin/config",           icon: Settings        },
+  { label: "Visão Geral",   href: "/admin",              icon: LayoutDashboard },
+  { label: "Produtoras",    href: "/admin/produtoras",   icon: Users           },
+  { label: "Pedidos",       href: "/admin/pedidos",      icon: ShoppingBag     },
+  { label: "Financeiro",    href: "/admin/financeiro",   icon: BarChart3       },
+  { label: "Solicitações",  href: "/admin/solicitacoes", icon: ClipboardList   },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
