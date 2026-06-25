@@ -10,13 +10,12 @@ import { criarPedido } from "@/app/actions/checkout";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const FRETE = 15.0;
-
-const ENDERECO_RETIRADA = {
-  rua: "Mercearia Colaborativa",
-  bairro: "412 Norte ou 208 Sul",
-  cidade: "Brasília",
-  estado: "DF",
-};
+const PEDIDO_MINIMO = 45;
+const LOCAIS_RETIRADA = ["Jardim Botânico", "SQS 204", "Águas Claras"];
+const HORARIOS_RETIRADA = Array.from({ length: 17 }, (_, i) => {
+  const mins = 600 + i * 30;
+  return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+});
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -137,6 +136,7 @@ export default function CheckoutPage() {
   const [estado, setEstado] = useState("");
   const [dataRetirada, setDataRetirada] = useState("");
   const [horaRetirada, setHoraRetirada] = useState("");
+  const [localRetirada, setLocalRetirada] = useState("");
 
   // Step 3 — Pagamento
   const [formaPagamento, setFormaPagamento] = useState<"pix" | "cartao">("pix");
@@ -194,8 +194,16 @@ export default function CheckoutPage() {
 
   function handleContinuar2(e: React.FormEvent) {
     e.preventDefault();
+    if (subtotal < PEDIDO_MINIMO) {
+      setErro(`Pedido mínimo de R$ 45,00 (sem considerar o frete). Adicione mais R$ ${fmt(PEDIDO_MINIMO - subtotal)} para continuar.`);
+      return;
+    }
     if (tipoEntrega === "entrega" && (!cep || !rua || !numero)) {
       setErro("Preencha o endereço completo para continuar.");
+      return;
+    }
+    if (tipoEntrega === "retirada" && !localRetirada) {
+      setErro("Selecione um ponto de retirada.");
       return;
     }
     if (tipoEntrega === "retirada" && !dataRetirada) {
@@ -226,7 +234,7 @@ export default function CheckoutPage() {
         endereco: rua,
         numero_endereco: numero,
         complemento,
-        bairro,
+        bairro: tipoEntrega === "retirada" ? localRetirada : bairro,
         cidade,
         estado,
         data_retirada: dataRetirada,
@@ -465,12 +473,30 @@ export default function CheckoutPage() {
             {/* Retirada fields */}
             {tipoEntrega === "retirada" && (
               <>
-                <div className="bg-sand px-5 py-4 flex flex-col gap-1">
-                  <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/45 font-semibold mb-1">Endereço de retirada</p>
-                  <p className="font-sans text-sm text-espresso">{ENDERECO_RETIRADA.rua}</p>
-                  <p className="font-sans text-xs text-espresso/60">
-                    {ENDERECO_RETIRADA.bairro} · {ENDERECO_RETIRADA.cidade}, {ENDERECO_RETIRADA.estado}
-                  </p>
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>Ponto de retirada</label>
+                  <div className="flex flex-col gap-2">
+                    {LOCAIS_RETIRADA.map((local) => (
+                      <label
+                        key={local}
+                        className={`flex items-center gap-3 px-4 py-3.5 border cursor-pointer transition-colors ${
+                          localRetirada === local
+                            ? "border-espresso bg-sand/30"
+                            : "border-sand hover:border-espresso/30"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="local-retirada"
+                          value={local}
+                          checked={localRetirada === local}
+                          onChange={() => setLocalRetirada(local)}
+                          className="accent-espresso"
+                        />
+                        <span className="font-sans text-sm text-espresso">{local}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -487,13 +513,17 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     <label htmlFor="hora-retirada" className={labelCls}>Horário</label>
-                    <input
+                    <select
                       id="hora-retirada"
-                      type="time"
                       value={horaRetirada}
                       onChange={(e) => setHoraRetirada(e.target.value)}
                       className={inputCls}
-                    />
+                    >
+                      <option value="">Selecione</option>
+                      {HORARIOS_RETIRADA.map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -688,7 +718,7 @@ export default function CheckoutPage() {
                   </p>
                 ) : (
                   <p className="font-sans text-xs text-espresso/70">
-                    {ENDERECO_RETIRADA.rua} — {ENDERECO_RETIRADA.bairro}<br />
+                    {localRetirada}<br />
                     {dataRetirada && <>em {new Date(dataRetirada + "T12:00").toLocaleDateString("pt-BR")} {horaRetirada && `às ${horaRetirada}`}</>}
                   </p>
                 )}

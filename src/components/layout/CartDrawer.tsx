@@ -149,9 +149,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </span>
                 </div>
               </div>
+              {subtotal < 45 && (
+                <p className="font-sans text-[0.68rem] text-wine/80 border border-wine/20 bg-wine/5 px-3 py-2.5 leading-relaxed mb-1">
+                  Pedido mínimo de R$ 45,00. Faltam R$ {(45 - subtotal).toFixed(2).replace(".", ",")} para continuar.
+                </p>
+              )}
               <button
                 onClick={handleCheckout}
-                className="w-full h-12 sm:h-14 bg-terracota text-cream font-sans text-[0.7rem] sm:text-[0.75rem] font-semibold tracking-[0.2em] uppercase hover:bg-caramel transition-colors flex items-center justify-center gap-3"
+                disabled={subtotal < 45}
+                className="w-full h-12 sm:h-14 bg-terracota text-cream font-sans text-[0.7rem] sm:text-[0.75rem] font-semibold tracking-[0.2em] uppercase hover:bg-caramel transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-terracota"
               >
                 Finalizar Pedido
               </button>

@@ -33,3 +33,26 @@ export async function insertProdutora(params: {
     throw new Error(error.message)
   }
 }
+
+export async function updateClienteProfile(params: {
+  id: string
+  data_nascimento?: string
+  telefone?: string
+  cep?: string
+  endereco?: string
+  numero_endereco?: string
+  complemento?: string
+  bairro?: string
+  cidade?: string
+  estado?: string
+  preferencias?: string[]
+}) {
+  const { id, ...rest } = params
+  const filtered = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined))
+  if (Object.keys(filtered).length === 0) return
+  const { error } = await supabaseAdmin.from('usuarios').update(filtered).eq('id', id)
+  if (error) {
+    console.error('[updateClienteProfile] Erro:', error)
+    throw new Error(error.message)
+  }
+}
