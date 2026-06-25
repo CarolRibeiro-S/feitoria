@@ -11,6 +11,11 @@ const COMMISSION = 0.18;
 const PAYOUT     = 0.82;
 
 // ── Types ────────────────────────────────────────────────────────────────────
+interface Produtora {
+  id: string;
+  nome_marca: string;
+}
+
 interface Pedido {
   id: string;
   numero: string;
@@ -68,6 +73,7 @@ const DATE_PRESETS: { key: DatePreset; label: string }[] = [
 // ── Component ────────────────────────────────────────────────────────────────
 export default function AdminFinancial() {
   const [orders, setOrders]         = useState<Pedido[]>([]);
+  const [produtoras, setProdutoras] = useState<Produtora[]>([]);
   const [loading, setLoading]       = useState(true);
   const [produtora, setProdutora]   = useState("all");
   const [datePreset, setDatePreset] = useState<DatePreset>("mes");
@@ -79,12 +85,21 @@ export default function AdminFinancial() {
   // ── Data fetch ─────────────────────────────────────────────────────────────
   useEffect(() => {
     async function load() {
-      const { data, error } = await supabase
-        .from("pedidos")
-        .select("id, numero, total, status, criado_em, forma_pagamento, nome_cliente, itens_pedido(produtor)")
-        .order("criado_em", { ascending: false });
-      if (error) console.error("[AdminFinanceiro]", error);
-      setOrders((data ?? []) as Pedido[]);
+      const [pedidosRes, produtorasRes] = await Promise.all([
+        supabase
+          .from("pedidos")
+          .select("id, numero, total, status, criado_em, forma_pagamento, nome_cliente, itens_pedido(produtor)")
+          .order("criado_em", { ascending: false }),
+        supabase
+          .from("produtoras")
+          .select("id, nome_marca")
+          .eq("ativo", true)
+          .order("nome_marca"),
+      ]);
+      if (pedidosRes.error)   console.error("[AdminFinanceiro] pedidos:",   pedidosRes.error);
+      if (produtorasRes.error) console.error("[AdminFinanceiro] produtoras:", produtorasRes.error);
+      setOrders((pedidosRes.data ?? []) as Pedido[]);
+      setProdutoras((produtorasRes.data ?? []) as Produtora[]);
       setLoading(false);
     }
     load();
@@ -102,12 +117,6 @@ export default function AdminFinancial() {
   }, [exportOpen]);
 
   // ── Derived state ──────────────────────────────────────────────────────────
-  const produtoras = useMemo(() => {
-    const set = new Set<string>();
-    orders.forEach(o => o.itens_pedido?.forEach(i => { if (i.produtor) set.add(i.produtor); }));
-    return Array.from(set).sort();
-  }, [orders]);
-
   const filtered = useMemo(() => {
     const now = new Date();
     let from: Date | null = null;
@@ -261,7 +270,7 @@ export default function AdminFinancial() {
               className="bg-cream border border-sand px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 focus:outline-none focus:border-espresso/40 cursor-pointer"
             >
               <option value="all">Todas as produtoras</option>
-              {produtoras.map(p => <option key={p} value={p}>{p}</option>)}
+              {produtoras.map(p => <option key={p.id} value={p.nome_marca}>{p.nome_marca}</option>)}
             </select>
 
             <div className="relative" ref={exportRef}>
