@@ -13,8 +13,17 @@ import {
   LogOut,
   LayoutDashboard,
   ClipboardList,
+  ChevronDown,
 } from "lucide-react";
-import { NAV_LINKS } from "@/lib/constants";
+import { NAV_LINKS, CATEGORIES } from "@/lib/constants";
+
+const CATEGORY_LINKS = [
+  { label: "Ver tudo",         href: "/produtos" },
+  ...CATEGORIES.map((c) => ({
+    label: c.name === "Kits" ? "Kits e Presentes" : c.name,
+    href: `/produtos?categoria=${encodeURIComponent(c.name)}`,
+  })),
+];
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import { getUserTipo } from "@/lib/user-tipo";
@@ -42,6 +51,7 @@ interface HeaderProps {
 export function Header({ onOpenCart }: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [userTipo, setUserTipo] = useState<string | null>(null);
   const { totalItems } = useCart();
@@ -205,16 +215,48 @@ export function Header({ onOpenCart }: HeaderProps) {
 
         {/* Nav links */}
         <nav className="flex-1 flex flex-col px-6 py-6 overflow-y-auto">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={() => setDrawerOpen(false)}
-              className="font-serif text-xl text-espresso hover:text-caramel transition-colors py-4 border-b border-sand/50 last:border-0 leading-tight"
-            >
-              {link.name}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) => {
+            if (link.name === "Produtos") {
+              return (
+                <div key="Produtos" className="border-b border-sand/50">
+                  <button
+                    onClick={() => setProductsOpen((v) => !v)}
+                    className="w-full flex items-center justify-between font-serif text-xl text-espresso hover:text-caramel transition-colors py-4 leading-tight"
+                  >
+                    Produtos
+                    <ChevronDown
+                      size={16}
+                      className={`text-espresso/30 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {productsOpen && (
+                    <div className="flex flex-col pb-3 -mt-1">
+                      {CATEGORY_LINKS.map(({ label, href }) => (
+                        <a
+                          key={label}
+                          href={href}
+                          onClick={() => { setDrawerOpen(false); setProductsOpen(false); }}
+                          className="font-sans text-[0.82rem] text-espresso/60 hover:text-espresso transition-colors py-2 pl-2 border-b border-sand/20 last:border-0"
+                        >
+                          {label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={() => setDrawerOpen(false)}
+                className="font-serif text-xl text-espresso hover:text-caramel transition-colors py-4 border-b border-sand/50 last:border-0 leading-tight"
+              >
+                {link.name}
+              </a>
+            );
+          })}
         </nav>
 
         {/* Drawer footer — Seja uma Produtora */}

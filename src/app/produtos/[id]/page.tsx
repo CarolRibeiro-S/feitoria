@@ -72,6 +72,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
   // CEP States
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState<any>(null);
+  const [frete, setFrete] = useState<number | null>(null);
   const [loadingCep, setLoadingCep] = useState(false);
   const [cepError, setCepError] = useState("");
 
@@ -159,6 +160,12 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
     });
   };
 
+  function calcFrete(uf: string): number {
+    if (uf === "SP") return 9.90;
+    if (["RJ","MG","ES","PR","SC","RS"].includes(uf)) return 15.90;
+    return 22.90;
+  }
+
   const handleCepSearch = async () => {
     if (cep.length < 8) {
       setCepError("CEP inválido");
@@ -168,6 +175,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
     setLoadingCep(true);
     setCepError("");
     setAddress(null);
+    setFrete(null);
 
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, "")}/json/`);
@@ -177,6 +185,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
         setCepError("CEP não encontrado");
       } else {
         setAddress(data);
+        setFrete(calcFrete(data.uf));
       }
     } catch (error) {
       setCepError("Erro ao consultar CEP");
@@ -387,11 +396,11 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                   Calcular Entrega
                 </span>
                 <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Seu CEP" 
+                  <input
+                    type="text"
+                    placeholder="Seu CEP"
                     value={cep}
-                    onChange={(e) => setCep(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                    onChange={(e) => { setCep(e.target.value.replace(/\D/g, "").slice(0, 8)); setAddress(null); setFrete(null); }}
                     className="flex-1 bg-cream border border-espresso/10 px-4 py-2 text-sm font-sans focus:outline-none focus:border-terracota min-w-0"
                   />
                   <button 
@@ -410,24 +419,36 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                   </div>
                 )}
 
-                {address && (
-                  <div className="flex flex-col gap-2 pt-2 border-t border-sand/50">
+                {address && frete !== null && (
+                  <div className="flex flex-col gap-3 pt-2 border-t border-sand/50">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 size={14} className="text-olive mt-0.5" />
+                      <CheckCircle2 size={14} className="text-olive mt-0.5 flex-shrink-0" />
                       <div className="flex flex-col">
                         <span className="font-sans text-[0.75rem] text-espresso font-medium">
                           {address.logradouro}, {address.bairro}
                         </span>
                         <span className="font-sans text-[0.7rem] text-espresso/50">
-                          {address.localidade} - {address.uf}
+                          {address.localidade} — {address.uf}
                         </span>
                       </div>
                     </div>
-                    <div className="bg-olive/10 border border-olive/10 p-3 mt-1">
-                      <p className="font-sans text-[0.7rem] text-olive font-semibold tracking-wide uppercase">
-                        Entrega em 3 a 5 dias úteis
-                      </p>
+                    <div className="flex flex-col gap-1.5 bg-sand/40 p-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-sans text-[0.72rem] text-espresso/60">Valor do produto</span>
+                        <span className="font-sans text-[0.78rem] text-espresso font-medium">
+                          R$ {displayPrice.toFixed(2).replace(".", ",")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="font-sans text-[0.72rem] text-espresso/60">Taxa de entrega (estimativa)</span>
+                        <span className="font-sans text-[0.78rem] text-espresso font-medium">
+                          R$ {frete.toFixed(2).replace(".", ",")}
+                        </span>
+                      </div>
                     </div>
+                    <p className="font-sans text-[0.65rem] text-espresso/40 italic">
+                      Entrega em 3 a 5 dias úteis. O frete será confirmado ao finalizar o pedido.
+                    </p>
                   </div>
                 )}
               </div>
@@ -483,9 +504,12 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                       <span className="font-sans text-[0.55rem] sm:text-[0.62rem] tracking-[0.2em] sm:tracking-[0.28em] uppercase text-caramel/80 font-semibold">
                         {getDisplayCategory(p.categoria)}
                       </span>
-                      <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
+                      <Link
+                        href={`/produtos/${p.id}`}
+                        className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto hover:underline underline-offset-2 decoration-espresso/20"
+                      >
                         {p.nome}
-                      </h3>
+                      </Link>
                       <Link
                         href={`/produtoras/${p.produtoras?.id}`}
                         className="font-sans text-[0.65rem] sm:text-[0.75rem] text-espresso/45 hover:text-espresso hover:underline underline-offset-2 transition-colors"

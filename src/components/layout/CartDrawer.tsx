@@ -2,6 +2,7 @@
 
 import { X, ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useCart } from "@/lib/cart-context";
 
@@ -23,27 +24,27 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     <>
       {/* Backdrop */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-espresso/40 backdrop-blur-sm z-[60] transition-opacity"
           onClick={onClose}
         />
       )}
 
       {/* Drawer */}
-      <div 
+      <div
         className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-cream z-[70] shadow-2xl transform transition-transform duration-500 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
-          
+
           {/* Header */}
           <div className="flex items-center justify-between p-5 sm:p-6 border-b border-sand">
             <div className="flex items-center gap-3">
               <ShoppingBag size={20} className="text-espresso" />
               <h2 className="font-serif text-lg sm:text-xl text-espresso">Seu Carrinho</h2>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="p-2 hover:bg-sand/50 rounded-full transition-colors text-espresso/40 hover:text-espresso"
             >
@@ -58,7 +59,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <div key={item.id} className="flex gap-4 group">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sand flex-shrink-0 overflow-hidden relative">
                     <ImagePlaceholder className="w-full h-full" />
-                    <button 
+                    <button
                       onClick={() => removeItem(item.id)}
                       className="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-terracota opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -67,16 +68,20 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                   <div className="flex-1 flex flex-col justify-between py-0.5">
                     <div>
-                      <h3 className="font-sans text-[0.8rem] sm:text-[0.85rem] font-medium text-espresso leading-tight">
+                      <Link
+                        href={`/produtos/${item.id}`}
+                        onClick={onClose}
+                        className="font-sans text-[0.8rem] sm:text-[0.85rem] font-medium text-espresso leading-tight hover:underline underline-offset-2 decoration-espresso/30"
+                      >
                         {item.name}
-                      </h3>
+                      </Link>
                       <p className="font-sans text-[0.7rem] sm:text-[0.72rem] text-espresso/40 mt-1">
                         por {item.producer}
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center border border-espresso/10 bg-sand/20 h-7 sm:h-8">
-                        <button 
+                        <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
                         >
@@ -85,7 +90,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <span className="w-5 sm:w-6 text-center font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso">
                           {item.quantity}
                         </span>
-                        <button 
+                        <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
                         >
@@ -105,7 +110,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <p className="font-serif text-lg text-espresso/40 italic">
                   Seu carrinho está vazio.
                 </p>
-                <button 
+                <button
                   onClick={onClose}
                   className="text-caramel font-sans text-[0.75rem] tracking-[0.2em] uppercase font-semibold underline underline-offset-4"
                 >
@@ -118,13 +123,31 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           {/* Footer */}
           {items.length > 0 && (
             <div className="p-5 sm:p-6 bg-sand/30 border-t border-sand">
-              <div className="flex items-center justify-between mb-5 sm:mb-6">
-                <span className="font-sans text-[0.7rem] sm:text-[0.75rem] tracking-[0.2em] uppercase text-espresso/50 font-semibold">
-                  Subtotal
-                </span>
-                <span className="font-serif text-xl sm:text-2xl text-espresso">
-                  R$ {subtotal.toFixed(2).replace(".", ",")}
-                </span>
+              <div className="flex flex-col gap-2 mb-5 sm:mb-6">
+                <div className="flex items-center justify-between">
+                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso/50">
+                    Subtotal
+                  </span>
+                  <span className="font-serif text-base sm:text-lg text-espresso">
+                    R$ {subtotal.toFixed(2).replace(".", ",")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso/50">
+                    Frete
+                  </span>
+                  <span className="font-sans text-[0.72rem] text-espresso/40 italic">
+                    A calcular
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-sand">
+                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] tracking-[0.2em] uppercase text-espresso/70 font-semibold">
+                    Total estimado
+                  </span>
+                  <span className="font-serif text-xl sm:text-2xl text-espresso">
+                    R$ {subtotal.toFixed(2).replace(".", ",")}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={handleCheckout}
@@ -133,7 +156,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 Finalizar Pedido
               </button>
               <p className="text-center font-sans text-[0.6rem] sm:text-[0.65rem] text-espresso/30 mt-4 leading-relaxed px-4">
-                Frete e descontos serão calculados na próxima etapa.
+                Frete calculado ao finalizar o pedido.
               </p>
             </div>
           )}

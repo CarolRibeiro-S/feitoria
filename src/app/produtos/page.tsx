@@ -8,6 +8,7 @@ import {
   SlidersHorizontal,
   AlertCircle,
   Image as ImageIcon,
+  Heart,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
@@ -43,16 +44,25 @@ export default function ProdutosPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Favorites
+  const [userId, setUserId] = useState<string | null>(null);
+  const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
+
+  // Read ?categoria= from URL on mount
+  useEffect(() => {
+    const cat = new URLSearchParams(window.location.search).get("categoria");
+    if (cat) setSelectedCategory(cat);
+  }, []);
+
   useEffect(() => { trackEvent("pageview", "/produtos"); }, []);
 
+  // Load products
   useEffect(() => {
     async function fetchProducts() {
       try {
         setLoading(true);
         setErrorMessage(null);
-        
-        console.log("[ProdutosPage] Buscando produtos...");
-        
+
         const { data, error } = await supabase
           .from("produtos")
           .select(`
@@ -75,27 +85,70 @@ export default function ProdutosPage() {
           .order("criado_em", { ascending: false });
 
         if (error) {
-          console.error("[ProdutosPage] Erro Supabase:", error);
           setErrorMessage(`Erro ao carregar produtos: ${error.message}`);
           return;
         }
-
-        console.log("[ProdutosPage] Dados recebidos:", data);
         setProducts((data as any) || []);
       } catch (err: any) {
-        console.error("[ProdutosPage] Erro inesperado:", err);
         setErrorMessage("Ocorreu um erro inesperado ao carregar os produtos.");
       } finally {
         setLoading(false);
       }
     }
-
     fetchProducts();
   }, []);
 
+  // Load user + favorites
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id ?? null);
+      if (user) {
+        supabase
+          .from("favoritos")
+          .select("produto_id")
+          .eq("usuario_id", user.id)
+          .then(({ data }) => {
+            setFavoritos(new Set(data?.map((f: any) => f.produto_id) ?? []));
+          });
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      const u = session?.user ?? null;
+      setUserId(u?.id ?? null);
+      if (u) {
+        supabase
+          .from("favoritos")
+          .select("produto_id")
+          .eq("usuario_id", u.id)
+          .then(({ data }) => {
+            setFavoritos(new Set(data?.map((f: any) => f.produto_id) ?? []));
+          });
+      } else {
+        setFavoritos(new Set());
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function toggleFavorite(e: React.MouseEvent, produtoId: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    if (favoritos.has(produtoId)) {
+      setFavoritos((prev) => { const s = new Set(prev); s.delete(produtoId); return s; });
+      await supabase.from("favoritos").delete().eq("usuario_id", userId).eq("produto_id", produtoId);
+    } else {
+      setFavoritos((prev) => new Set([...prev, produtoId]));
+      await supabase.from("favoritos").insert({ usuario_id: userId, produto_id: produtoId });
+    }
+  }
+
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesSearch = 
+      const matchesSearch =
         product.nome?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.produtoras?.nome_marca?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory ? product.categoria === selectedCategory : true;
@@ -103,7 +156,6 @@ export default function ProdutosPage() {
     });
   }, [searchQuery, selectedCategory, products]);
 
-  // Mapeamento de categorias para exibição no front-end
   const getDisplayCategory = (cat: string) => {
     if (cat === "Confeitaria") return "Cozinha Artesanal";
     return cat;
@@ -113,7 +165,7 @@ export default function ProdutosPage() {
     <div className="bg-cream min-h-screen">
       <main className="pt-24 sm:pt-32 lg:pt-44 pb-20">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
-          
+
           {/* ── PAGE TITLE & SEARCH ─────────────────────────────────────────── */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8 mb-10 sm:mb-12">
             <div>
@@ -138,7 +190,7 @@ export default function ProdutosPage() {
           </div>
 
           <div className="grid lg:grid-cols-[240px_1fr] gap-10 lg:gap-12">
-            
+
             {/* ── FILTERS (Desktop) ─────────────────────────────────────────── */}
             <aside className="hidden lg:flex flex-col gap-10">
               <div>
@@ -181,9 +233,9 @@ export default function ProdutosPage() {
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 font-sans text-[0.65rem] sm:text-[0.7rem] tracking-wider uppercase border transition-colors ${
-                  selectedCategory === null 
-                  ? "bg-espresso text-cream border-espresso" 
-                  : "bg-cream text-espresso border-espresso/10"
+                  selectedCategory === null
+                    ? "bg-espresso text-cream border-espresso"
+                    : "bg-cream text-espresso border-espresso/10"
                 }`}
               >
                 Tudo
@@ -193,9 +245,9 @@ export default function ProdutosPage() {
                   key={cat.name}
                   onClick={() => setSelectedCategory(cat.name)}
                   className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 font-sans text-[0.65rem] sm:text-[0.7rem] tracking-wider uppercase border transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat.name 
-                    ? "bg-espresso text-cream border-espresso" 
-                    : "bg-cream text-espresso border-espresso/10"
+                    selectedCategory === cat.name
+                      ? "bg-espresso text-cream border-espresso"
+                      : "bg-cream text-espresso border-espresso/10"
                   }`}
                 >
                   <cat.Icon size={13} />
@@ -211,7 +263,7 @@ export default function ProdutosPage() {
                   <AlertCircle className="text-wine/60" size={32} />
                   <div>
                     <p className="font-serif text-lg text-espresso">{errorMessage}</p>
-                    <button 
+                    <button
                       onClick={() => window.location.reload()}
                       className="mt-4 text-terracota font-sans text-xs uppercase tracking-widest font-semibold hover:text-caramel transition-colors"
                     >
@@ -252,8 +304,20 @@ export default function ProdutosPage() {
                             <ImageIcon size={32} strokeWidth={1.2} />
                           </div>
                         )}
+                        {/* Favorites button */}
+                        <button
+                          aria-label={favoritos.has(product.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                          onClick={(e) => toggleFavorite(e, product.id)}
+                          className="absolute top-2 right-2 z-10 w-8 h-8 bg-cream/85 flex items-center justify-center hover:bg-cream transition-colors shadow-sm"
+                        >
+                          <Heart
+                            size={15}
+                            strokeWidth={1.5}
+                            className={favoritos.has(product.id) ? "fill-terracota text-terracota" : "text-espresso/50"}
+                          />
+                        </button>
                         <div className="absolute inset-0 bg-espresso/5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none lg:pointer-events-auto">
-                          <a 
+                          <a
                             href={`/produtos/${product.id}`}
                             className="hidden lg:block bg-cream text-espresso font-sans text-[0.65rem] tracking-[0.2em] uppercase px-5 py-3 hover:bg-terracota hover:text-cream transition-colors"
                           >
@@ -265,9 +329,12 @@ export default function ProdutosPage() {
                         <span className="font-sans text-[0.55rem] sm:text-[0.62rem] tracking-[0.2em] sm:tracking-[0.28em] uppercase text-caramel/80 font-semibold">
                           {getDisplayCategory(product.categoria)}
                         </span>
-                        <h3 className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto">
+                        <Link
+                          href={`/produtos/${product.id}`}
+                          className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto hover:underline underline-offset-2 decoration-espresso/20"
+                        >
                           {product.nome}
-                        </h3>
+                        </Link>
                         <Link
                           href={`/produtoras/${product.produtoras?.id}`}
                           className="font-sans text-[0.65rem] sm:text-[0.7rem] text-espresso/50 tracking-tight hover:text-espresso hover:underline underline-offset-2 transition-colors"
@@ -309,8 +376,8 @@ export default function ProdutosPage() {
                   <p className="font-serif text-xl text-espresso/40 italic">
                     Nenhum produto encontrado para sua busca.
                   </p>
-                  <button 
-                    onClick={() => {setSearchQuery(""); setSelectedCategory(null);}}
+                  <button
+                    onClick={() => { setSearchQuery(""); setSelectedCategory(null); }}
                     className="mt-4 text-caramel font-sans text-sm underline underline-offset-4"
                   >
                     Limpar filtros
