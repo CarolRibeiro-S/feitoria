@@ -166,6 +166,25 @@ export async function criarPedido(input: PedidoInput): Promise<string> {
     console.log('[criarPedido] 3/3 — Nenhum item para inserir.')
   }
 
+  // ── 4. Marca carrinho abandonado como convertido ────────────────────────
+  try {
+    if (input.usuario_id) {
+      await supabaseAdmin
+        .from('carrinhos_abandonados')
+        .update({ convertido: true })
+        .eq('usuario_id', input.usuario_id)
+        .eq('convertido', false)
+    } else if (input.email_cliente) {
+      await supabaseAdmin
+        .from('carrinhos_abandonados')
+        .update({ convertido: true })
+        .eq('email', input.email_cliente)
+        .eq('convertido', false)
+    }
+  } catch {
+    // Non-critical — pedido já foi criado com sucesso
+  }
+
   console.log(`[criarPedido] Concluído. Número: ${numero}`)
   console.log('─────────────────────────────────────────────\n')
   return numero
