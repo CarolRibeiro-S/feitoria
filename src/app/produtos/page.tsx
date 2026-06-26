@@ -359,6 +359,7 @@ export default function ProdutosPage() {
                                   price: product.preco,
                                   quantity: 1,
                                   image: product.foto,
+                                  categoria: product.categoria,
                                 });
                               }
                             }}

@@ -181,6 +181,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
       price: displayPrice,
       quantity: quantity,
       image: product.foto,
+      categoria: product.categoria,
     });
   };
 
@@ -553,6 +554,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                             price: p.preco,
                             quantity: 1,
                             image: p.foto,
+                            categoria: p.categoria,
                           })}
                           className="w-7 h-7 sm:w-8 sm:h-8 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
                         >

@@ -2,12 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Truck, QrCode, CreditCard, Check, ChevronLeft, Loader2 } from "lucide-react";
+import { MapPin, Truck, QrCode, CreditCard, Check, ChevronLeft, Loader2, Plus, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import { criarPedido } from "@/app/actions/checkout";
 import { validarCupom } from "@/app/actions/fidelidade";
 import type { CupomValido } from "@/app/actions/fidelidade";
+import { mergeCrossSellHints } from "@/lib/cross-sell-map";
+
+type CrossSellProduct = {
+  id: string;
+  nome: string;
+  preco: number;
+  foto: string | null;
+  categoria: string;
+  produtoras: { nome_marca: string };
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -111,7 +122,7 @@ const labelCls =
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal, clearCart, addItem } = useCart();
 
   // Auth
   const [userId, setUserId] = useState<string | null>(null);
@@ -146,6 +157,9 @@ export default function CheckoutPage() {
   const [nomeCartao, setNomeCartao] = useState("");
   const [validade, setValidade] = useState("");
   const [cvv, setCvv] = useState("");
+
+  // Cross-sell
+  const [checkoutCrossSell, setCheckoutCrossSell] = useState<CrossSellProduct[]>([]);
 
   // Fidelidade
   const [progressoFidelidade, setProgressoFidelidade] = useState<{
@@ -195,6 +209,56 @@ export default function CheckoutPage() {
         if (data) setProgressoFidelidade(data as { selos_atuais: number; elegivel_desconto: boolean });
       });
   }, [userId]);
+
+  // Fetch cross-sell suggestions when entering Step 3
+  useEffect(() => {
+    if (etapa !== 3 || items.length === 0) return;
+
+    async function fetchCheckoutCrossSell() {
+      const cartIds = items.map((i) => i.id);
+
+      let itemsWithCat: { name: string; categoria: string }[] = items
+        .filter((i) => !!i.categoria)
+        .map((i) => ({ name: i.name, categoria: i.categoria! }));
+
+      if (itemsWithCat.length === 0) {
+        const { data: meta } = await supabase
+          .from("produtos")
+          .select("id, nome, categoria")
+          .in("id", cartIds);
+        if (!meta) return;
+        const m = new Map(meta.map((p) => [p.id, { name: p.nome, categoria: p.categoria }]));
+        itemsWithCat = cartIds.map((id) => m.get(id)).filter(Boolean) as { name: string; categoria: string }[];
+      }
+
+      const { categories, priorityFilter } = mergeCrossSellHints(itemsWithCat);
+      if (categories.length === 0) return;
+
+      const { data: candidates } = await supabase
+        .from("produtos")
+        .select("id, nome, preco, foto, categoria, produtoras(nome_marca)")
+        .in("categoria", categories)
+        .eq("disponivel", true)
+        .limit(9);
+
+      if (!candidates) return;
+
+      const cartIdSet = new Set(cartIds);
+      let filtered = candidates.filter((p) => !cartIdSet.has(p.id));
+
+      if (priorityFilter) {
+        const pf = priorityFilter.toLowerCase();
+        filtered = [
+          ...filtered.filter((p) => p.nome.toLowerCase().includes(pf)),
+          ...filtered.filter((p) => !p.nome.toLowerCase().includes(pf)),
+        ];
+      }
+
+      setCheckoutCrossSell(filtered.slice(0, 3) as unknown as CrossSellProduct[]);
+    }
+
+    fetchCheckoutCrossSell();
+  }, [etapa]);
 
   // ── CEP lookup ──────────────────────────────────────────────────────────────
   async function buscarCEP(raw: string) {
@@ -789,6 +853,73 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               )}
+
+              {/* ── Cross-sell suggestions ── */}
+              {(() => {
+                const cartIdSet = new Set(items.map((i) => i.id));
+                const visibleCrossSell = checkoutCrossSell.filter((p) => !cartIdSet.has(p.id));
+                if (visibleCrossSell.length === 0) return null;
+                return (
+                  <div className="border-t border-sand pt-5 flex flex-col gap-4">
+                    <p className="font-sans text-[0.58rem] tracking-[0.28em] uppercase text-caramel font-semibold">
+                      Você também pode gostar
+                    </p>
+                    <div className="flex flex-col gap-2.5">
+                      {visibleCrossSell.map((produto) => (
+                        <div
+                          key={produto.id}
+                          className="flex items-center gap-3 border border-sand/60 bg-sand/15 px-3 py-2.5"
+                        >
+                          <div className="w-11 h-11 bg-beige flex-shrink-0 overflow-hidden relative flex items-center justify-center">
+                            {produto.foto ? (
+                              <Image
+                                src={produto.foto}
+                                alt={produto.nome}
+                                fill
+                                className="object-cover"
+                                sizes="44px"
+                              />
+                            ) : (
+                              <ImageIcon size={14} className="text-espresso/20" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-sans text-[0.75rem] font-medium text-espresso leading-snug truncate">
+                              {produto.nome}
+                            </p>
+                            <p className="font-sans text-[0.62rem] text-espresso/40 truncate">
+                              {produto.produtoras.nome_marca}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2.5 flex-shrink-0">
+                            <span className="font-serif text-sm text-espresso">
+                              R$ {produto.preco.toFixed(2).replace(".", ",")}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                addItem({
+                                  id: produto.id,
+                                  name: produto.nome,
+                                  producer: produto.produtoras.nome_marca,
+                                  price: produto.preco,
+                                  quantity: 1,
+                                  image: produto.foto,
+                                  categoria: produto.categoria,
+                                })
+                              }
+                              aria-label={`Adicionar ${produto.nome} ao pedido`}
+                              className="w-7 h-7 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors"
+                            >
+                              <Plus size={13} strokeWidth={2} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {erro && <p className="font-sans text-[0.78rem] text-wine border border-wine/30 px-4 py-3">{erro}</p>}
 

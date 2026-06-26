@@ -52,27 +52,39 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     async function fetchCrossSell() {
       const cartIds = items.map((i) => i.id);
 
-      // 1. Fetch categories for cart items
-      const { data: productMeta } = await supabase
-        .from("produtos")
-        .select("id, nome, categoria")
-        .in("id", cartIds);
+      // Use categoria stored in CartItem; fallback to Supabase lookup for old cart items
+      let itemsWithCat: { name: string; categoria: string }[] = items
+        .filter((i) => !!i.categoria)
+        .map((i) => ({ name: i.name, categoria: i.categoria! }));
 
-      if (!productMeta || productMeta.length === 0) return;
+      if (itemsWithCat.length === 0) {
+        const { data: productMeta } = await supabase
+          .from("produtos")
+          .select("id, nome, categoria")
+          .in("id", cartIds);
 
-      // 2. Build {name, categoria} list for each cart item
-      const metaMap = new Map(
-        productMeta.map((p) => [p.id, { name: p.nome, categoria: p.categoria }])
-      );
-      const itemsWithCat = cartIds
-        .map((id) => metaMap.get(id))
-        .filter(Boolean) as { name: string; categoria: string }[];
+        if (!productMeta || productMeta.length === 0) {
+          console.log("[CrossSell] Sem meta de produto para IDs:", cartIds);
+          return;
+        }
+        const metaMap = new Map(
+          productMeta.map((p) => [p.id, { name: p.nome, categoria: p.categoria }])
+        );
+        itemsWithCat = cartIds
+          .map((id) => metaMap.get(id))
+          .filter(Boolean) as { name: string; categoria: string }[];
+      }
 
-      // 3. Compute suggested categories + optional priority filter
+      console.log("[CrossSell] Itens no carrinho com categoria:", itemsWithCat);
+
       const { categories, priorityFilter } = mergeCrossSellHints(itemsWithCat);
-      if (categories.length === 0) return;
+      console.log("[CrossSell] Categorias sugeridas:", categories, "| Filtro prioritário:", priorityFilter);
 
-      // 4. Fetch candidates from suggested categories
+      if (categories.length === 0) {
+        console.log("[CrossSell] crossSellMap não cobre as categorias:", itemsWithCat.map((i) => i.categoria));
+        return;
+      }
+
       const { data: candidates } = await supabase
         .from("produtos")
         .select("id, nome, preco, foto, categoria, produtoras(nome_marca)")
@@ -80,13 +92,13 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         .eq("disponivel", true)
         .limit(9);
 
+      console.log("[CrossSell] Candidatos do banco:", candidates?.length, "| categorias:", categories);
+
       if (!candidates) return;
 
-      // 5. Exclude items already in cart
       const cartIdSet = new Set(cartIds);
       let filtered = candidates.filter((p) => !cartIdSet.has(p.id));
 
-      // 6. Apply priority filter (matching products bubble to top)
       if (priorityFilter) {
         const pf = priorityFilter.toLowerCase();
         filtered = [
@@ -95,7 +107,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         ];
       }
 
-      setCrossSellItems(filtered.slice(0, 3) as unknown as CrossSellProduct[]);
+      const result = filtered.slice(0, 3) as unknown as CrossSellProduct[];
+      console.log("[CrossSell] Sugestões finais:", result.map((p) => p.nome));
+      setCrossSellItems(result);
     }
 
     fetchCrossSell();
@@ -254,6 +268,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                   price: produto.preco,
                                   quantity: 1,
                                   image: produto.foto,
+                                  categoria: produto.categoria,
                                 })
                               }
                               aria-label={`Adicionar ${produto.nome} ao carrinho`}
