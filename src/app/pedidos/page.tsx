@@ -19,7 +19,7 @@ type ItemPedido = {
 type Pedido = {
   id: string;
   numero: string;
-  criado_em: string;
+  created_at: string;
   status: string;
   tipo_entrega: string;
   forma_pagamento: string;
@@ -149,11 +149,16 @@ export default function PedidosPage() {
   }, [router]);
 
   async function fetchPedidos(userId: string) {
+    console.log("[Pedidos] usuario_id:", userId);
+    console.log("[Pedidos] Executando: from('pedidos').select('*, itens_pedido(*)').eq('usuario_id', userId).order('created_at', { ascending: false })");
+
     const { data, error } = await supabase
       .from("pedidos")
       .select("*, itens_pedido(*)")
       .eq("usuario_id", userId)
-      .order("criado_em", { ascending: false });
+      .order("created_at", { ascending: false });
+
+    console.log("[Pedidos] Resultado — data:", data, "| error:", error);
 
     if (error) {
       console.error("[Pedidos] Erro ao buscar pedidos:", error);
@@ -271,7 +276,7 @@ export default function PedidosPage() {
                       </span>
                     </div>
                     <p className="font-sans text-xs text-espresso/45 mt-1">
-                      {formatDate(pedido.criado_em)}
+                      {formatDate(pedido.created_at)}
                     </p>
                   </div>
 
