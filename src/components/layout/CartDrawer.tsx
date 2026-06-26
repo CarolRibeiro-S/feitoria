@@ -1,10 +1,27 @@
 "use client";
 
-import { X, ShoppingBag, Plus, Minus, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { X, ShoppingBag, Plus, Minus, Trash2, Image as ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useCart } from "@/lib/cart-context";
+import { supabase } from "@/lib/supabase-client";
+import { mergeCrossSellHints } from "@/lib/cross-sell-map";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type CrossSellProduct = {
+  id: string;
+  nome: string;
+  preco: number;
+  foto: string | null;
+  categoria: string;
+  produtoras: { nome_marca: string };
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -13,7 +30,76 @@ interface CartDrawerProps {
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const router = useRouter();
-  const { items, subtotal, updateQuantity, removeItem } = useCart();
+  const { items, subtotal, updateQuantity, removeItem, addItem } = useCart();
+
+  const [crossSellItems, setCrossSellItems] = useState<CrossSellProduct[]>([]);
+  const prevKeyRef = useRef<string>("");
+
+  // Stable key representing current cart contents
+  const cartKey = useMemo(
+    () => items.map((i) => i.id).sort().join(","),
+    [items]
+  );
+
+  useEffect(() => {
+    if (!isOpen || items.length === 0) {
+      setCrossSellItems([]);
+      return;
+    }
+    if (cartKey === prevKeyRef.current) return;
+    prevKeyRef.current = cartKey;
+
+    async function fetchCrossSell() {
+      const cartIds = items.map((i) => i.id);
+
+      // 1. Fetch categories for cart items
+      const { data: productMeta } = await supabase
+        .from("produtos")
+        .select("id, nome, categoria")
+        .in("id", cartIds);
+
+      if (!productMeta || productMeta.length === 0) return;
+
+      // 2. Build {name, categoria} list for each cart item
+      const metaMap = new Map(
+        productMeta.map((p) => [p.id, { name: p.nome, categoria: p.categoria }])
+      );
+      const itemsWithCat = cartIds
+        .map((id) => metaMap.get(id))
+        .filter(Boolean) as { name: string; categoria: string }[];
+
+      // 3. Compute suggested categories + optional priority filter
+      const { categories, priorityFilter } = mergeCrossSellHints(itemsWithCat);
+      if (categories.length === 0) return;
+
+      // 4. Fetch candidates from suggested categories
+      const { data: candidates } = await supabase
+        .from("produtos")
+        .select("id, nome, preco, foto, categoria, produtoras(nome_marca)")
+        .in("categoria", categories)
+        .eq("disponivel", true)
+        .limit(9);
+
+      if (!candidates) return;
+
+      // 5. Exclude items already in cart
+      const cartIdSet = new Set(cartIds);
+      let filtered = candidates.filter((p) => !cartIdSet.has(p.id));
+
+      // 6. Apply priority filter (matching products bubble to top)
+      if (priorityFilter) {
+        const pf = priorityFilter.toLowerCase();
+        filtered = [
+          ...filtered.filter((p) => p.nome.toLowerCase().includes(pf)),
+          ...filtered.filter((p) => !p.nome.toLowerCase().includes(pf)),
+        ];
+      }
+
+      setCrossSellItems(filtered.slice(0, 3) as unknown as CrossSellProduct[]);
+    }
+
+    fetchCrossSell();
+  }, [isOpen, cartKey]);
 
   function handleCheckout() {
     onClose();
@@ -52,58 +138,136 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </button>
           </div>
 
-          {/* Items List */}
+          {/* Scrollable body */}
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 flex flex-col gap-6 scrollbar-hide">
             {items.length > 0 ? (
-              items.map((item) => (
-                <div key={item.id} className="flex gap-4 group">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sand flex-shrink-0 overflow-hidden relative">
-                    <ImagePlaceholder className="w-full h-full" />
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-terracota opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                  <div className="flex-1 flex flex-col justify-between py-0.5">
-                    <div>
-                      <Link
-                        href={`/produtos/${item.id}`}
-                        onClick={onClose}
-                        className="font-sans text-[0.8rem] sm:text-[0.85rem] font-medium text-espresso leading-tight hover:underline underline-offset-2 decoration-espresso/30"
+              <>
+                {/* ── Cart items ───────────────────────────────────────── */}
+                {items.map((item) => (
+                  <div key={item.id} className="flex gap-4 group">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sand flex-shrink-0 overflow-hidden relative">
+                      <ImagePlaceholder className="w-full h-full" />
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-terracota opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        {item.name}
-                      </Link>
-                      <p className="font-sans text-[0.7rem] sm:text-[0.72rem] text-espresso/40 mt-1">
-                        por {item.producer}
-                      </p>
+                        <Trash2 size={12} />
+                      </button>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center border border-espresso/10 bg-sand/20 h-7 sm:h-8">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
+                    <div className="flex-1 flex flex-col justify-between py-0.5">
+                      <div>
+                        <Link
+                          href={`/produtos/${item.id}`}
+                          onClick={onClose}
+                          className="font-sans text-[0.8rem] sm:text-[0.85rem] font-medium text-espresso leading-tight hover:underline underline-offset-2 decoration-espresso/30"
                         >
-                          <Minus size={10} />
-                        </button>
-                        <span className="w-5 sm:w-6 text-center font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
-                        >
-                          <Plus size={10} />
-                        </button>
+                          {item.name}
+                        </Link>
+                        <p className="font-sans text-[0.7rem] sm:text-[0.72rem] text-espresso/40 mt-1">
+                          por {item.producer}
+                        </p>
                       </div>
-                      <span className="font-serif text-[0.8rem] sm:text-sm text-espresso">
-                        R$ {item.price.toFixed(2).replace(".", ",")}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center border border-espresso/10 bg-sand/20 h-7 sm:h-8">
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
+                          >
+                            <Minus size={10} />
+                          </button>
+                          <span className="w-5 sm:w-6 text-center font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
+                          >
+                            <Plus size={10} />
+                          </button>
+                        </div>
+                        <span className="font-serif text-[0.8rem] sm:text-sm text-espresso">
+                          R$ {item.price.toFixed(2).replace(".", ",")}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+
+                {/* ── Cross-sell suggestions ───────────────────────────── */}
+                {crossSellItems.length > 0 && (
+                  <div className="border-t border-sand pt-6 -mx-0">
+                    <p className="font-sans text-[0.58rem] tracking-[0.3em] uppercase text-caramel font-semibold mb-4">
+                      Você também pode gostar
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      {crossSellItems.map((produto) => (
+                        <div
+                          key={produto.id}
+                          className="flex items-center gap-3 bg-sand/20 p-3 border border-sand/60"
+                        >
+                          {/* Thumbnail */}
+                          <Link
+                            href={`/produtos/${produto.id}`}
+                            onClick={onClose}
+                            className="flex-shrink-0"
+                          >
+                            <div className="w-12 h-12 bg-beige overflow-hidden relative flex items-center justify-center">
+                              {produto.foto ? (
+                                <Image
+                                  src={produto.foto}
+                                  alt={produto.nome}
+                                  fill
+                                  className="object-cover"
+                                  sizes="48px"
+                                />
+                              ) : (
+                                <ImageIcon size={14} className="text-espresso/20" />
+                              )}
+                            </div>
+                          </Link>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={`/produtos/${produto.id}`}
+                              onClick={onClose}
+                              className="font-sans text-[0.75rem] font-medium text-espresso leading-snug line-clamp-2 hover:text-terracota transition-colors block"
+                            >
+                              {produto.nome}
+                            </Link>
+                            <p className="font-sans text-[0.63rem] text-espresso/40 mt-0.5 truncate">
+                              {produto.produtoras.nome_marca}
+                            </p>
+                          </div>
+
+                          {/* Price + add */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="font-serif text-[0.82rem] text-espresso">
+                              R$ {produto.preco.toFixed(2).replace(".", ",")}
+                            </span>
+                            <button
+                              onClick={() =>
+                                addItem({
+                                  id: produto.id,
+                                  name: produto.nome,
+                                  producer: produto.produtoras.nome_marca,
+                                  price: produto.preco,
+                                  quantity: 1,
+                                  image: produto.foto,
+                                })
+                              }
+                              aria-label={`Adicionar ${produto.nome} ao carrinho`}
+                              className="w-7 h-7 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors flex-shrink-0"
+                            >
+                              <Plus size={13} strokeWidth={2} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
                 <ShoppingBag size={40} className="text-espresso/10" />
@@ -151,7 +315,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </div>
               {subtotal < 45 && (
                 <p className="font-sans text-[0.68rem] text-wine/80 border border-wine/20 bg-wine/5 px-3 py-2.5 leading-relaxed mb-1">
-                  Pedido mínimo de R$ 45,00. Faltam R$ {(45 - subtotal).toFixed(2).replace(".", ",")} para continuar.
+                  Pedido mínimo de R$ 45,00. Faltam R${" "}
+                  {(45 - subtotal).toFixed(2).replace(".", ",")} para continuar.
                 </p>
               )}
               <button

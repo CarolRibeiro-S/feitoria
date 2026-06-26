@@ -18,6 +18,7 @@ import {
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
+import { crossSellMap } from "@/lib/cross-sell-map";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -94,17 +95,40 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
 
         setProduct(produto as any);
 
-        // 2. Busca produtos relacionados (mesma categoria, exceto o atual)
-        const { data: relacionados, error: relacionadosError } = await supabase
-          .from("produtos")
-          .select("*, produtoras(id, nome_marca)")
-          .eq("categoria", produto.categoria)
-          .neq("id", id)
-          .eq("disponivel", true)
-          .limit(3);
+        // 2. Busca produtos relacionados: 2 da mesma categoria + 2 de categorias complementares
+        const complementaryCategories = crossSellMap[produto.categoria] ?? [];
 
-        if (!relacionadosError && relacionados) {
-          setRelatedProducts(relacionados as any);
+        const [sameCatResult, complementaryResult] = await Promise.all([
+          supabase
+            .from("produtos")
+            .select("*, produtoras(id, nome_marca)")
+            .eq("categoria", produto.categoria)
+            .neq("id", id)
+            .eq("disponivel", true)
+            .limit(2),
+          complementaryCategories.length > 0
+            ? supabase
+                .from("produtos")
+                .select("*, produtoras(id, nome_marca)")
+                .in("categoria", complementaryCategories)
+                .neq("id", id)
+                .eq("disponivel", true)
+                .limit(2)
+            : Promise.resolve({ data: [] as any[], error: null }),
+        ]);
+
+        const seen = new Set<string>([id]);
+        const combined = [
+          ...(sameCatResult.data ?? []),
+          ...(complementaryResult.data ?? []),
+        ].filter((p) => {
+          if (seen.has(p.id)) return false;
+          seen.add(p.id);
+          return true;
+        });
+
+        if (combined.length > 0) {
+          setRelatedProducts(combined as any);
         }
 
       } catch (err: any) {
@@ -476,7 +500,7 @@ export default function ProdutoDetalhePage({ params }: { params: Promise<{ id: s
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-6 lg:gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-6 lg:gap-6">
                 {relatedProducts.map((p) => (
                   <div key={p.id} className="group flex flex-col bg-cream">
                     <div className="aspect-square overflow-hidden relative bg-[#DCC8B2] flex items-center justify-center">
