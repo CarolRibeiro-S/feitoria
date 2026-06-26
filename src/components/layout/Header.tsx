@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   User as UserIcon,
+  UserCog,
   LogOut,
   LayoutDashboard,
   ClipboardList,
@@ -168,6 +169,14 @@ export function Header({ onOpenCart }: HeaderProps) {
                           : <ClipboardList size={14} strokeWidth={1.6} />
                         }
                         Meu painel
+                      </Link>
+                      <Link
+                        href="/minha-conta"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 hover:text-espresso hover:bg-sand/30 transition-colors"
+                      >
+                        <UserCog size={14} strokeWidth={1.6} />
+                        Minha Conta
                       </Link>
                       <button
                         onClick={handleSignOut}

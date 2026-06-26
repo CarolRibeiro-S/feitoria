@@ -36,6 +36,7 @@ export async function insertProdutora(params: {
 
 export async function updateClienteProfile(params: {
   id: string
+  nome?: string
   data_nascimento?: string
   telefone?: string
   cep?: string
