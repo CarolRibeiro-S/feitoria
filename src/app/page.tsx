@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
+import BirthdayCouponBanner from "@/components/ui/BirthdayCouponBanner";
 
 // Conteúdo do hero mobile — centralizado vertical e horizontalmente
 const mobileHeroContent = (
@@ -66,6 +67,7 @@ export default function Home() {
 
   return (
     <div className="bg-cream min-h-screen">
+      <BirthdayCouponBanner />
       <main>
         {/* ── HERO MOBILE ────────────────────────────────────────────────────── */}
         <section className="relative w-full h-screen flex items-center justify-center overflow-hidden sm:hidden">

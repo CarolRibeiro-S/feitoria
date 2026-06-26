@@ -6,6 +6,8 @@ import { MapPin, Truck, QrCode, CreditCard, Check, ChevronLeft, Loader2 } from "
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import { criarPedido } from "@/app/actions/checkout";
+import { validarCupom } from "@/app/actions/fidelidade";
+import type { CupomValido } from "@/app/actions/fidelidade";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -145,8 +147,30 @@ export default function CheckoutPage() {
   const [validade, setValidade] = useState("");
   const [cvv, setCvv] = useState("");
 
+  // Fidelidade
+  const [progressoFidelidade, setProgressoFidelidade] = useState<{
+    selos_atuais: number;
+    elegivel_desconto: boolean;
+  } | null>(null);
+  const [aplicarDescontoFidelidade, setAplicarDescontoFidelidade] = useState(false);
+  const [cupomCodigo, setCupomCodigo] = useState("");
+  const [cupomAplicado, setCupomAplicado] = useState<CupomValido | null>(null);
+  const [cupomErro, setCupomErro] = useState("");
+  const [cupomLoading, setCupomLoading] = useState(false);
+
   const frete = tipoEntrega === "entrega" ? FRETE : 0;
-  const total = subtotal + frete;
+
+  // Discount calculations (derived)
+  const descontoFidelidade =
+    aplicarDescontoFidelidade && progressoFidelidade?.elegivel_desconto
+      ? Math.round(subtotal * 0.3 * 100) / 100
+      : 0;
+  const subtotalAposFidelidade = subtotal - descontoFidelidade;
+  const descontoCupom = cupomAplicado
+    ? Math.round(subtotalAposFidelidade * (cupomAplicado.percentual_desconto / 100) * 100) / 100
+    : 0;
+  const subtotalFinal = subtotalAposFidelidade - descontoCupom;
+  const total = subtotalFinal + frete;
 
   // Pre-fill logged-in user data
   useEffect(() => {
@@ -158,6 +182,19 @@ export default function CheckoutPage() {
       }
     });
   }, []);
+
+  // Fetch loyalty progress when user is known
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("progresso_fidelidade")
+      .select("selos_atuais, elegivel_desconto")
+      .eq("usuario_id", userId)
+      .single()
+      .then(({ data }) => {
+        if (data) setProgressoFidelidade(data as { selos_atuais: number; elegivel_desconto: boolean });
+      });
+  }, [userId]);
 
   // ── CEP lookup ──────────────────────────────────────────────────────────────
   async function buscarCEP(raw: string) {
@@ -178,6 +215,31 @@ export default function CheckoutPage() {
     } finally {
       setCepLoading(false);
     }
+  }
+
+  // ── Cupom ───────────────────────────────────────────────────────────────────
+  async function handleAplicarCupom() {
+    if (!userId || !cupomCodigo.trim()) return;
+    setCupomErro("");
+    setCupomLoading(true);
+    try {
+      const result = await validarCupom(cupomCodigo, userId);
+      if (result) {
+        setCupomAplicado(result);
+      } else {
+        setCupomErro("Cupom inválido, expirado ou já utilizado.");
+      }
+    } catch {
+      setCupomErro("Não foi possível validar o cupom. Tente novamente.");
+    } finally {
+      setCupomLoading(false);
+    }
+  }
+
+  function handleRemoverCupom() {
+    setCupomAplicado(null);
+    setCupomCodigo("");
+    setCupomErro("");
   }
 
   // ── Step handlers ───────────────────────────────────────────────────────────
@@ -240,7 +302,7 @@ export default function CheckoutPage() {
         data_retirada: dataRetirada,
         hora_retirada: horaRetirada,
         forma_pagamento: formaPagamento,
-        subtotal,
+        subtotal: subtotalFinal,
         frete,
         total,
         itens: items.map((item) => ({
@@ -250,12 +312,14 @@ export default function CheckoutPage() {
           preco_unitario: item.price,
           quantidade: item.quantity,
         })),
+        desconto_fidelidade_usado: aplicarDescontoFidelidade && !!progressoFidelidade?.elegivel_desconto,
+        cupom_codigo: cupomAplicado?.codigo ?? null,
       });
 
       clearCart();
       localStorage.setItem(
         "feitoria-last-order",
-        JSON.stringify({ numero: numeroPedido, items, subtotal, frete, total })
+        JSON.stringify({ numero: numeroPedido, items, subtotal: subtotalFinal, frete, total })
       );
       router.push("/checkout/confirmacao");
     } catch (err) {
@@ -549,7 +613,7 @@ export default function CheckoutPage() {
         {etapa === 3 && (
           <form onSubmit={handleFinalizar} className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-10">
 
-            {/* Left: payment */}
+            {/* Left: discounts + payment */}
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3">
                 <button type="button" onClick={() => setEtapa(2)} className="text-espresso/40 hover:text-espresso transition-colors">
@@ -557,6 +621,81 @@ export default function CheckoutPage() {
                 </button>
                 <h2 className="font-serif text-xl text-espresso font-normal">Pagamento</h2>
               </div>
+
+              {/* ── Banner fidelidade ── */}
+              {userId && progressoFidelidade?.elegivel_desconto && (
+                <div className="border border-olive/25 bg-olive/5 px-5 py-4 flex flex-col gap-3">
+                  <div>
+                    <p className="font-sans text-[0.58rem] tracking-[0.28em] uppercase text-olive font-semibold mb-0.5">
+                      Fidelidade FEITORIA
+                    </p>
+                    <p className="font-sans text-sm text-espresso">
+                      Você acumulou 10 selos. Use 30% de desconto nesta compra.
+                    </p>
+                  </div>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={aplicarDescontoFidelidade}
+                      onChange={(e) => setAplicarDescontoFidelidade(e.target.checked)}
+                      className="accent-espresso w-4 h-4"
+                    />
+                    <span className="font-sans text-sm text-espresso">
+                      Aplicar desconto de 30%{" "}
+                      <span className="text-olive">
+                        (−R$ {fmt(subtotal * 0.3)})
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {/* ── Cupom de desconto ── */}
+              {userId && (
+                <div className="flex flex-col gap-2">
+                  <label className={labelCls}>
+                    Cupom de desconto{" "}
+                    <span className="normal-case tracking-normal font-normal text-espresso/35">(opcional)</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Digite seu código"
+                      value={cupomCodigo}
+                      onChange={(e) => setCupomCodigo(e.target.value.toUpperCase())}
+                      className={`${inputCls} flex-1`}
+                      disabled={!!cupomAplicado}
+                    />
+                    {!cupomAplicado ? (
+                      <button
+                        type="button"
+                        onClick={handleAplicarCupom}
+                        disabled={cupomLoading || !cupomCodigo.trim()}
+                        className="flex-shrink-0 px-4 py-3 border border-espresso/30 text-espresso font-sans text-[0.7rem] font-semibold hover:border-espresso transition-colors disabled:opacity-40"
+                      >
+                        {cupomLoading ? <Loader2 size={13} className="animate-spin" /> : "Aplicar"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleRemoverCupom}
+                        className="flex-shrink-0 px-4 py-3 border border-wine/30 text-wine font-sans text-[0.7rem] font-semibold hover:border-wine transition-colors"
+                      >
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  {cupomErro && (
+                    <p className="font-sans text-[0.75rem] text-wine">{cupomErro}</p>
+                  )}
+                  {cupomAplicado && (
+                    <p className="font-sans text-[0.75rem] text-olive">
+                      Cupom <span className="font-semibold">{cupomAplicado.codigo}</span> aplicado —{" "}
+                      {cupomAplicado.percentual_desconto}% de desconto (−R$ {fmt(descontoCupom)})
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Forma de pagamento */}
               <div className="grid grid-cols-2 gap-3">
@@ -693,6 +832,20 @@ export default function CheckoutPage() {
                     <span className="font-sans text-xs text-espresso/55">Subtotal</span>
                     <span className="font-sans text-xs text-espresso">R$ {fmt(subtotal)}</span>
                   </div>
+                  {descontoFidelidade > 0 && (
+                    <div className="flex justify-between">
+                      <span className="font-sans text-xs text-olive">Desconto fidelidade (30%)</span>
+                      <span className="font-sans text-xs text-olive">−R$ {fmt(descontoFidelidade)}</span>
+                    </div>
+                  )}
+                  {descontoCupom > 0 && (
+                    <div className="flex justify-between">
+                      <span className="font-sans text-xs text-olive">
+                        Cupom ({cupomAplicado?.percentual_desconto}%)
+                      </span>
+                      <span className="font-sans text-xs text-olive">−R$ {fmt(descontoCupom)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="font-sans text-xs text-espresso/55">Frete</span>
                     <span className={`font-sans text-xs ${frete === 0 ? "text-olive" : "text-espresso"}`}>

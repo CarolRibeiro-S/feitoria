@@ -41,6 +41,8 @@ export type PedidoInput = {
   frete: number
   total: number
   itens: ItemPedidoInput[]
+  desconto_fidelidade_usado?: boolean
+  cupom_codigo?: string | null
 }
 
 // ── Server Action ────────────────────────────────────────────────────────────
@@ -183,6 +185,58 @@ export async function criarPedido(input: PedidoInput): Promise<string> {
     }
   } catch {
     // Non-critical — pedido já foi criado com sucesso
+  }
+
+  // ── 5. Lógica de fidelidade ─────────────────────────────────────────────
+  if (input.usuario_id) {
+    try {
+      const selosGerados = Math.floor(input.subtotal / 100)
+
+      if (selosGerados > 0) {
+        await supabaseAdmin.from('selos_cliente').insert({
+          usuario_id: input.usuario_id,
+          pedido_id: pedido.id,
+          valor_compra: input.subtotal,
+          selos_gerados: selosGerados,
+        })
+      }
+
+      const { data: progresso } = await supabaseAdmin
+        .from('progresso_fidelidade')
+        .select('selos_atuais, selos_historico_total, elegivel_desconto')
+        .eq('usuario_id', input.usuario_id)
+        .single()
+
+      const selos_historico_total = (progresso?.selos_historico_total ?? 0) + selosGerados
+      let selos_atuais = (progresso?.selos_atuais ?? 0) + selosGerados
+
+      if (input.desconto_fidelidade_usado) {
+        selos_atuais = 0
+      }
+
+      const elegivel_desconto = selos_atuais >= 10
+
+      await supabaseAdmin.from('progresso_fidelidade').upsert(
+        {
+          usuario_id: input.usuario_id,
+          selos_atuais,
+          selos_historico_total,
+          elegivel_desconto,
+          ultima_atualizacao: new Date().toISOString(),
+        },
+        { onConflict: 'usuario_id' }
+      )
+
+      if (input.cupom_codigo) {
+        await supabaseAdmin
+          .from('cupons')
+          .update({ usado: true })
+          .eq('codigo', input.cupom_codigo)
+          .eq('usuario_id', input.usuario_id)
+      }
+    } catch (err) {
+      console.error('[criarPedido] Erro na lógica de fidelidade (non-critical):', err)
+    }
   }
 
   console.log(`[criarPedido] Concluído. Número: ${numero}`)
