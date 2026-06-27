@@ -14,6 +14,7 @@ import {
   X,
   ShieldCheck,
   ClipboardList,
+  Calculator,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 
@@ -22,6 +23,7 @@ const ADMIN_NAV = [
   { label: "Produtoras",    href: "/admin/produtoras",   icon: Users           },
   { label: "Pedidos",       href: "/admin/pedidos",      icon: ShoppingBag     },
   { label: "Financeiro",    href: "/admin/financeiro",   icon: BarChart3       },
+  { label: "Simulador",     href: "/admin/simulador",    icon: Calculator      },
   { label: "Solicitações",  href: "/admin/solicitacoes", icon: ClipboardList   },
 ];
 

@@ -674,6 +674,35 @@ export default function ProdutoraEditPage() {
             </p>
           )}
 
+          {/* Projeção de catálogo */}
+          {!produtosLoading && produtosTab.length > 0 && (() => {
+            const ativos = produtosTab.filter((p) => p.disponivel);
+            const totalVenda = ativos.reduce((s, p) => s + p.preco, 0);
+            const repasse = totalVenda * 0.82;
+            const comissao = totalVenda * 0.18;
+            return (
+              <div className="bg-sand/20 border border-sand px-5 py-4 flex flex-col gap-3">
+                <p className="font-sans text-[0.58rem] tracking-[0.25em] uppercase text-espresso/40 font-semibold">
+                  Projeção de catálogo — {ativos.length} produto{ativos.length !== 1 ? "s" : ""} ativo{ativos.length !== 1 ? "s" : ""}
+                </p>
+                <div className="grid grid-cols-3 gap-4 pt-1">
+                  <div>
+                    <p className="font-sans text-[0.57rem] uppercase tracking-[0.14em] text-espresso/35">Valor de venda</p>
+                    <p className="font-serif text-lg text-espresso mt-1">{fmtBRL(totalVenda)}</p>
+                  </div>
+                  <div>
+                    <p className="font-sans text-[0.57rem] uppercase tracking-[0.14em] text-espresso/35">Repasse à produtora (82%)</p>
+                    <p className="font-serif text-lg text-olive mt-1">{fmtBRL(repasse)}</p>
+                  </div>
+                  <div>
+                    <p className="font-sans text-[0.57rem] uppercase tracking-[0.14em] text-espresso/35">Comissão FEITORIA (18%)</p>
+                    <p className="font-serif text-lg text-terracota mt-1">{fmtBRL(comissao)}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* List */}
           {!produtosLoading && produtosTab.length > 0 && (
             <div className="bg-cream border border-sand divide-y divide-sand/50">

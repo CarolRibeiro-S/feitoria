@@ -149,6 +149,37 @@ export default function NovoProdutoPage() {
           </div>
         </div>
 
+        {/* ── Simulação de recebimento ─────────────────────────────────── */}
+        {(() => {
+          const valor = parseFloat(form.preco.replace(",", "."));
+          if (isNaN(valor) || valor <= 0) return null;
+          const rep = valor * 0.82;
+          const com = valor * 0.18;
+          const fmt = (v: number) => "R$ " + v.toFixed(2).replace(".", ",");
+          return (
+            <div className="flex flex-col gap-2.5">
+              <label className={labelCls}>Simulação de recebimento</label>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-sand/20 border border-sand px-3 py-3.5 flex flex-col gap-1.5">
+                  <p className="font-sans text-[0.55rem] tracking-[0.2em] uppercase font-semibold text-espresso/40">Pix</p>
+                  <p className="font-serif text-base text-olive">{fmt(rep)}</p>
+                  <p className="font-sans text-[0.58rem] text-espresso/35">Repasse à produtora</p>
+                </div>
+                <div className="bg-sand/20 border border-sand px-3 py-3.5 flex flex-col gap-1.5">
+                  <p className="font-sans text-[0.55rem] tracking-[0.2em] uppercase font-semibold text-espresso/40">Cartão</p>
+                  <p className="font-serif text-base text-olive">{fmt(rep)}</p>
+                  <p className="font-sans text-[0.58rem] text-espresso/35">Repasse à produtora</p>
+                </div>
+                <div className="bg-terracota/5 border border-terracota/20 px-3 py-3.5 flex flex-col gap-1.5">
+                  <p className="font-sans text-[0.55rem] tracking-[0.2em] uppercase font-semibold text-terracota/55">Comissão FEITORIA</p>
+                  <p className="font-serif text-base text-terracota">{fmt(com)}</p>
+                  <p className="font-sans text-[0.58rem] text-espresso/35">18% do valor de venda</p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="flex flex-col gap-2">
           <label className={labelCls}>Foto do produto</label>
           <ImageUpload
