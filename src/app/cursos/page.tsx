@@ -8,7 +8,7 @@ export default function CursosPage() {
         <div className="flex flex-col items-center text-center gap-6 max-w-lg">
 
           <span className="font-sans text-[0.6rem] tracking-[0.35em] uppercase text-caramel font-semibold">
-            Cursos & Experiências
+            Cursos
           </span>
 
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-espresso font-normal leading-tight">
@@ -16,7 +16,7 @@ export default function CursosPage() {
           </h1>
 
           <p className="font-sans text-[0.9rem] sm:text-[0.95rem] text-espresso/55 leading-relaxed max-w-sm">
-            Estamos preparando experiências únicas para você se conectar ainda mais com quem produz.
+            Estamos preparando cursos únicos para você se conectar ainda mais com quem produz.
           </p>
 
           <div className="w-10 h-px bg-terracota/40 my-2" />

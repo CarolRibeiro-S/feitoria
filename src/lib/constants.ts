@@ -13,7 +13,8 @@ import {
 export const NAV_LINKS = [
   { name: "Produtos", href: "/produtos" },
   { name: "Descubra Quem Faz", href: "/produtoras" },
-  { name: "Cursos & Experiências", href: "/cursos" },
+  { name: "Experiências", href: "/experiencias" },
+  { name: "Cursos", href: "/cursos" },
   { name: "Kits", href: "/kits" },
 ];
 
