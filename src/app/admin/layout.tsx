@@ -15,12 +15,14 @@ import {
   ShieldCheck,
   ClipboardList,
   Calculator,
+  UserCheck,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 
 const ADMIN_NAV = [
   { label: "Visão Geral",   href: "/admin",              icon: LayoutDashboard },
   { label: "Produtoras",    href: "/admin/produtoras",   icon: Users           },
+  { label: "Clientes",      href: "/admin/clientes",     icon: UserCheck       },
   { label: "Pedidos",       href: "/admin/pedidos",      icon: ShoppingBag     },
   { label: "Financeiro",    href: "/admin/financeiro",   icon: BarChart3       },
   { label: "Simulador",     href: "/admin/simulador",    icon: Calculator      },
