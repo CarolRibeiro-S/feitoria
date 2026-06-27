@@ -32,13 +32,34 @@ export default function AdminClientes() {
       const [usuariosRes, pedidosRes] = await Promise.all([
         supabase
           .from("usuarios")
-          .select("id, nome, email, telefone, cidade, estado, criado_em")
+          .select("id, nome, email, telefone, cidade, estado, criado_em, tipo")
           .eq("tipo", "cliente")
           .order("criado_em", { ascending: false }),
         supabase
           .from("pedidos")
           .select("usuario_id, total, status"),
       ]);
+
+      console.log("[admin/clientes] usuarios query result:", {
+        data: usuariosRes.data,
+        error: usuariosRes.error,
+        count: usuariosRes.data?.length ?? 0,
+      });
+
+      if (usuariosRes.error) {
+        console.error("[admin/clientes] RLS ou erro na query:", usuariosRes.error.message, usuariosRes.error.details);
+      }
+
+      // diagnóstico extra: busca sem filtro para ver se o problema é RLS ou filtro
+      const { data: allUsuarios, error: allError } = await supabase
+        .from("usuarios")
+        .select("id, tipo, email")
+        .limit(20);
+      console.log("[admin/clientes] todos os usuarios (sem filtro, limit 20):", {
+        data: allUsuarios,
+        error: allError,
+        count: allUsuarios?.length ?? 0,
+      });
 
       const statsMap = new Map<string, { total: number; count: number }>();
       for (const p of (pedidosRes.data ?? []) as any[]) {
@@ -49,6 +70,7 @@ export default function AdminClientes() {
         s.count += 1;
       }
 
+      console.log("[admin/clientes] statsMap entries:", statsMap.size, "pedidos agrupados");
       setClientes(
         ((usuariosRes.data ?? []) as any[]).map((u) => ({
           id:          u.id,
