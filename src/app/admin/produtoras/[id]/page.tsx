@@ -6,7 +6,9 @@ import {
   ArrowLeft, Save, RefreshCw, KeyRound,
   TrendingUp, ShoppingBag, Package,
   Pencil, Trash2, Plus, Image as ImageIcon,
+  UserPlus, AlertCircle,
 } from "lucide-react";
+import { criarContaProdutora } from "@/app/actions/admin-produtoras";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase-client";
@@ -80,11 +82,17 @@ export default function ProdutoraEditPage() {
 
   // Acesso
   const [email, setEmail] = useState("");
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
   const [ativo, setAtivo] = useState<boolean | null>(null);
   const [togglingAtivo, setTogglingAtivo] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
+  // Criação de nova conta de acesso
+  const [novaContaEmail, setNovaContaEmail] = useState("");
+  const [criandoConta, setCriandoConta] = useState(false);
+  const [criacaoMsg, setCriacaoMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const [contaCriadaLink, setContaCriadaLink] = useState<string | null>(null);
 
   // Mercado Pago
   const [mp, setMp] = useState({ mp_access_token: "", mp_user_id: "", mp_conectado: false });
@@ -137,6 +145,7 @@ export default function ProdutoraEditPage() {
       foto_perfil: p.foto_perfil ?? "",
     });
     setEmail(p.email ?? "");
+    setUsuarioId(p.usuario_id ?? null);
     setAtivo(p.ativo ?? null);
     setMp({
       mp_access_token: p.mp_access_token ?? "",
@@ -187,6 +196,29 @@ export default function ProdutoraEditPage() {
       console.error("[ProdutoraEdit] resetPassword:", await res.text());
     }
     setResetting(false);
+  }
+
+  async function handleCriarConta() {
+    if (!novaContaEmail.trim()) return;
+    setCriandoConta(true);
+    setCriacaoMsg(null);
+    setContaCriadaLink(null);
+
+    const result = await criarContaProdutora(id, form.nome_marca, novaContaEmail.trim());
+
+    if (!result.ok) {
+      setCriacaoMsg({ text: result.error, ok: false });
+    } else {
+      setUsuarioId(result.usuarioId);
+      setEmail(novaContaEmail.trim());
+      setContaCriadaLink(result.actionLink);
+      setCriacaoMsg({
+        text: `Conta criada! ${result.actionLink ? "Copie o link abaixo e envie para a produtora." : `Um email foi enviado para ${novaContaEmail.trim()}.`}`,
+        ok: true,
+      });
+      setNovaContaEmail("");
+    }
+    setCriandoConta(false);
   }
 
   async function handleSaveMp() {
@@ -476,72 +508,144 @@ export default function ProdutoraEditPage() {
       {aba === "acesso" && (
         <div className="flex flex-col gap-8 pt-2 max-w-2xl">
 
-          <div className="flex flex-col gap-2">
-            <label className={labelCls}>E-mail da conta</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setResetSent(false);
-                setResetLink(null);
-              }}
-              placeholder="email@exemplo.com"
-              className={inputCls}
-            />
-            <p className="font-sans text-[0.65rem] text-espresso/35">
-              Edite se necessário para enviar o link de redefinição.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4 pt-2 border-t border-sand">
-            <p className="font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase text-espresso/40 pt-4">
-              Redefinição de senha
-            </p>
-            {resetSent ? (
-              <div className="flex flex-col gap-3">
-                <div className="bg-olive/5 border border-olive/20 px-5 py-4 flex items-center gap-3">
-                  <KeyRound size={14} className="text-olive flex-shrink-0" />
-                  <p className="font-sans text-[0.8rem] text-olive">
-                    Link gerado para <span className="font-semibold">{email}</span>.
+          {/* ── Sem conta de acesso criada ─────────────────────────────────── */}
+          {!usuarioId ? (
+            <div className="flex flex-col gap-5">
+              <div className="bg-sand/20 border border-sand px-5 py-4 flex items-start gap-3">
+                <AlertCircle size={15} className="text-espresso/40 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-sans text-[0.82rem] font-semibold text-espresso">
+                    Esta produtora ainda não tem conta de acesso criada.
+                  </p>
+                  <p className="font-sans text-[0.72rem] text-espresso/50 mt-1">
+                    Crie uma conta para que ela possa fazer login na plataforma.
                   </p>
                 </div>
-                {resetLink && (
-                  <div className="flex flex-col gap-2">
-                    <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
-                      Link de redefinição — copie e envie para a produtora
-                    </p>
-                    <div className="flex items-stretch gap-2">
-                      <input
-                        readOnly
-                        value={resetLink}
-                        className="flex-1 min-w-0 bg-transparent border border-sand px-3 py-2.5 font-sans text-[0.7rem] text-espresso/50 truncate"
-                      />
-                      <button
-                        onClick={() => navigator.clipboard.writeText(resetLink)}
-                        className="flex-shrink-0 px-4 py-2.5 bg-cream border border-sand text-espresso font-sans text-[0.65rem] uppercase tracking-widest hover:border-espresso/40 transition-colors"
-                      >
-                        Copiar
-                      </button>
-                    </div>
-                    <p className="font-sans text-[0.62rem] text-espresso/30">
-                      Expira em 24h. Redireciona para /redefinir-senha após uso.
-                    </p>
-                  </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className={labelCls}>E-mail para a conta de acesso</label>
+                <input
+                  type="email"
+                  value={novaContaEmail}
+                  onChange={(e) => { setNovaContaEmail(e.target.value); setCriacaoMsg(null); }}
+                  placeholder="email@exemplo.com"
+                  className={inputCls}
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleCriarConta}
+                  disabled={criandoConta || !novaContaEmail.trim()}
+                  className="flex items-center gap-2 bg-espresso text-cream font-sans text-[0.7rem] font-semibold tracking-[0.18em] uppercase px-6 py-3 hover:bg-terracota transition-colors disabled:opacity-50"
+                >
+                  <UserPlus size={13} />
+                  {criandoConta ? "Criando..." : "Criar conta de acesso"}
+                </button>
+                {criacaoMsg && (
+                  <p className={`font-sans text-[0.78rem] ${criacaoMsg.ok ? "text-olive" : "text-wine"}`}>
+                    {criacaoMsg.text}
+                  </p>
                 )}
               </div>
-            ) : (
-              <button
-                onClick={handleResetPassword}
-                disabled={resetting || !email}
-                className="self-start flex items-center gap-2 bg-cream border border-sand text-espresso font-sans text-[0.7rem] font-semibold tracking-[0.15em] uppercase px-6 py-3 hover:border-espresso/40 transition-colors disabled:opacity-40"
-              >
-                <RefreshCw size={13} className={resetting ? "animate-spin" : ""} />
-                {resetting ? "Gerando link..." : "Gerar link de redefinição"}
-              </button>
-            )}
-          </div>
 
+              {contaCriadaLink && (
+                <div className="flex flex-col gap-2 border-t border-sand pt-5">
+                  <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+                    Link de definição de senha — copie e envie para a produtora
+                  </p>
+                  <div className="flex items-stretch gap-2">
+                    <input
+                      readOnly
+                      value={contaCriadaLink}
+                      className="flex-1 min-w-0 bg-transparent border border-sand px-3 py-2.5 font-sans text-[0.7rem] text-espresso/50 truncate"
+                    />
+                    <button
+                      onClick={() => navigator.clipboard.writeText(contaCriadaLink)}
+                      className="flex-shrink-0 px-4 py-2.5 bg-cream border border-sand text-espresso font-sans text-[0.65rem] uppercase tracking-widest hover:border-espresso/40 transition-colors"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                  <p className="font-sans text-[0.62rem] text-espresso/30">
+                    Expira em 24h. Redireciona para /redefinir-senha após uso.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ── Conta já vinculada ────────────────────────────────────────── */
+            <>
+              <div className="flex flex-col gap-2">
+                <label className={labelCls}>E-mail da conta</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setResetSent(false);
+                    setResetLink(null);
+                  }}
+                  placeholder="email@exemplo.com"
+                  className={inputCls}
+                />
+                <p className="font-sans text-[0.65rem] text-espresso/35">
+                  Edite se necessário para enviar o link de redefinição.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-4 pt-2 border-t border-sand">
+                <p className="font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase text-espresso/40 pt-4">
+                  Redefinição de senha
+                </p>
+                {resetSent ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="bg-olive/5 border border-olive/20 px-5 py-4 flex items-center gap-3">
+                      <KeyRound size={14} className="text-olive flex-shrink-0" />
+                      <p className="font-sans text-[0.8rem] text-olive">
+                        Link gerado para <span className="font-semibold">{email}</span>.
+                      </p>
+                    </div>
+                    {resetLink && (
+                      <div className="flex flex-col gap-2">
+                        <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+                          Link de redefinição — copie e envie para a produtora
+                        </p>
+                        <div className="flex items-stretch gap-2">
+                          <input
+                            readOnly
+                            value={resetLink}
+                            className="flex-1 min-w-0 bg-transparent border border-sand px-3 py-2.5 font-sans text-[0.7rem] text-espresso/50 truncate"
+                          />
+                          <button
+                            onClick={() => navigator.clipboard.writeText(resetLink)}
+                            className="flex-shrink-0 px-4 py-2.5 bg-cream border border-sand text-espresso font-sans text-[0.65rem] uppercase tracking-widest hover:border-espresso/40 transition-colors"
+                          >
+                            Copiar
+                          </button>
+                        </div>
+                        <p className="font-sans text-[0.62rem] text-espresso/30">
+                          Expira em 24h. Redireciona para /redefinir-senha após uso.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleResetPassword}
+                    disabled={resetting || !email}
+                    className="self-start flex items-center gap-2 bg-cream border border-sand text-espresso font-sans text-[0.7rem] font-semibold tracking-[0.15em] uppercase px-6 py-3 hover:border-espresso/40 transition-colors disabled:opacity-40"
+                  >
+                    <RefreshCw size={13} className={resetting ? "animate-spin" : ""} />
+                    {resetting ? "Gerando link..." : "Gerar link de redefinição"}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ── Estado da conta (sempre visível) ──────────────────────────── */}
           <div className="flex flex-col gap-4 pt-2 border-t border-sand">
             <p className="font-sans text-[0.68rem] font-semibold tracking-[0.14em] uppercase text-espresso/40 pt-4">
               Estado da conta
