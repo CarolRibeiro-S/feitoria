@@ -33,18 +33,16 @@ export async function criarContaProdutora(
 
   const newUserId = authData.user.id;
 
-  // 2. Insert profile into usuarios
-  const { error: usuariosError } = await supabaseAdmin.from("usuarios").insert({
-    id: newUserId,
-    email: emailLower,
-    nome: produtoraNome,
-    tipo: "produtora",
-  });
+  // 2. Update the usuarios row that the handle_new_user trigger already created
+  const { error: usuariosError } = await supabaseAdmin
+    .from("usuarios")
+    .update({ tipo: "produtora", nome: produtoraNome })
+    .eq("id", newUserId);
 
   if (usuariosError) {
     // Rollback: remove the auth user so the email can be retried
     await supabaseAdmin.auth.admin.deleteUser(newUserId);
-    return { ok: false, error: "Erro ao criar perfil: " + usuariosError.message };
+    return { ok: false, error: "Erro ao atualizar perfil: " + usuariosError.message };
   }
 
   // 3. Link auth user to produtora row
