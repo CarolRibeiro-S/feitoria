@@ -26,10 +26,25 @@ type CrossSellProduct = {
 const FRETE = 15.0;
 const PEDIDO_MINIMO = 45;
 const LOCAIS_RETIRADA = ["Jardim Botânico", "SQS 204", "Águas Claras"];
-const HORARIOS_RETIRADA = Array.from({ length: 17 }, (_, i) => {
+const ALL_HORARIOS = Array.from({ length: 17 }, (_, i) => {
   const mins = 600 + i * 30;
   return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
 });
+
+function getHorariosDisponiveis(dataSelecionada: string): string[] {
+  if (!dataSelecionada) return ALL_HORARIOS;
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  // If date is today, filter out times already past (+ 1h minimum lead time)
+  if (dataSelecionada === todayStr) {
+    const cutoffMins = today.getHours() * 60 + today.getMinutes() + 60;
+    return ALL_HORARIOS.filter((h) => {
+      const [hh, mm] = h.split(":").map(Number);
+      return hh * 60 + mm > cutoffMins;
+    });
+  }
+  return ALL_HORARIOS;
+}
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -143,6 +158,20 @@ export default function CheckoutPage() {
   const [dataRetirada, setDataRetirada] = useState("");
   const [horaRetirada, setHoraRetirada] = useState("");
   const [localRetirada, setLocalRetirada] = useState("");
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>(ALL_HORARIOS);
+
+  // Recalculate available times whenever the selected date changes
+  useEffect(() => {
+    setHorariosDisponiveis(getHorariosDisponiveis(dataRetirada));
+    setHoraRetirada("");
+  }, [dataRetirada]);
+
+  // Minimum selectable date: tomorrow (orders need at least 1 day lead time)
+  const minDate = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  })();
 
   // Cross-sell
   const [checkoutCrossSell, setCheckoutCrossSell] = useState<CrossSellProduct[]>([]);
@@ -637,6 +666,7 @@ export default function CheckoutPage() {
                       id="data-retirada"
                       type="date"
                       required
+                      min={minDate}
                       value={dataRetirada}
                       onChange={(e) => setDataRetirada(e.target.value)}
                       className={inputCls}
@@ -651,7 +681,7 @@ export default function CheckoutPage() {
                       className={inputCls}
                     >
                       <option value="">Selecione</option>
-                      {HORARIOS_RETIRADA.map((h) => (
+                      {horariosDisponiveis.map((h) => (
                         <option key={h} value={h}>{h}</option>
                       ))}
                     </select>
