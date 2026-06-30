@@ -1,6 +1,9 @@
 'use server'
 
 import { createClient } from '@supabase/supabase-js'
+import { resend } from '@/lib/resend'
+import { pedidoConfirmadoClienteEmail } from '@/lib/emails/pedido-confirmado-cliente'
+import { pedidoNovoProdutoraEmail } from '@/lib/emails/pedido-novo-produtora'
 
 // ── Variáveis de ambiente ────────────────────────────────────────────────────
 const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -241,5 +244,112 @@ export async function criarPedido(input: PedidoInput): Promise<string> {
 
   console.log(`[criarPedido] Concluído. Número: ${numero}`)
   console.log('─────────────────────────────────────────────\n')
+
+  // ── 6. Transactional emails (non-critical — errors never cancel the order) ─
+  try {
+    // Build common delivery fields
+    const emailEntregaBase = {
+      tipo_entrega: input.tipo_entrega,
+      endereco:       input.endereco,
+      numero_endereco: input.numero_endereco,
+      bairro:         input.bairro,
+      cidade:         input.cidade,
+      estado:         input.estado,
+      local_retirada: input.tipo_entrega === 'retirada' ? input.bairro : undefined,
+      data_retirada:  input.data_retirada,
+      hora_retirada:  input.hora_retirada,
+    }
+
+    // 6a. Email para o cliente
+    const clienteEmail = pedidoConfirmadoClienteEmail({
+      numero,
+      nome_cliente: input.nome_cliente,
+      itens: input.itens.map(i => ({
+        nome_produto:   i.nome_produto,
+        produtor:       i.produtor,
+        preco_unitario: i.preco_unitario,
+        quantidade:     i.quantidade,
+      })),
+      subtotal: input.subtotal,
+      frete:    input.frete,
+      total:    input.total,
+      ...emailEntregaBase,
+    })
+
+    await resend.emails.send({
+      from: 'FEITORIA <onboarding@resend.dev>',
+      to:   input.email_cliente,
+      subject: clienteEmail.subject,
+      html:    clienteEmail.html,
+    })
+    console.log('[criarPedido] Email cliente enviado para:', input.email_cliente)
+
+    // 6b. Busca emails das produtoras via join produtoras → usuarios
+    const uniqueProdutorNames = [...new Set(input.itens.map(i => i.produtor))]
+
+    const { data: produtorasRows } = await supabaseAdmin
+      .from('produtoras')
+      .select('nome_marca, usuario_id')
+      .in('nome_marca', uniqueProdutorNames)
+
+    const usuarioIds = (produtorasRows ?? [])
+      .map((p: { nome_marca: string; usuario_id: string | null }) => p.usuario_id)
+      .filter(Boolean) as string[]
+
+    const { data: usuariosRows } = await supabaseAdmin
+      .from('usuarios')
+      .select('id, email, nome')
+      .in('id', usuarioIds)
+
+    const usuariosMap = new Map(
+      (usuariosRows ?? []).map((u: { id: string; email: string; nome: string | null }) => [u.id, u])
+    )
+
+    // Build a nome_marca → email map
+    const produtoraEmailMap = new Map<string, { email: string; nome: string }>()
+    for (const row of (produtorasRows ?? []) as { nome_marca: string; usuario_id: string | null }[]) {
+      if (!row.usuario_id) continue
+      const user = usuariosMap.get(row.usuario_id)
+      if (user?.email) {
+        produtoraEmailMap.set(row.nome_marca, {
+          email: user.email,
+          nome:  user.nome ?? row.nome_marca,
+        })
+      }
+    }
+
+    // 6c. Envia um email por produtora única
+    for (const nomeProdutora of uniqueProdutorNames) {
+      const dest = produtoraEmailMap.get(nomeProdutora)
+      if (!dest) continue
+
+      const itensDaProdutora = input.itens.filter(i => i.produtor === nomeProdutora)
+      const produtoraEmail = pedidoNovoProdutoraEmail({
+        numero,
+        data_pedido:  new Date().toISOString().split('T')[0],
+        nome_produtora: dest.nome,
+        itens: itensDaProdutora.map(i => ({
+          nome_produto:   i.nome_produto,
+          quantidade:     i.quantidade,
+          preco_unitario: i.preco_unitario,
+        })),
+        nome_cliente:  input.nome_cliente,
+        email_cliente: input.email_cliente,
+        ...emailEntregaBase,
+      })
+
+      await resend.emails.send({
+        from: 'FEITORIA <onboarding@resend.dev>',
+        to:   dest.email,
+        subject: produtoraEmail.subject,
+        html:    produtoraEmail.html,
+      })
+      console.log('[criarPedido] Email produtora enviado para:', dest.email, '(' + nomeProdutora + ')')
+    }
+  } catch (emailErr) {
+    // Email errors must never surface to the user — order is already confirmed
+    console.error('[criarPedido] Erro ao enviar email (non-critical):', emailErr)
+  }
+
   return numero
 }
