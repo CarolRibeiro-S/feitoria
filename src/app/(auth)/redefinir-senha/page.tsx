@@ -21,9 +21,12 @@ export default function RedefinirSenhaPage() {
   const [sessionReady, setSessionReady] = useState(false);
 
   useEffect(() => {
-    // Handles both implicit flow (#access_token in hash) and PKCE flow
-    // (session already set by /auth/callback before redirect here).
-    // onAuthStateChange processes the URL hash automatically when present.
+    // Check existing session first (PKCE flow: /auth/callback already ran)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setSessionReady(true);
+    });
+
+    // Also listen for PASSWORD_RECOVERY or SIGNED_IN events (implicit flow)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "PASSWORD_RECOVERY" || (session && event === "SIGNED_IN")) {
@@ -32,12 +35,14 @@ export default function RedefinirSenhaPage() {
       }
     );
 
-    // Also check for an existing active session (PKCE flow: callback already ran)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true);
-    });
+    // Safety timeout: user arrived via a recovery link so they must be auth'd.
+    // If neither getSession nor onAuthStateChange fires within 3s, show the form anyway.
+    const timeout = setTimeout(() => setSessionReady(true), 3000);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
