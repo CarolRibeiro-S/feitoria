@@ -285,42 +285,74 @@ export async function criarPedido(input: PedidoInput): Promise<string> {
     console.log('[criarPedido] Email cliente enviado para:', input.email_cliente)
 
     // 6b. Busca emails das produtoras via join produtoras → usuarios
+    // Also selects produtoras.email as fallback when usuario_id is not yet linked
     const uniqueProdutorNames = [...new Set(input.itens.map(i => i.produtor))]
+    console.log('[email-produtora] Produtoras únicas no pedido:', uniqueProdutorNames)
 
-    const { data: produtorasRows } = await supabaseAdmin
+    const { data: produtorasRows, error: produtorasError } = await supabaseAdmin
       .from('produtoras')
-      .select('nome_marca, usuario_id')
+      .select('nome_marca, usuario_id, email')
       .in('nome_marca', uniqueProdutorNames)
 
+    console.log('[email-produtora] Resultado da query produtoras:', JSON.stringify(produtorasRows))
+    if (produtorasError) {
+      console.error('[email-produtora] Erro na query produtoras:', JSON.stringify(produtorasError))
+    }
+
     const usuarioIds = (produtorasRows ?? [])
-      .map((p: { nome_marca: string; usuario_id: string | null }) => p.usuario_id)
+      .map((p: { nome_marca: string; usuario_id: string | null; email: string | null }) => p.usuario_id)
       .filter(Boolean) as string[]
 
-    const { data: usuariosRows } = await supabaseAdmin
+    const { data: usuariosRows, error: usuariosError } = await supabaseAdmin
       .from('usuarios')
       .select('id, email, nome')
       .in('id', usuarioIds)
+
+    console.log('[email-produtora] Resultado da query usuarios:', JSON.stringify(usuariosRows))
+    if (usuariosError) {
+      console.error('[email-produtora] Erro na query usuarios:', JSON.stringify(usuariosError))
+    }
 
     const usuariosMap = new Map(
       (usuariosRows ?? []).map((u: { id: string; email: string; nome: string | null }) => [u.id, u])
     )
 
-    // Build a nome_marca → email map
+    // Build a nome_marca → email map.
+    // Primary:  produtoras.usuario_id → usuarios.email (linked auth account)
+    // Fallback: produtoras.email column (set during onboarding, before account is linked)
     const produtoraEmailMap = new Map<string, { email: string; nome: string }>()
-    for (const row of (produtorasRows ?? []) as { nome_marca: string; usuario_id: string | null }[]) {
-      if (!row.usuario_id) continue
-      const user = usuariosMap.get(row.usuario_id)
-      if (user?.email) {
-        produtoraEmailMap.set(row.nome_marca, {
-          email: user.email,
-          nome:  user.nome ?? row.nome_marca,
-        })
+    for (const row of (produtorasRows ?? []) as { nome_marca: string; usuario_id: string | null; email: string | null }[]) {
+      console.log('[email-produtora] Processando produtora:', row.nome_marca, '| usuario_id:', row.usuario_id, '| email direto:', row.email)
+
+      let emailDest: string | null = null
+      let nomeDest: string = row.nome_marca
+
+      if (row.usuario_id) {
+        const user = usuariosMap.get(row.usuario_id)
+        if (user?.email) {
+          emailDest = user.email
+          nomeDest  = user.nome ?? row.nome_marca
+          console.log('[email-produtora] Email via usuarios:', emailDest)
+        }
+      }
+
+      // Fallback: use email stored directly on produtoras row
+      if (!emailDest && row.email) {
+        emailDest = row.email
+        console.log('[email-produtora] Fallback — usando produtoras.email:', emailDest)
+      }
+
+      if (emailDest) {
+        produtoraEmailMap.set(row.nome_marca, { email: emailDest, nome: nomeDest })
+      } else {
+        console.warn('[email-produtora] Nenhum email encontrado para produtora:', row.nome_marca)
       }
     }
 
     // 6c. Envia um email por produtora única
     for (const nomeProdutora of uniqueProdutorNames) {
       const dest = produtoraEmailMap.get(nomeProdutora)
+      console.log('[email-produtora] Enviando para:', nomeProdutora, '→', dest?.email ?? 'SEM EMAIL')
       if (!dest) continue
 
       const itensDaProdutora = input.itens.filter(i => i.produtor === nomeProdutora)
@@ -338,13 +370,13 @@ export async function criarPedido(input: PedidoInput): Promise<string> {
         ...emailEntregaBase,
       })
 
-      await resend.emails.send({
+      const emailResult = await resend.emails.send({
         from: 'FEITORIA <onboarding@resend.dev>',
         to:   dest.email,
         subject: produtoraEmail.subject,
         html:    produtoraEmail.html,
       })
-      console.log('[criarPedido] Email produtora enviado para:', dest.email, '(' + nomeProdutora + ')')
+      console.log('[email-produtora] Resultado do envio para', dest.email, ':', JSON.stringify(emailResult))
     }
   } catch (emailErr) {
     // Email errors must never surface to the user — order is already confirmed
