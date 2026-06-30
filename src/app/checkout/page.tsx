@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Truck, QrCode, CreditCard, Check, ChevronLeft, Loader2, Plus, Image as ImageIcon } from "lucide-react";
+import { MapPin, Truck, Check, ChevronLeft, Loader2, Plus, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import { criarPedido } from "@/app/actions/checkout";
+import { criarPreferencia } from "@/app/actions/payment";
 import { validarCupom } from "@/app/actions/fidelidade";
 import type { CupomValido } from "@/app/actions/fidelidade";
 import { mergeCrossSellHints } from "@/lib/cross-sell-map";
@@ -49,14 +50,6 @@ function formatCEP(v: string) {
   return d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
 }
 
-function formatCartao(v: string) {
-  return v.replace(/\D/g, "").slice(0, 16).replace(/(\d{4})(?=\d)/g, "$1 ");
-}
-
-function formatValidade(v: string) {
-  const d = v.replace(/\D/g, "").slice(0, 4);
-  return d.length > 2 ? d.slice(0, 2) + "/" + d.slice(2) : d;
-}
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
@@ -150,13 +143,6 @@ export default function CheckoutPage() {
   const [dataRetirada, setDataRetirada] = useState("");
   const [horaRetirada, setHoraRetirada] = useState("");
   const [localRetirada, setLocalRetirada] = useState("");
-
-  // Step 3 — Pagamento
-  const [formaPagamento, setFormaPagamento] = useState<"pix" | "cartao">("pix");
-  const [numCartao, setNumCartao] = useState("");
-  const [nomeCartao, setNomeCartao] = useState("");
-  const [validade, setValidade] = useState("");
-  const [cvv, setCvv] = useState("");
 
   // Cross-sell
   const [checkoutCrossSell, setCheckoutCrossSell] = useState<CrossSellProduct[]>([]);
@@ -341,15 +327,11 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function handleFinalizar(e: React.FormEvent) {
-    e.preventDefault();
-    if (formaPagamento === "cartao" && (!numCartao || !nomeCartao || !validade || !cvv)) {
-      setErro("Preencha todos os dados do cartão.");
-      return;
-    }
+  async function handlePagarComMP() {
     setErro("");
     setFinalizando(true);
     try {
+      // 1. Persist order to DB
       const numeroPedido = await criarPedido({
         usuario_id: userId,
         nome_cliente: nome,
@@ -365,7 +347,7 @@ export default function CheckoutPage() {
         estado,
         data_retirada: dataRetirada,
         hora_retirada: horaRetirada,
-        forma_pagamento: formaPagamento,
+        forma_pagamento: "pix",
         subtotal: subtotalFinal,
         frete,
         total,
@@ -380,12 +362,33 @@ export default function CheckoutPage() {
         cupom_codigo: cupomAplicado?.codigo ?? null,
       });
 
-      clearCart();
+      // 2. Save order snapshot for the confirmation page
       localStorage.setItem(
         "feitoria-last-order",
         JSON.stringify({ numero: numeroPedido, items, subtotal: subtotalFinal, frete, total })
       );
-      router.push("/checkout/confirmacao");
+
+      // 3. Create MP preference
+      const prefResult = await criarPreferencia({
+        numeroPedido,
+        items: items.map((item) => ({
+          title: item.name,
+          quantity: item.quantity,
+          unit_price: item.price,
+        })),
+        emailCliente: email,
+        total,
+      });
+
+      if (!prefResult.ok) {
+        setErro("Erro ao conectar com o Mercado Pago. Tente novamente.");
+        setFinalizando(false);
+        return;
+      }
+
+      // 4. Clear cart and redirect to MP Checkout
+      clearCart();
+      window.location.href = prefResult.init_point;
     } catch (err) {
       console.error("[Checkout] Erro ao finalizar:", err);
       setErro("Erro ao finalizar pedido. Tente novamente.");
@@ -675,7 +678,7 @@ export default function CheckoutPage() {
 
         {/* ── ETAPA 3 — Pagamento ──────────────────────────────────────────── */}
         {etapa === 3 && (
-          <form onSubmit={handleFinalizar} className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-10">
+          <div className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-10">
 
             {/* Left: discounts + payment */}
             <div className="flex flex-col gap-6">
@@ -761,98 +764,24 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Forma de pagamento */}
-              <div className="grid grid-cols-2 gap-3">
-                {(["pix", "cartao"] as const).map((forma) => (
-                  <button
-                    key={forma}
-                    type="button"
-                    onClick={() => setFormaPagamento(forma)}
-                    className={`flex items-center justify-center gap-2.5 py-4 border transition-colors font-sans text-[0.72rem] font-semibold tracking-[0.15em] uppercase ${
-                      formaPagamento === forma
-                        ? "border-espresso bg-espresso text-cream"
-                        : "border-sand text-espresso/50 hover:border-espresso/30 hover:text-espresso/80"
-                    }`}
-                  >
-                    {forma === "pix" ? <QrCode size={15} strokeWidth={1.6} /> : <CreditCard size={15} strokeWidth={1.6} />}
-                    {forma === "pix" ? "Pix" : "Cartão de Crédito"}
-                  </button>
-                ))}
+              {/* Pagamento via Mercado Pago */}
+              <div className="flex flex-col gap-3">
+                <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/40 font-semibold">
+                  Método de pagamento
+                </p>
+                <div className="bg-sand/30 border border-sand px-5 py-4 flex items-center gap-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                    <circle cx="12" cy="12" r="12" fill="#009EE3" />
+                    <path d="M6 13.5h3.5l1-3h4l1 3H19" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <div>
+                    <p className="font-sans text-[0.82rem] font-semibold text-espresso">Mercado Pago</p>
+                    <p className="font-sans text-[0.68rem] text-espresso/45">
+                      Pix, cartão de crédito/débito, boleto e mais.
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              {/* Pix */}
-              {formaPagamento === "pix" && (
-                <div className="flex flex-col gap-5">
-                  <div className="bg-sand px-6 py-6 flex flex-col sm:flex-row items-center gap-6">
-                    {/* Mock QR */}
-                    <div className="w-36 h-36 bg-cream border border-beige flex-shrink-0 grid grid-cols-7 gap-[2px] p-3">
-                      {[1,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,0,1,0,1,1,0,0,0,1,0,1,0,1,1,1,0,1,1,1,0,0,0,1].map((b,i) => (
-                        <div key={i} className={b ? "bg-espresso" : "bg-cream"} />
-                      ))}
-                    </div>
-                    <div className="flex flex-col gap-2 text-center sm:text-left">
-                      <p className="font-sans text-[0.62rem] tracking-[0.2em] uppercase text-espresso/45 font-semibold">Chave Pix</p>
-                      <p className="font-sans text-sm text-espresso font-medium">pagamentos@feitoria.com.br</p>
-                      <p className="font-sans text-xs text-espresso/50 leading-relaxed max-w-[200px]">
-                        Escaneie o QR Code ou copie a chave. O pedido é confirmado após a identificação do pagamento.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Cartão */}
-              {formaPagamento === "cartao" && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="num-cartao" className={labelCls}>Número do cartão</label>
-                    <input
-                      id="num-cartao"
-                      type="text"
-                      placeholder="0000 0000 0000 0000"
-                      value={numCartao}
-                      onChange={(e) => setNumCartao(formatCartao(e.target.value))}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="nome-cartao" className={labelCls}>Nome no cartão</label>
-                    <input
-                      id="nome-cartao"
-                      type="text"
-                      placeholder="Como está no cartão"
-                      value={nomeCartao}
-                      onChange={(e) => setNomeCartao(e.target.value.toUpperCase())}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="validade" className={labelCls}>Validade</label>
-                      <input
-                        id="validade"
-                        type="text"
-                        placeholder="MM/AA"
-                        value={validade}
-                        onChange={(e) => setValidade(formatValidade(e.target.value))}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="cvv" className={labelCls}>CVV</label>
-                      <input
-                        id="cvv"
-                        type="text"
-                        placeholder="000"
-                        maxLength={4}
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
-                        className={inputCls}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* ── Cross-sell suggestions ── */}
               {(() => {
@@ -924,12 +853,14 @@ export default function CheckoutPage() {
               {erro && <p className="font-sans text-[0.78rem] text-wine border border-wine/30 px-4 py-3">{erro}</p>}
 
               <button
-                type="submit"
+                type="button"
+                onClick={handlePagarComMP}
                 disabled={finalizando}
-                className="w-full bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase py-4 hover:bg-caramel transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ backgroundColor: finalizando ? "#007ab5" : "#009EE3" }}
+                className="w-full text-white font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase py-4 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:opacity-90"
               >
                 {finalizando && <Loader2 size={14} className="animate-spin" />}
-                {finalizando ? "Finalizando..." : "Finalizar Pedido"}
+                {finalizando ? "Redirecionando..." : "Pagar com Mercado Pago"}
               </button>
             </div>
 
@@ -1009,7 +940,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-          </form>
+          </div>
         )}
       </div>
     </div>

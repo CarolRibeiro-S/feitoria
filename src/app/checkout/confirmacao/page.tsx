@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Clock, AlertCircle } from "lucide-react";
 import type { CartItem } from "@/lib/cart-context";
 
 type OrderSummary = {
@@ -17,7 +18,11 @@ function fmt(value: number) {
   return value.toFixed(2).replace(".", ",");
 }
 
-export default function ConfirmacaoPage() {
+// ── Status-aware content ──────────────────────────────────────────────────────
+
+function ConfirmacaoContent() {
+  const searchParams = useSearchParams();
+  const status = searchParams.get("status") ?? "success";
   const [order, setOrder] = useState<OrderSummary | null>(null);
 
   useEffect(() => {
@@ -25,30 +30,63 @@ export default function ConfirmacaoPage() {
       const raw = localStorage.getItem("feitoria-last-order");
       if (raw) {
         setOrder(JSON.parse(raw));
-        localStorage.removeItem("feitoria-last-order");
+        if (status === "success") {
+          localStorage.removeItem("feitoria-last-order");
+        }
       }
     } catch {
       // Dados indisponíveis — mostra confirmação genérica
     }
-  }, []);
+  }, [status]);
+
+  // ── Status configs ──────────────────────────────────────────────────────────
+  const statusConfig = {
+    success: {
+      icon: CheckCircle,
+      iconColor: "text-olive",
+      iconBg: "bg-olive/10 border-olive/25",
+      badge: "Confirmado",
+      title: "Pagamento aprovado!",
+      subtitle: "Seu pedido está confirmado. Você receberá um e-mail com os detalhes e as próximas etapas. Obrigada por comprar na Feitoria.",
+    },
+    pending: {
+      icon: Clock,
+      iconColor: "text-caramel",
+      iconBg: "bg-caramel/10 border-caramel/25",
+      badge: "Em processamento",
+      title: "Pagamento em análise.",
+      subtitle: "Seu pedido foi recebido e o pagamento está sendo processado. Você receberá uma confirmação por e-mail em breve.",
+    },
+    failure: {
+      icon: AlertCircle,
+      iconColor: "text-wine",
+      iconBg: "bg-wine/10 border-wine/25",
+      badge: "Não aprovado",
+      title: "Pagamento não aprovado.",
+      subtitle: "Não foi possível concluir o pagamento. Nenhum valor foi cobrado. Você pode tentar novamente com outro método.",
+    },
+  } as const;
+
+  const cfg = statusConfig[status as keyof typeof statusConfig] ?? statusConfig.success;
+  const Icon = cfg.icon;
 
   return (
     <div className="bg-cream min-h-screen">
       <div className="max-w-2xl mx-auto px-5 sm:px-8 py-14 lg:py-20 flex flex-col gap-10">
 
-        {/* Success message */}
+        {/* Status message */}
         <div className="flex flex-col items-center text-center gap-5">
-          <div className="w-14 h-14 bg-olive/10 border border-olive/25 flex items-center justify-center">
-            <CheckCircle size={28} strokeWidth={1.4} className="text-olive" />
+          <div className={`w-14 h-14 border flex items-center justify-center ${cfg.iconBg}`}>
+            <Icon size={28} strokeWidth={1.4} className={cfg.iconColor} />
           </div>
           <div className="flex flex-col gap-2">
             <p className="font-sans text-[0.65rem] tracking-[0.3em] uppercase text-caramel font-semibold">
-              Confirmado
+              {cfg.badge}
             </p>
             <h1 className="font-serif text-3xl lg:text-4xl text-espresso font-normal">
-              Pedido realizado com sucesso!
+              {cfg.title}
             </h1>
-            {order?.numero && (
+            {order?.numero && status !== "failure" && (
               <p className="font-sans text-sm text-espresso/55 mt-1">
                 Número do pedido:{" "}
                 <span className="font-semibold text-espresso">{order.numero}</span>
@@ -56,12 +94,12 @@ export default function ConfirmacaoPage() {
             )}
           </div>
           <p className="font-sans text-sm text-espresso/55 leading-relaxed max-w-md">
-            Você receberá um e-mail com os detalhes do pedido e as próximas etapas. Obrigada por comprar na Feitoria.
+            {cfg.subtitle}
           </p>
         </div>
 
-        {/* Order summary */}
-        {order && order.items.length > 0 && (
+        {/* Order summary — only on success/pending */}
+        {order && order.items.length > 0 && status !== "failure" && (
           <div className="flex flex-col gap-4">
             <h2 className="font-serif text-lg text-espresso font-normal">O que você pediu</h2>
 
@@ -108,21 +146,56 @@ export default function ConfirmacaoPage() {
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link
-            href="/produtos"
-            className="flex-1 text-center bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-6 py-4 hover:bg-caramel transition-colors"
-          >
-            Continuar comprando
-          </Link>
-          <Link
-            href="/pedidos"
-            className="flex-1 text-center border border-espresso/25 text-espresso font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-6 py-4 hover:border-espresso/50 transition-colors"
-          >
-            Ver meus pedidos
-          </Link>
+          {status === "failure" ? (
+            <>
+              <Link
+                href="/checkout"
+                className="flex-1 text-center bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-6 py-4 hover:bg-caramel transition-colors"
+              >
+                Tentar novamente
+              </Link>
+              <Link
+                href="/produtos"
+                className="flex-1 text-center border border-espresso/25 text-espresso font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-6 py-4 hover:border-espresso/50 transition-colors"
+              >
+                Ver produtos
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/produtos"
+                className="flex-1 text-center bg-terracota text-cream font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-6 py-4 hover:bg-caramel transition-colors"
+              >
+                Continuar comprando
+              </Link>
+              <Link
+                href="/pedidos"
+                className="flex-1 text-center border border-espresso/25 text-espresso font-sans text-[0.72rem] font-semibold tracking-[0.2em] uppercase px-6 py-4 hover:border-espresso/50 transition-colors"
+              >
+                Ver meus pedidos
+              </Link>
+            </>
+          )}
         </div>
 
       </div>
     </div>
+  );
+}
+
+// ── Page wrapper (Suspense required for useSearchParams in App Router) ────────
+
+export default function ConfirmacaoPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-cream min-h-screen flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-sand border-t-espresso/40 rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <ConfirmacaoContent />
+    </Suspense>
   );
 }
