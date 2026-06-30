@@ -88,7 +88,7 @@ export async function criarPedido(input: PedidoInput): Promise<string> {
   }
 
   // ── 2. Insere o pedido ──────────────────────────────────────────────────
-  const numero = `FT-${Date.now().toString().slice(-7)}`
+  const numero = `FT-${Date.now().toString().slice(-7)}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
   console.log(`\n[criarPedido] 2/3 — Inserindo pedido número ${numero}...`)
 
   const pedidoPayload = {
