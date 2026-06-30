@@ -212,10 +212,7 @@ export default function ProdutoraEditPage() {
       setUsuarioId(result.usuarioId);
       setEmail(novaContaEmail.trim());
       setContaCriadaLink(result.actionLink);
-      setCriacaoMsg({
-        text: `Conta criada! ${result.actionLink ? "Copie o link abaixo e envie para a produtora." : `Um email foi enviado para ${novaContaEmail.trim()}.`}`,
-        ok: true,
-      });
+      setCriacaoMsg({ text: result.message, ok: true });
       setNovaContaEmail("");
     }
     setCriandoConta(false);
