@@ -18,31 +18,13 @@ export default function RedefinirSenhaPage() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
-  const [sessionReady, setSessionReady] = useState(false);
+  const [pronto, setPronto] = useState(false);
 
   useEffect(() => {
-    // Check existing session first (PKCE flow: /auth/callback already ran)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true);
-    });
-
-    // Also listen for PASSWORD_RECOVERY or SIGNED_IN events (implicit flow)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "PASSWORD_RECOVERY" || (session && event === "SIGNED_IN")) {
-          setSessionReady(true);
-        }
-      }
-    );
-
-    // Safety timeout: user arrived via a recovery link so they must be auth'd.
-    // If neither getSession nor onAuthStateChange fires within 3s, show the form anyway.
-    const timeout = setTimeout(() => setSessionReady(true), 3000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
+    // Show the form immediately — the user arrived via the email recovery link.
+    // Supabase processes the #access_token hash automatically on the first
+    // auth call (updateUser), so no need to wait for an event.
+    setPronto(true);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -62,7 +44,7 @@ export default function RedefinirSenhaPage() {
     const { error } = await supabase.auth.updateUser({ password: novaSenha });
 
     if (error) {
-      setErro(error.message ?? "Erro ao redefinir a senha. Tente novamente.");
+      setErro("Não foi possível redefinir a senha. O link pode ter expirado. Solicite um novo.");
       setCarregando(false);
       return;
     }
@@ -70,6 +52,8 @@ export default function RedefinirSenhaPage() {
     setSucesso(true);
     setTimeout(() => router.push("/login"), 2500);
   }
+
+  if (!pronto) return null;
 
   return (
     <div className="w-full max-w-sm flex flex-col gap-10">
@@ -112,20 +96,8 @@ export default function RedefinirSenhaPage() {
         </div>
       )}
 
-      {/* Aguardando sessão */}
-      {!sessionReady && !sucesso && (
-        <div className="flex flex-col gap-5">
-          <div className="h-12 bg-sand/40 animate-pulse" />
-          <div className="h-12 bg-sand/40 animate-pulse" />
-          <div className="h-12 bg-sand/40 animate-pulse" />
-          <p className="font-sans text-[0.75rem] text-espresso/40 text-center">
-            Verificando link de recuperação...
-          </p>
-        </div>
-      )}
-
       {/* Form */}
-      {sessionReady && !sucesso && (
+      {!sucesso && (
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label htmlFor="nova-senha" className={labelCls}>Nova senha</label>
