@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Building2, Sliders, Tag, ShieldCheck, UserPlus, Check, AlertCircle, Loader2, X, Gift } from "lucide-react";
+import { Building2, Sliders, Tag, ShieldCheck, UserPlus, Check, AlertCircle, Loader2, X, Gift, Send } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
+import { notificarInteresseKit } from "@/app/actions/kits";
 
 const CATEGORIAS = ["Confeitaria", "Cookies", "Padaria", "Cafés", "Empório", "Bebidas", "Congelados", "Kits"];
 
@@ -99,6 +100,8 @@ export default function ConfiguracoesPage() {
   const [currentId,     setCurrentId]     = useState<string | null>(null);
   const [admins,        setAdmins]        = useState<Admin[]>([]);
   const [interessados,  setInteressados]  = useState<InteresseKit[]>([]);
+  const [kitSending,    setKitSending]    = useState<Set<string>>(new Set());
+  const [kitErrors,     setKitErrors]     = useState<Record<string, string>>({});
 
   // Section state
   const [empresa,  setEmpresa]  = useState({ nome_empresa: "", cnpj: "", razao_social: "" });
@@ -193,15 +196,33 @@ export default function ConfiguracoesPage() {
     setTimeout(() => setPromoStatus("idle"), 4000);
   }
 
-  async function toggleNotificado(id: string, atual: boolean) {
-    const { error } = await supabase
-      .from("interesse_kits")
-      .update({ notificado: !atual })
-      .eq("id", id);
-    if (!error) {
-      setInteressados((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, notificado: !atual } : r))
+  async function handleNotificar(r: InteresseKit) {
+    // Se já notificado, pede confirmação antes de re-enviar
+    if (r.notificado) {
+      const ok = window.confirm(
+        `Este cliente já foi notificado.\n\nEnviar o email novamente para ${r.email}?`
       );
+      if (!ok) return;
+    }
+
+    // Limpa erro anterior e marca como enviando
+    setKitErrors((prev) => { const n = { ...prev }; delete n[r.id]; return n; });
+    setKitSending((prev) => new Set(prev).add(r.id));
+
+    try {
+      const result = await notificarInteresseKit(r.id, r.nome, r.email);
+
+      if (!result.ok) {
+        setKitErrors((prev) => ({ ...prev, [r.id]: result.error }));
+        return;
+      }
+
+      // Atualiza estado local — marca como notificado
+      setInteressados((prev) =>
+        prev.map((item) => (item.id === r.id ? { ...item, notificado: true } : item))
+      );
+    } finally {
+      setKitSending((prev) => { const n = new Set(prev); n.delete(r.id); return n; });
     }
   }
 
@@ -432,38 +453,54 @@ export default function ConfiguracoesPage() {
             {interessados.map((r) => (
               <div
                 key={r.id}
-                className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 gap-4"
+                className="flex flex-col gap-1.5 py-3.5 first:pt-0 last:pb-0"
               >
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <span className="font-sans text-[0.82rem] font-medium text-espresso truncate">
-                    {r.nome}
-                  </span>
-                  <span className="font-sans text-[0.72rem] text-espresso/40 truncate">
-                    {r.email}
-                  </span>
-                  <span className="font-sans text-[0.62rem] text-espresso/30">
-                    {new Date(r.criado_em).toLocaleDateString("pt-BR", {
-                      day: "2-digit", month: "short", year: "numeric",
-                    })}
-                  </span>
-                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-sans text-[0.82rem] font-medium text-espresso truncate">
+                      {r.nome}
+                    </span>
+                    <span className="font-sans text-[0.72rem] text-espresso/40 truncate">
+                      {r.email}
+                    </span>
+                    <span className="font-sans text-[0.62rem] text-espresso/30">
+                      {new Date(r.criado_em).toLocaleDateString("pt-BR", {
+                        day: "2-digit", month: "short", year: "numeric",
+                      })}
+                    </span>
+                  </div>
 
-                <button
-                  onClick={() => toggleNotificado(r.id, r.notificado)}
-                  title={r.notificado ? "Marcar como não notificado" : "Marcar como notificado"}
-                  className={`flex items-center gap-1.5 flex-shrink-0 font-sans text-[0.68rem] font-semibold tracking-wide transition-colors ${
-                    r.notificado ? "text-olive" : "text-espresso/25 hover:text-espresso/60"
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 border flex items-center justify-center flex-shrink-0 transition-colors ${
-                      r.notificado ? "bg-olive border-olive" : "border-espresso/25 hover:border-espresso/50"
+                  <button
+                    onClick={() => handleNotificar(r)}
+                    disabled={kitSending.has(r.id)}
+                    title={r.notificado ? "Reenviar email de notificação" : "Enviar email e marcar como notificado"}
+                    className={`flex items-center gap-1.5 flex-shrink-0 font-sans text-[0.68rem] font-semibold tracking-wide transition-colors disabled:opacity-50 ${
+                      r.notificado ? "text-olive hover:text-olive/70" : "text-espresso/30 hover:text-espresso/70"
                     }`}
                   >
-                    {r.notificado && <Check size={10} strokeWidth={2.5} className="text-cream" />}
-                  </div>
-                  {r.notificado ? "Notificado" : "Notificar"}
-                </button>
+                    {kitSending.has(r.id) ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : r.notificado ? (
+                      <>
+                        <Check size={12} strokeWidth={2.5} />
+                        Notificado
+                      </>
+                    ) : (
+                      <>
+                        <Send size={12} strokeWidth={1.8} />
+                        Notificar
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Erro inline por linha */}
+                {kitErrors[r.id] && (
+                  <p className="font-sans text-[0.68rem] text-terracota flex items-center gap-1.5">
+                    <AlertCircle size={11} />
+                    {kitErrors[r.id]}
+                  </p>
+                )}
               </div>
             ))}
           </div>
