@@ -37,23 +37,26 @@ export default function BirthdayCouponBanner() {
   if (!visible || !cupom) return null
 
   return (
-    <div className="bg-espresso text-cream px-5 sm:px-8 py-5 flex items-start justify-between gap-6">
-      <div className="flex flex-col gap-1.5 max-w-2xl">
-        <p className="font-sans text-[0.58rem] tracking-[0.3em] uppercase text-cream/45 font-semibold">
-          Presente FEITORIA
-        </p>
-        <p className="font-sans text-sm text-cream/85 leading-relaxed">
-          Feliz aniversário! Para celebrar esse momento especial, preparamos um cupom de 12% para
-          você usar onde mais gosta.{' '}
-          <span className="font-semibold text-cream tracking-wide">Código: {cupom}</span>
-        </p>
-      </div>
+    <div
+      className="w-full flex items-center justify-between gap-3 px-4 py-2"
+      style={{ backgroundColor: '#C55A3A' }}
+    >
+      <p className="font-sans text-xs text-cream/90 leading-none text-center flex-1">
+        <span className="font-semibold text-cream">Feliz aniversário!</span>
+        {' '}Seu cupom de 12%:{' '}
+        <span
+          className="font-semibold tracking-widest text-cream"
+          style={{ letterSpacing: '0.12em' }}
+        >
+          {cupom}
+        </span>
+      </p>
       <button
         onClick={dismiss}
-        className="flex-shrink-0 text-cream/35 hover:text-cream/70 transition-colors mt-0.5"
+        className="flex-shrink-0 text-cream/50 hover:text-cream transition-colors"
         aria-label="Fechar"
       >
-        <X size={15} strokeWidth={1.8} />
+        <X size={13} strokeWidth={2} />
       </button>
     </div>
   )
