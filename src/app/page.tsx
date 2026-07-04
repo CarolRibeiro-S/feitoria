@@ -66,7 +66,7 @@ const desktopHeroContent = (
 export default function Home() {
 
   return (
-    <div className="bg-cream min-h-screen">
+    <div className="bg-cream dark:bg-dark-bg min-h-screen">
       <BirthdayCouponBanner />
       <main>
         {/* ── HERO MOBILE ────────────────────────────────────────────────────── */}
@@ -96,10 +96,10 @@ export default function Home() {
         </section>
 
         {/* ── CATEGORIAS ─────────────────────────────────────────────────────── */}
-        <section className="bg-sand py-10 lg:py-16">
+        <section className="bg-sand dark:bg-dark-surface py-10 lg:py-16">
           <div className="max-w-7xl mx-auto px-5 sm:px-8">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="font-serif text-lg lg:text-2xl text-espresso">Explorar por categoria</h2>
+              <h2 className="font-serif text-lg lg:text-2xl text-espresso dark:text-cream">Explorar por categoria</h2>
               <a
                 href="/produtos"
                 className="font-sans text-[0.62rem] sm:text-[0.68rem] text-caramel tracking-[0.2em] uppercase font-semibold hover:text-terracota transition-colors flex items-center gap-1.5"
@@ -114,10 +114,10 @@ export default function Home() {
                   href={`/produtos?categoria=${name}`}
                   className="flex flex-col items-center gap-2.5 flex-shrink-0 group lg:flex-shrink"
                 >
-                  <div className="w-[4.2rem] h-[4.2rem] sm:w-20 sm:h-20 lg:w-full bg-cream group-hover:bg-beige/70 transition-colors border border-beige/40 flex items-center justify-center">
+                  <div className="w-[4.2rem] h-[4.2rem] sm:w-20 sm:h-20 lg:w-full bg-cream dark:bg-dark-bg group-hover:bg-beige/70 dark:group-hover:bg-espresso/40 transition-colors border border-beige/40 dark:border-espresso/40 flex items-center justify-center">
                     <Icon size={24} strokeWidth={1.4} className="text-olive/80 group-hover:text-olive transition-colors" />
                   </div>
-                  <span className="font-sans text-[0.65rem] sm:text-[0.68rem] font-medium text-espresso/75 tracking-wide text-center w-[4.2rem] sm:w-20 lg:w-full leading-tight">
+                  <span className="font-sans text-[0.65rem] sm:text-[0.68rem] font-medium text-espresso/75 dark:text-cream/75 tracking-wide text-center w-[4.2rem] sm:w-20 lg:w-full leading-tight">
                     {name}
                   </span>
                 </a>

@@ -162,7 +162,7 @@ export default function ProdutosPage() {
   };
 
   return (
-    <div className="bg-cream min-h-screen">
+    <div className="bg-cream dark:bg-dark-bg min-h-screen">
       <main className="pt-24 sm:pt-32 lg:pt-44 pb-20">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
 
@@ -172,7 +172,7 @@ export default function ProdutosPage() {
               <span className="font-sans text-[0.6rem] sm:text-[0.65rem] tracking-[0.35em] uppercase text-caramel font-semibold">
                 Nossa Curadoria
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-espresso mt-2 font-normal">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-espresso dark:text-cream mt-2 font-normal">
                 Catálogo de Sabores
               </h1>
             </div>
@@ -183,9 +183,9 @@ export default function ProdutosPage() {
                 placeholder="Buscar por produto ou produtora..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-sand/40 border-b border-espresso/10 py-3 pl-2 pr-10 font-sans text-sm focus:outline-none focus:border-terracota transition-colors placeholder:text-espresso/30"
+                className="w-full bg-sand/40 dark:bg-espresso/20 border-b border-espresso/10 dark:border-cream/10 py-3 pl-2 pr-10 font-sans text-sm text-espresso dark:text-cream focus:outline-none focus:border-terracota transition-colors placeholder:text-espresso/30 dark:placeholder:text-cream/30"
               />
-              <Search className="absolute right-2 top-3 text-espresso/30" size={18} />
+              <Search className="absolute right-2 top-3 text-espresso/30 dark:text-cream/30" size={18} />
             </div>
           </div>
 
@@ -194,14 +194,14 @@ export default function ProdutosPage() {
             {/* ── FILTERS (Desktop) ─────────────────────────────────────────── */}
             <aside className="hidden lg:flex flex-col gap-10">
               <div>
-                <h3 className="font-sans text-[0.6rem] tracking-[0.32em] uppercase text-espresso/40 mb-6 font-semibold flex items-center gap-2">
+                <h3 className="font-sans text-[0.6rem] tracking-[0.32em] uppercase text-espresso/40 dark:text-cream/40 mb-6 font-semibold flex items-center gap-2">
                   <SlidersHorizontal size={12} /> Categorias
                 </h3>
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => setSelectedCategory(null)}
                     className={`font-sans text-[0.85rem] text-left py-1.5 transition-colors ${
-                      selectedCategory === null ? "text-terracota font-medium" : "text-espresso/65 hover:text-espresso"
+                      selectedCategory === null ? "text-terracota font-medium" : "text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream"
                     }`}
                   >
                     Ver Tudo
@@ -211,7 +211,7 @@ export default function ProdutosPage() {
                       key={cat.name}
                       onClick={() => setSelectedCategory(cat.name)}
                       className={`font-sans text-[0.85rem] text-left py-1.5 transition-colors flex items-center justify-between group ${
-                        selectedCategory === cat.name ? "text-terracota font-medium" : "text-espresso/65 hover:text-espresso"
+                        selectedCategory === cat.name ? "text-terracota font-medium" : "text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream"
                       }`}
                     >
                       {cat.name}
@@ -221,8 +221,8 @@ export default function ProdutosPage() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-sand">
-                <p className="font-serif text-sm text-espresso/50 italic leading-relaxed">
+              <div className="pt-6 border-t border-sand dark:border-espresso/40">
+                <p className="font-serif text-sm text-espresso/50 dark:text-cream/50 italic leading-relaxed">
                   Cada item em nosso catálogo é produzido de forma artesanal, respeitando o tempo e a natureza.
                 </p>
               </div>
@@ -235,7 +235,7 @@ export default function ProdutosPage() {
                 className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 font-sans text-[0.65rem] sm:text-[0.7rem] tracking-wider uppercase border transition-colors ${
                   selectedCategory === null
                     ? "bg-espresso text-cream border-espresso"
-                    : "bg-cream text-espresso border-espresso/10"
+                    : "bg-cream dark:bg-dark-bg text-espresso dark:text-cream border-espresso/10 dark:border-cream/10"
                 }`}
               >
                 Tudo
@@ -247,7 +247,7 @@ export default function ProdutosPage() {
                   className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 font-sans text-[0.65rem] sm:text-[0.7rem] tracking-wider uppercase border transition-colors flex items-center gap-2 ${
                     selectedCategory === cat.name
                       ? "bg-espresso text-cream border-espresso"
-                      : "bg-cream text-espresso border-espresso/10"
+                      : "bg-cream dark:bg-dark-bg text-espresso dark:text-cream border-espresso/10 dark:border-cream/10"
                   }`}
                 >
                   <cat.Icon size={13} />
@@ -277,11 +277,11 @@ export default function ProdutosPage() {
                 <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="flex flex-col animate-pulse">
-                      <div className="aspect-square bg-sand/50" />
+                      <div className="aspect-square bg-sand/50 dark:bg-espresso/30" />
                       <div className="p-4 flex flex-col gap-2">
-                        <div className="h-2 w-16 bg-sand/60" />
-                        <div className="h-4 w-full bg-sand/60" />
-                        <div className="h-3 w-2/3 bg-sand/60" />
+                        <div className="h-2 w-16 bg-sand/60 dark:bg-espresso/30" />
+                        <div className="h-4 w-full bg-sand/60 dark:bg-espresso/30" />
+                        <div className="h-3 w-2/3 bg-sand/60 dark:bg-espresso/30" />
                       </div>
                     </div>
                   ))}
@@ -289,7 +289,7 @@ export default function ProdutosPage() {
               ) : !errorMessage && filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
                   {filteredProducts.map((product) => (
-                    <div key={product.id} className="group flex flex-col bg-cream">
+                    <div key={product.id} className="group flex flex-col bg-cream dark:bg-dark-surface">
                       <div className="aspect-square overflow-hidden relative bg-[#DCC8B2] flex items-center justify-center">
                         {product.foto ? (
                           <Image
@@ -308,7 +308,7 @@ export default function ProdutosPage() {
                         <button
                           aria-label={favoritos.has(product.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                           onClick={(e) => toggleFavorite(e, product.id)}
-                          className="absolute top-2 right-2 z-10 w-8 h-8 bg-cream/85 flex items-center justify-center hover:bg-cream transition-colors shadow-sm"
+                          className="absolute top-2 right-2 z-10 w-8 h-8 bg-cream/85 dark:bg-dark-surface/85 flex items-center justify-center hover:bg-cream dark:hover:bg-dark-surface transition-colors shadow-sm"
                         >
                           <Heart
                             size={15}
@@ -331,19 +331,19 @@ export default function ProdutosPage() {
                         </span>
                         <Link
                           href={`/produtos/${product.id}`}
-                          className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso leading-snug line-clamp-2 h-10 sm:h-auto hover:underline underline-offset-2 decoration-espresso/20"
+                          className="font-sans text-[0.8rem] sm:text-[0.88rem] font-medium text-espresso dark:text-cream leading-snug line-clamp-2 h-10 sm:h-auto hover:underline underline-offset-2 decoration-espresso/20 dark:decoration-cream/20"
                         >
                           {product.nome}
                         </Link>
                         <Link
                           href={`/produtoras/${product.produtoras?.id}`}
-                          className="font-sans text-[0.65rem] sm:text-[0.7rem] text-espresso/50 tracking-tight hover:text-espresso hover:underline underline-offset-2 transition-colors"
+                          className="font-sans text-[0.65rem] sm:text-[0.7rem] text-espresso/50 dark:text-cream/50 tracking-tight hover:text-espresso dark:hover:text-cream hover:underline underline-offset-2 transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
                           por {product.produtoras?.nome_marca}
                         </Link>
-                        <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand">
-                          <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso font-normal">
+                        <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-sand dark:border-espresso/40">
+                          <span className="font-serif text-[1rem] sm:text-[1.15rem] text-espresso dark:text-cream font-normal">
                             R$ {product.preco?.toFixed(2).replace(".", ",")}
                           </span>
                           <button
@@ -374,7 +374,7 @@ export default function ProdutosPage() {
                 </div>
               ) : !errorMessage && (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <p className="font-serif text-xl text-espresso/40 italic">
+                  <p className="font-serif text-xl text-espresso/40 dark:text-cream/40 italic">
                     Nenhum produto encontrado para sua busca.
                   </p>
                   <button

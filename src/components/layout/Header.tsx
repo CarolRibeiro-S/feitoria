@@ -15,6 +15,8 @@ import {
   LayoutDashboard,
   ClipboardList,
   ChevronDown,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { NAV_LINKS, CATEGORIES } from "@/lib/constants";
 
@@ -28,6 +30,7 @@ const CATEGORY_LINKS = [
 import { useCart } from "@/lib/cart-context";
 import { supabase } from "@/lib/supabase-client";
 import { getUserTipo } from "@/lib/user-tipo";
+import { useTheme } from "@/lib/theme-provider";
 import { User } from "@supabase/supabase-js";
 
 // Mantido para uso no Footer
@@ -56,6 +59,7 @@ export function Header({ onOpenCart }: HeaderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [userTipo, setUserTipo] = useState<string | null>(null);
   const { totalItems } = useCart();
+  const { theme, toggleTheme } = useTheme();
 
   async function loadTipo(u: User | null) {
     setUserTipo(u ? await getUserTipo(supabase, u.id) : null);
@@ -88,7 +92,7 @@ export function Header({ onOpenCart }: HeaderProps) {
   return (
     <>
       {/* ── HEADER BAR ─────────────────────────────────────────────────────── */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-cream border-b border-sand">
+      <header className="fixed top-0 inset-x-0 z-50 bg-cream dark:bg-dark-bg border-b border-sand dark:border-espresso/40">
         <div className="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 lg:px-8">
 
           {/* LEFT — hamburger */}
@@ -96,7 +100,7 @@ export function Header({ onOpenCart }: HeaderProps) {
             <button
               aria-label="Abrir menu"
               onClick={() => setDrawerOpen(true)}
-              className="text-espresso/65 hover:text-espresso transition-colors p-1 -ml-1"
+              className="text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream transition-colors p-1 -ml-1"
             >
               <Menu size={20} strokeWidth={1.5} />
             </button>
@@ -114,21 +118,21 @@ export function Header({ onOpenCart }: HeaderProps) {
             />
           </Link>
 
-          {/* RIGHT — icons + auth */}
+          {/* RIGHT — icons + theme toggle + auth */}
           <div className="flex-1 flex items-center justify-end gap-0.5 sm:gap-1">
 
-            <button aria-label="Buscar" className="text-espresso/65 hover:text-espresso transition-colors p-2">
+            <button aria-label="Buscar" className="text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream transition-colors p-2">
               <Search size={20} strokeWidth={1.5} />
             </button>
 
-            <button aria-label="Favoritos" className="text-espresso/65 hover:text-espresso transition-colors p-2">
+            <button aria-label="Favoritos" className="text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream transition-colors p-2">
               <Heart size={20} strokeWidth={1.5} />
             </button>
 
             <button
               aria-label="Carrinho"
               onClick={onOpenCart}
-              className="text-espresso/65 hover:text-espresso transition-colors p-2 relative"
+              className="text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream transition-colors p-2 relative"
             >
               <ShoppingBag size={20} strokeWidth={1.5} />
               {totalItems > 0 && (
@@ -138,10 +142,22 @@ export function Header({ onOpenCart }: HeaderProps) {
               )}
             </button>
 
+            {/* Theme toggle */}
+            <button
+              aria-label={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+              onClick={toggleTheme}
+              className="text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream transition-colors p-2"
+            >
+              {theme === 'dark'
+                ? <Sun size={20} strokeWidth={1.5} />
+                : <Moon size={20} strokeWidth={1.5} />
+              }
+            </button>
+
             {!user ? (
               <Link
                 href="/login"
-                className="font-sans text-[0.73rem] font-medium text-espresso/65 hover:text-espresso transition-colors ml-2 whitespace-nowrap"
+                className="font-sans text-[0.73rem] font-medium text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream transition-colors ml-2 whitespace-nowrap"
               >
                 Entrar
               </Link>
@@ -149,20 +165,20 @@ export function Header({ onOpenCart }: HeaderProps) {
               <div className="relative ml-1">
                 <button
                   onClick={() => setDropdownOpen((v) => !v)}
-                  className="flex items-center gap-1.5 font-sans text-[0.73rem] font-medium text-espresso hover:text-caramel transition-colors py-1.5 px-1"
+                  className="flex items-center gap-1.5 font-sans text-[0.73rem] font-medium text-espresso dark:text-cream hover:text-caramel dark:hover:text-caramel transition-colors py-1.5 px-1"
                 >
                   <span className="max-w-[80px] sm:max-w-[110px] truncate">Olá, {firstName}</span>
-                  <UserIcon size={15} strokeWidth={1.8} className="text-espresso/40 flex-shrink-0" />
+                  <UserIcon size={15} strokeWidth={1.8} className="text-espresso/40 dark:text-cream/40 flex-shrink-0" />
                 </button>
 
                 {dropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-[-1]" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-44 bg-cream border border-sand shadow-lg py-1.5 flex flex-col">
+                    <div className="absolute right-0 mt-2 w-44 bg-cream dark:bg-dark-bg border border-sand dark:border-espresso/40 shadow-lg py-1.5 flex flex-col">
                       <Link
                         href={panelHref}
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 hover:text-espresso hover:bg-sand/30 transition-colors"
+                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 dark:text-cream/70 hover:text-espresso dark:hover:text-cream hover:bg-sand/30 dark:hover:bg-espresso/20 transition-colors"
                       >
                         {userTipo === "produtora"
                           ? <LayoutDashboard size={14} strokeWidth={1.6} />
@@ -173,7 +189,7 @@ export function Header({ onOpenCart }: HeaderProps) {
                       <Link
                         href="/minha-conta"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 hover:text-espresso hover:bg-sand/30 transition-colors"
+                        className="flex items-center gap-2.5 px-4 py-2.5 font-sans text-[0.75rem] text-espresso/70 dark:text-cream/70 hover:text-espresso dark:hover:text-cream hover:bg-sand/30 dark:hover:bg-espresso/20 transition-colors"
                       >
                         <UserCog size={14} strokeWidth={1.6} />
                         Minha Conta
@@ -204,19 +220,19 @@ export function Header({ onOpenCart }: HeaderProps) {
 
       {/* ── DRAWER PANEL ───────────────────────────────────────────────────── */}
       <div
-        className={`fixed top-0 left-0 h-full w-[280px] bg-cream z-[70] flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-[280px] bg-cream dark:bg-dark-bg z-[70] flex flex-col transform transition-transform duration-300 ease-in-out ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Drawer top — FEITORIA + close */}
-        <div className="flex items-center justify-between px-6 h-14 sm:h-16 border-b border-sand flex-shrink-0">
-          <span className="font-serif text-base tracking-[0.2em] uppercase text-espresso">
+        <div className="flex items-center justify-between px-6 h-14 sm:h-16 border-b border-sand dark:border-espresso/40 flex-shrink-0">
+          <span className="font-serif text-base tracking-[0.2em] uppercase text-espresso dark:text-cream">
             Feitoria
           </span>
           <button
             aria-label="Fechar menu"
             onClick={() => setDrawerOpen(false)}
-            className="text-espresso/50 hover:text-espresso transition-colors p-1 -mr-1"
+            className="text-espresso/50 dark:text-cream/50 hover:text-espresso dark:hover:text-cream transition-colors p-1 -mr-1"
           >
             <X size={20} strokeWidth={1.5} />
           </button>
@@ -227,15 +243,15 @@ export function Header({ onOpenCart }: HeaderProps) {
           {NAV_LINKS.map((link) => {
             if (link.name === "Produtos") {
               return (
-                <div key="Produtos" className="border-b border-sand/50">
+                <div key="Produtos" className="border-b border-sand/50 dark:border-espresso/30">
                   <button
                     onClick={() => setProductsOpen((v) => !v)}
-                    className="w-full flex items-center justify-between font-serif text-xl text-espresso hover:text-caramel transition-colors py-4 leading-tight"
+                    className="w-full flex items-center justify-between font-serif text-xl text-espresso dark:text-cream hover:text-caramel transition-colors py-4 leading-tight"
                   >
                     Produtos
                     <ChevronDown
                       size={16}
-                      className={`text-espresso/30 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`}
+                      className={`text-espresso/30 dark:text-cream/30 transition-transform duration-200 ${productsOpen ? "rotate-180" : ""}`}
                     />
                   </button>
                   {productsOpen && (
@@ -245,7 +261,7 @@ export function Header({ onOpenCart }: HeaderProps) {
                           key={label}
                           href={href}
                           onClick={() => { setDrawerOpen(false); setProductsOpen(false); }}
-                          className="font-sans text-[0.82rem] text-espresso/60 hover:text-espresso transition-colors py-2 pl-2 border-b border-sand/20 last:border-0"
+                          className="font-sans text-[0.82rem] text-espresso/60 dark:text-cream/60 hover:text-espresso dark:hover:text-cream transition-colors py-2 pl-2 border-b border-sand/20 dark:border-espresso/20 last:border-0"
                         >
                           {label}
                         </a>
@@ -260,7 +276,7 @@ export function Header({ onOpenCart }: HeaderProps) {
                 key={link.name}
                 href={link.href}
                 onClick={() => setDrawerOpen(false)}
-                className="font-serif text-xl text-espresso hover:text-caramel transition-colors py-4 border-b border-sand/50 last:border-0 leading-tight"
+                className="font-serif text-xl text-espresso dark:text-cream hover:text-caramel transition-colors py-4 border-b border-sand/50 dark:border-espresso/30 last:border-0 leading-tight"
               >
                 {link.name}
               </a>
@@ -269,7 +285,7 @@ export function Header({ onOpenCart }: HeaderProps) {
         </nav>
 
         {/* Drawer footer — Seja uma Produtora */}
-        <div className="px-6 py-7 border-t border-sand flex-shrink-0">
+        <div className="px-6 py-7 border-t border-sand dark:border-espresso/40 flex-shrink-0">
           <a
             href="/seja-produtora"
             onClick={() => setDrawerOpen(false)}

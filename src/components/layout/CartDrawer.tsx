@@ -132,21 +132,21 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-cream z-[70] shadow-2xl transform transition-transform duration-500 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-cream dark:bg-dark-bg z-[70] shadow-2xl transform transition-transform duration-500 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
 
           {/* Header */}
-          <div className="flex items-center justify-between p-5 sm:p-6 border-b border-sand">
+          <div className="flex items-center justify-between p-5 sm:p-6 border-b border-sand dark:border-espresso/40">
             <div className="flex items-center gap-3">
-              <ShoppingBag size={20} className="text-espresso" />
-              <h2 className="font-serif text-lg sm:text-xl text-espresso">Seu Carrinho</h2>
+              <ShoppingBag size={20} className="text-espresso dark:text-cream" />
+              <h2 className="font-serif text-lg sm:text-xl text-espresso dark:text-cream">Seu Carrinho</h2>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-sand/50 rounded-full transition-colors text-espresso/40 hover:text-espresso"
+              className="p-2 hover:bg-sand/50 dark:hover:bg-espresso/30 rounded-full transition-colors text-espresso/40 dark:text-cream/40 hover:text-espresso dark:hover:text-cream"
             >
               <X size={20} />
             </button>
@@ -159,11 +159,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {/* ── Cart items ───────────────────────────────────────── */}
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4 group">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sand flex-shrink-0 overflow-hidden relative">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-sand dark:bg-espresso/40 flex-shrink-0 overflow-hidden relative">
                       <ImagePlaceholder className="w-full h-full" />
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="absolute top-1 right-1 bg-white/80 p-1 rounded-full text-terracota opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-white/80 dark:bg-espresso/80 p-1 rounded-full text-terracota opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -173,33 +173,33 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <Link
                           href={`/produtos/${item.id}`}
                           onClick={onClose}
-                          className="font-sans text-[0.8rem] sm:text-[0.85rem] font-medium text-espresso leading-tight hover:underline underline-offset-2 decoration-espresso/30"
+                          className="font-sans text-[0.8rem] sm:text-[0.85rem] font-medium text-espresso dark:text-cream leading-tight hover:underline underline-offset-2 decoration-espresso/30 dark:decoration-cream/30"
                         >
                           {item.name}
                         </Link>
-                        <p className="font-sans text-[0.7rem] sm:text-[0.72rem] text-espresso/40 mt-1">
+                        <p className="font-sans text-[0.7rem] sm:text-[0.72rem] text-espresso/40 dark:text-cream/40 mt-1">
                           por {item.producer}
                         </p>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center border border-espresso/10 bg-sand/20 h-7 sm:h-8">
+                        <div className="flex items-center border border-espresso/10 dark:border-cream/10 bg-sand/20 dark:bg-espresso/20 h-7 sm:h-8">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
+                            className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 dark:text-cream/30 hover:text-espresso dark:hover:text-cream"
                           >
                             <Minus size={10} />
                           </button>
-                          <span className="w-5 sm:w-6 text-center font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso">
+                          <span className="w-5 sm:w-6 text-center font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso dark:text-cream">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 hover:text-espresso"
+                            className="w-6 sm:w-7 h-full flex items-center justify-center text-espresso/30 dark:text-cream/30 hover:text-espresso dark:hover:text-cream"
                           >
                             <Plus size={10} />
                           </button>
                         </div>
-                        <span className="font-serif text-[0.8rem] sm:text-sm text-espresso">
+                        <span className="font-serif text-[0.8rem] sm:text-sm text-espresso dark:text-cream">
                           R$ {item.price.toFixed(2).replace(".", ",")}
                         </span>
                       </div>
@@ -209,7 +209,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                 {/* ── Cross-sell suggestions ───────────────────────────── */}
                 {crossSellItems.length > 0 && (
-                  <div className="border-t border-sand pt-6 -mx-0">
+                  <div className="border-t border-sand dark:border-espresso/40 pt-6 -mx-0">
                     <p className="font-sans text-[0.58rem] tracking-[0.3em] uppercase text-caramel font-semibold mb-4">
                       Você também pode gostar
                     </p>
@@ -217,7 +217,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       {crossSellItems.map((produto) => (
                         <div
                           key={produto.id}
-                          className="flex items-center gap-3 bg-sand/20 p-3 border border-sand/60"
+                          className="flex items-center gap-3 bg-sand/20 dark:bg-espresso/20 p-3 border border-sand/60 dark:border-espresso/40"
                         >
                           {/* Thumbnail */}
                           <Link
@@ -225,7 +225,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             onClick={onClose}
                             className="flex-shrink-0"
                           >
-                            <div className="w-12 h-12 bg-beige overflow-hidden relative flex items-center justify-center">
+                            <div className="w-12 h-12 bg-beige dark:bg-espresso/50 overflow-hidden relative flex items-center justify-center">
                               {produto.foto ? (
                                 <Image
                                   src={produto.foto}
@@ -235,7 +235,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                   sizes="48px"
                                 />
                               ) : (
-                                <ImageIcon size={14} className="text-espresso/20" />
+                                <ImageIcon size={14} className="text-espresso/20 dark:text-cream/20" />
                               )}
                             </div>
                           </Link>
@@ -245,18 +245,18 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <Link
                               href={`/produtos/${produto.id}`}
                               onClick={onClose}
-                              className="font-sans text-[0.75rem] font-medium text-espresso leading-snug line-clamp-2 hover:text-terracota transition-colors block"
+                              className="font-sans text-[0.75rem] font-medium text-espresso dark:text-cream leading-snug line-clamp-2 hover:text-terracota transition-colors block"
                             >
                               {produto.nome}
                             </Link>
-                            <p className="font-sans text-[0.63rem] text-espresso/40 mt-0.5 truncate">
+                            <p className="font-sans text-[0.63rem] text-espresso/40 dark:text-cream/40 mt-0.5 truncate">
                               {produto.produtoras.nome_marca}
                             </p>
                           </div>
 
                           {/* Price + add */}
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="font-serif text-[0.82rem] text-espresso">
+                            <span className="font-serif text-[0.82rem] text-espresso dark:text-cream">
                               R$ {produto.preco.toFixed(2).replace(".", ",")}
                             </span>
                             <button
@@ -272,7 +272,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                 })
                               }
                               aria-label={`Adicionar ${produto.nome} ao carrinho`}
-                              className="w-7 h-7 bg-espresso text-cream flex items-center justify-center hover:bg-terracota transition-colors flex-shrink-0"
+                              className="w-7 h-7 bg-espresso dark:bg-cream text-cream dark:text-espresso flex items-center justify-center hover:bg-terracota dark:hover:bg-terracota dark:hover:text-cream transition-colors flex-shrink-0"
                             >
                               <Plus size={13} strokeWidth={2} />
                             </button>
@@ -285,8 +285,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-                <ShoppingBag size={40} className="text-espresso/10" />
-                <p className="font-serif text-lg text-espresso/40 italic">
+                <ShoppingBag size={40} className="text-espresso/10 dark:text-cream/10" />
+                <p className="font-serif text-lg text-espresso/40 dark:text-cream/40 italic">
                   Seu carrinho está vazio.
                 </p>
                 <button
@@ -301,29 +301,29 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
           {/* Footer */}
           {items.length > 0 && (
-            <div className="p-5 sm:p-6 bg-sand/30 border-t border-sand">
+            <div className="p-5 sm:p-6 bg-sand/30 dark:bg-dark-surface border-t border-sand dark:border-espresso/40">
               <div className="flex flex-col gap-2 mb-5 sm:mb-6">
                 <div className="flex items-center justify-between">
-                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso/50">
+                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso/50 dark:text-cream/50">
                     Subtotal
                   </span>
-                  <span className="font-serif text-base sm:text-lg text-espresso">
+                  <span className="font-serif text-base sm:text-lg text-espresso dark:text-cream">
                     R$ {subtotal.toFixed(2).replace(".", ",")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso/50">
+                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] text-espresso/50 dark:text-cream/50">
                     Frete
                   </span>
-                  <span className="font-sans text-[0.72rem] text-espresso/40 italic">
+                  <span className="font-sans text-[0.72rem] text-espresso/40 dark:text-cream/40 italic">
                     A calcular
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-sand">
-                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] tracking-[0.2em] uppercase text-espresso/70 font-semibold">
+                <div className="flex items-center justify-between pt-2 border-t border-sand dark:border-espresso/40">
+                  <span className="font-sans text-[0.7rem] sm:text-[0.75rem] tracking-[0.2em] uppercase text-espresso/70 dark:text-cream/70 font-semibold">
                     Total estimado
                   </span>
-                  <span className="font-serif text-xl sm:text-2xl text-espresso">
+                  <span className="font-serif text-xl sm:text-2xl text-espresso dark:text-cream">
                     R$ {subtotal.toFixed(2).replace(".", ",")}
                   </span>
                 </div>
@@ -341,7 +341,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               >
                 Finalizar Pedido
               </button>
-              <p className="text-center font-sans text-[0.6rem] sm:text-[0.65rem] text-espresso/30 mt-4 leading-relaxed px-4">
+              <p className="text-center font-sans text-[0.6rem] sm:text-[0.65rem] text-espresso/30 dark:text-cream/30 mt-4 leading-relaxed px-4">
                 Frete calculado ao finalizar o pedido.
               </p>
             </div>

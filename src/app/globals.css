@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode — overrides the default media-query variant */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Paleta de cores FEITORIA */
   --color-cream: #F6F3EE;
@@ -11,6 +14,10 @@
   --color-terracota: #C55A3A;
   --color-wine: #7E1D1D;
 
+  /* Dark mode backgrounds (warm espresso tones) */
+  --color-dark-bg:      #1A1410;
+  --color-dark-surface: #2C1F18;
+
   /* Tipografia */
   --font-serif: var(--font-playfair), Georgia, serif;
   --font-sans: var(--font-montserrat), system-ui, sans-serif;
@@ -19,6 +26,11 @@
 :root {
   --background: #F6F3EE;
   --foreground: #3B2F2A;
+}
+
+.dark {
+  --background: #1A1410;
+  --foreground: #F6F3EE;
 }
 
 body {

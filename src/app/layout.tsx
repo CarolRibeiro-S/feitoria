@@ -20,6 +20,9 @@ export const metadata: Metadata = {
 };
 
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
+import { ThemeProvider } from "@/lib/theme-provider";
+
+const antiFlashScript = `(function(){try{var t=localStorage.getItem('feitoria-theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -30,9 +33,15 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${playfair.variable} ${montserrat.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: antiFlashScript }} />
+      </head>
       <body className="min-h-full flex flex-col">
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <ThemeProvider>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );
