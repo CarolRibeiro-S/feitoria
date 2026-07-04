@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Gift } from 'lucide-react'
+import { supabase } from '@/lib/supabase-client'
 
 export default function KitsPage() {
   const [nome, setNome] = useState('')
@@ -16,23 +17,37 @@ export default function KitsPage() {
     setErro(null)
 
     try {
-      const res = await fetch('https://formspree.io/f/xvzjgdaw', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          _subject: 'Interesse em Kits — FEITORIA',
-          nome,
-          email,
-        }),
-      })
+      // 1. Salva no Supabase (primário)
+      const { error: dbError } = await supabase
+        .from('interesse_kits')
+        .insert({ nome: nome.trim(), email: email.trim().toLowerCase() })
 
-      if (res.ok) {
-        setEnviado(true)
-        setNome('')
-        setEmail('')
-      } else {
-        setErro('Algo deu errado. Tente novamente em instantes.')
+      if (dbError) {
+        // Ignora conflito de email duplicado, falha em qualquer outro erro
+        if (dbError.code !== '23505') {
+          setErro('Algo deu errado. Tente novamente em instantes.')
+          return
+        }
       }
+
+      // 2. Envia para o Formspree (secundário — falha silenciosa)
+      try {
+        await fetch('https://formspree.io/f/xvzjgdaw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            _subject: 'Interesse em Kits — FEITORIA',
+            nome,
+            email,
+          }),
+        })
+      } catch {
+        // Non-critical
+      }
+
+      setEnviado(true)
+      setNome('')
+      setEmail('')
     } catch {
       setErro('Algo deu errado. Tente novamente em instantes.')
     } finally {

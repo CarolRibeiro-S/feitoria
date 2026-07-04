@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Building2, Sliders, Tag, ShieldCheck, UserPlus, Check, AlertCircle, Loader2, X } from "lucide-react";
+import { Building2, Sliders, Tag, ShieldCheck, UserPlus, Check, AlertCircle, Loader2, X, Gift } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 
 const CATEGORIAS = ["Confeitaria", "Cookies", "Padaria", "Cafés", "Empório", "Bebidas", "Congelados", "Kits"];
@@ -10,6 +10,7 @@ type Configs        = Record<string, string>;
 type Admin          = { id: string; nome: string | null; email: string };
 type FeedbackState  = "idle" | "saving" | "ok" | "err";
 type PromoState     = "idle" | "loading" | "ok" | "notfound" | "err";
+type InteresseKit   = { id: string; nome: string; email: string; criado_em: string; notificado: boolean };
 
 const inputCls =
   "bg-cream border border-sand px-4 py-2.5 font-sans text-[0.82rem] text-espresso outline-none focus:border-espresso/45 transition-colors placeholder:text-espresso/25 w-full";
@@ -94,9 +95,10 @@ function SaveButton({
 /* ── Page ────────────────────────────────────────────────────────────────── */
 
 export default function ConfiguracoesPage() {
-  const [loading,    setLoading]    = useState(true);
-  const [currentId,  setCurrentId]  = useState<string | null>(null);
-  const [admins,     setAdmins]     = useState<Admin[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [currentId,     setCurrentId]     = useState<string | null>(null);
+  const [admins,        setAdmins]        = useState<Admin[]>([]);
+  const [interessados,  setInteressados]  = useState<InteresseKit[]>([]);
 
   // Section state
   const [empresa,  setEmpresa]  = useState({ nome_empresa: "", cnpj: "", razao_social: "" });
@@ -113,9 +115,10 @@ export default function ConfiguracoesPage() {
 
   useEffect(() => {
     async function load() {
-      const [cfgsRes, admsRes, { data: { user } }] = await Promise.all([
+      const [cfgsRes, admsRes, kitsRes, { data: { user } }] = await Promise.all([
         supabase.from("configuracoes").select("chave, valor"),
         supabase.from("usuarios").select("id, nome, email").eq("tipo", "admin").order("nome"),
+        supabase.from("interesse_kits").select("id, nome, email, criado_em, notificado").order("criado_em", { ascending: false }),
         supabase.auth.getUser(),
       ]);
 
@@ -134,6 +137,7 @@ export default function ConfiguracoesPage() {
         pedido_minimo:   map.pedido_minimo   ?? "45",
       });
       setAdmins((admsRes.data ?? []) as Admin[]);
+      setInteressados((kitsRes.data ?? []) as InteresseKit[]);
       setCurrentId(user?.id ?? null);
       setLoading(false);
     }
@@ -187,6 +191,18 @@ export default function ConfiguracoesPage() {
     setPromoStatus("ok");
     setPromoEmail("");
     setTimeout(() => setPromoStatus("idle"), 4000);
+  }
+
+  async function toggleNotificado(id: string, atual: boolean) {
+    const { error } = await supabase
+      .from("interesse_kits")
+      .update({ notificado: !atual })
+      .eq("id", id);
+    if (!error) {
+      setInteressados((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, notificado: !atual } : r))
+      );
+    }
   }
 
   async function revogarAdmin(adminId: string) {
@@ -400,6 +416,58 @@ export default function ConfiguracoesPage() {
             </p>
           )}
         </div>
+      </SectionCard>
+
+      {/* ── Interessados em Kits ──────────────────────────────────────────── */}
+      <SectionCard title="Interessados em Kits" icon={Gift}>
+
+        <p className="font-sans text-[0.75rem] text-espresso/50">
+          {interessados.length === 0
+            ? "Nenhum registro ainda."
+            : `${interessados.length} ${interessados.length === 1 ? "pessoa aguardando" : "pessoas aguardando"} o lançamento dos kits.`}
+        </p>
+
+        {interessados.length > 0 && (
+          <div className="flex flex-col divide-y divide-sand/50">
+            {interessados.map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 gap-4"
+              >
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="font-sans text-[0.82rem] font-medium text-espresso truncate">
+                    {r.nome}
+                  </span>
+                  <span className="font-sans text-[0.72rem] text-espresso/40 truncate">
+                    {r.email}
+                  </span>
+                  <span className="font-sans text-[0.62rem] text-espresso/30">
+                    {new Date(r.criado_em).toLocaleDateString("pt-BR", {
+                      day: "2-digit", month: "short", year: "numeric",
+                    })}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => toggleNotificado(r.id, r.notificado)}
+                  title={r.notificado ? "Marcar como não notificado" : "Marcar como notificado"}
+                  className={`flex items-center gap-1.5 flex-shrink-0 font-sans text-[0.68rem] font-semibold tracking-wide transition-colors ${
+                    r.notificado ? "text-olive" : "text-espresso/25 hover:text-espresso/60"
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 border flex items-center justify-center flex-shrink-0 transition-colors ${
+                      r.notificado ? "bg-olive border-olive" : "border-espresso/25 hover:border-espresso/50"
+                    }`}
+                  >
+                    {r.notificado && <Check size={10} strokeWidth={2.5} className="text-cream" />}
+                  </div>
+                  {r.notificado ? "Notificado" : "Notificar"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </SectionCard>
 
     </div>
