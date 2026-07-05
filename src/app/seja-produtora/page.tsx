@@ -4,13 +4,11 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase-client";
 
 const CATEGORIAS = [
-  "Confeitaria",
-  "Cookies",
-  "Padaria",
-  "Cafés",
+  "Pães & Confeitaria",
+  "Bebidas & Cafés",
   "Empório",
-  "Bebidas",
   "Congelados",
+  "Kits",
   "Outro",
 ];
 

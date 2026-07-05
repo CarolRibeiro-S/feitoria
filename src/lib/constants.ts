@@ -1,10 +1,7 @@
 import {
   Cake,
-  Cookie,
-  Wheat,
   Coffee,
   ShoppingBasket,
-  Wine,
   Gift,
   Snowflake,
   type LucideIcon
@@ -19,12 +16,9 @@ export const NAV_LINKS = [
 ];
 
 export const CATEGORIES: { name: string; Icon: LucideIcon }[] = [
-  { name: "Confeitaria", Icon: Cake },
-  { name: "Cookies", Icon: Cookie },
-  { name: "Padaria", Icon: Wheat },
-  { name: "Cafés", Icon: Coffee },
-  { name: "Empório", Icon: ShoppingBasket },
-  { name: "Bebidas", Icon: Wine },
-  { name: "Kits", Icon: Gift },
-  { name: "Congelados", Icon: Snowflake },
+  { name: "Pães & Confeitaria", Icon: Cake },
+  { name: "Bebidas & Cafés",    Icon: Coffee },
+  { name: "Empório",            Icon: ShoppingBasket },
+  { name: "Congelados",         Icon: Snowflake },
+  { name: "Kits",               Icon: Gift },
 ];

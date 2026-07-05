@@ -9,13 +9,11 @@ import { supabase } from "@/lib/supabase-client";
 import { createProduto } from "@/app/actions/produtos";
 
 const CATEGORIAS = [
-  "Confeitaria",
-  "Padaria",
-  "Cafés",
+  "Pães & Confeitaria",
+  "Bebidas & Cafés",
   "Empório",
-  "Bebidas",
-  "Kits e Presentes",
   "Congelados",
+  "Kits",
 ];
 
 const labelCls =

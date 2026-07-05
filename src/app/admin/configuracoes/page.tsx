@@ -5,7 +5,7 @@ import { Building2, Sliders, Tag, ShieldCheck, UserPlus, Check, AlertCircle, Loa
 import { supabase } from "@/lib/supabase-client";
 import { notificarInteresseKit } from "@/app/actions/kits";
 
-const CATEGORIAS = ["Confeitaria", "Cookies", "Padaria", "Cafés", "Empório", "Bebidas", "Congelados", "Kits"];
+const CATEGORIAS = ["Pães & Confeitaria", "Bebidas & Cafés", "Empório", "Congelados", "Kits"];
 
 type Configs        = Record<string, string>;
 type Admin          = { id: string; nome: string | null; email: string };

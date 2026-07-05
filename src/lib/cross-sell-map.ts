@@ -1,11 +1,9 @@
 export const crossSellMap: Record<string, string[]> = {
-  'Padaria':     ['Empório', 'Bebidas'],
-  'Cookies':     ['Bebidas', 'Cafés'],
-  'Confeitaria': ['Cafés', 'Bebidas'],
-  'Congelados':  ['Empório', 'Bebidas'],
-  'Cafés':       ['Confeitaria', 'Padaria'],
-  'Empório':     ['Bebidas', 'Padaria'],
-  'Bebidas':     ['Cookies', 'Confeitaria'],
+  'Pães & Confeitaria': ['Bebidas & Cafés', 'Empório'],
+  'Bebidas & Cafés':    ['Pães & Confeitaria', 'Empório'],
+  'Empório':            ['Bebidas & Cafés', 'Pães & Confeitaria'],
+  'Congelados':         ['Bebidas & Cafés', 'Empório'],
+  'Kits':               ['Pães & Confeitaria', 'Bebidas & Cafés'],
 }
 
 export type CrossSellHint = {
@@ -19,14 +17,13 @@ export function getCrossSellHint(itemName: string, categoria: string): CrossSell
   const lower = itemName.toLowerCase()
 
   if (lower.includes('pão de queijo') || lower.includes('pão')) {
-    // Bebidas with "café" in the name take priority, then Empório
-    return { categories: ['Bebidas', 'Empório'], priorityFilter: 'café' }
+    return { categories: ['Bebidas & Cafés', 'Empório'], priorityFilter: 'café' }
   }
   if (lower.includes('craquelado') || lower.includes('cookie')) {
-    return { categories: ['Bebidas', 'Cafés'] }
+    return { categories: ['Bebidas & Cafés'] }
   }
   if (lower.includes('grissini')) {
-    return { categories: ['Bebidas'] }
+    return { categories: ['Bebidas & Cafés'] }
   }
 
   return { categories: crossSellMap[categoria] ?? [] }
