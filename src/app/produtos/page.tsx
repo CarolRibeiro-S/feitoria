@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
-  SlidersHorizontal,
   AlertCircle,
   Image as ImageIcon,
   Heart,
@@ -189,75 +188,37 @@ export default function ProdutosPage() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-[240px_1fr] gap-10 lg:gap-12">
-
-            {/* ── FILTERS (Desktop) ─────────────────────────────────────────── */}
-            <aside className="hidden lg:flex flex-col gap-10">
-              <div>
-                <h3 className="font-sans text-[0.6rem] tracking-[0.32em] uppercase text-espresso/40 dark:text-cream/40 mb-6 font-semibold flex items-center gap-2">
-                  <SlidersHorizontal size={12} /> Categorias
-                </h3>
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className={`font-sans text-[0.85rem] text-left py-1.5 transition-colors ${
-                      selectedCategory === null ? "text-terracota font-medium" : "text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream"
-                    }`}
-                  >
-                    Ver Tudo
-                  </button>
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.name}
-                      onClick={() => setSelectedCategory(cat.name)}
-                      className={`font-sans text-[0.85rem] text-left py-1.5 transition-colors flex items-center justify-between group ${
-                        selectedCategory === cat.name ? "text-terracota font-medium" : "text-espresso/65 dark:text-cream/65 hover:text-espresso dark:hover:text-cream"
-                      }`}
-                    >
-                      {cat.name}
-                      <cat.Icon size={14} className={selectedCategory === cat.name ? "text-terracota" : "text-espresso/20 group-hover:text-espresso/40"} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-sand dark:border-espresso/40">
-                <p className="font-serif text-sm text-espresso/50 dark:text-cream/50 italic leading-relaxed">
-                  Cada item em nosso catálogo é produzido de forma artesanal, respeitando o tempo e a natureza.
-                </p>
-              </div>
-            </aside>
-
-            {/* ── MOBILE CATEGORIES ─────────────────────────────────────────── */}
-            <div className="lg:hidden flex gap-2.5 sm:gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-5 px-5">
+          {/* ── CATEGORY PILLS ────────────────────────────────────────────── */}
+          <div className="overflow-x-auto scrollbar-hide -mx-5 px-5 sm:mx-0 sm:px-0 mb-10 sm:mb-12">
+            <div className="flex sm:flex-wrap sm:justify-center gap-2.5 sm:gap-3 min-w-max sm:min-w-0">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 font-sans text-[0.65rem] sm:text-[0.7rem] tracking-wider uppercase border transition-colors ${
+                className={`flex-shrink-0 px-5 py-2 rounded-full font-sans text-sm border transition-colors ${
                   selectedCategory === null
-                    ? "bg-espresso text-cream border-espresso"
-                    : "bg-cream dark:bg-dark-bg text-espresso dark:text-cream border-espresso/10 dark:border-cream/10"
+                    ? "bg-terracota border-terracota text-cream"
+                    : "bg-transparent border-espresso/25 dark:border-cream/25 text-espresso dark:text-cream hover:border-espresso/60 dark:hover:border-cream/60"
                 }`}
               >
-                Tudo
+                Ver Tudo
               </button>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.name}
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 font-sans text-[0.65rem] sm:text-[0.7rem] tracking-wider uppercase border transition-colors flex items-center gap-2 ${
+                  className={`flex-shrink-0 px-5 py-2 rounded-full font-sans text-sm border transition-colors ${
                     selectedCategory === cat.name
-                      ? "bg-espresso text-cream border-espresso"
-                      : "bg-cream dark:bg-dark-bg text-espresso dark:text-cream border-espresso/10 dark:border-cream/10"
+                      ? "bg-terracota border-terracota text-cream"
+                      : "bg-transparent border-espresso/25 dark:border-cream/25 text-espresso dark:text-cream hover:border-espresso/60 dark:hover:border-cream/60"
                   }`}
                 >
-                  <cat.Icon size={13} />
                   {cat.name}
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* ── PRODUCT GRID ──────────────────────────────────────────────── */}
-            <div className="flex flex-col gap-8">
+          {/* ── PRODUCT GRID ──────────────────────────────────────────────── */}
+          <div className="flex flex-col gap-8">
               {errorMessage && (
                 <div className="bg-wine/5 border border-wine/20 p-6 flex flex-col items-center gap-4 text-center">
                   <AlertCircle className="text-wine/60" size={32} />
@@ -274,7 +235,7 @@ export default function ProdutosPage() {
               )}
 
               {!errorMessage && loading ? (
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
                   {[...Array(6)].map((_, i) => (
                     <div key={i} className="flex flex-col animate-pulse">
                       <div className="aspect-square bg-sand/50 dark:bg-espresso/30" />
@@ -287,7 +248,7 @@ export default function ProdutosPage() {
                   ))}
                 </div>
               ) : !errorMessage && filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10">
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="group flex flex-col bg-cream dark:bg-dark-surface">
                       <div className="aspect-square overflow-hidden relative bg-[#DCC8B2] flex items-center justify-center">
@@ -387,7 +348,6 @@ export default function ProdutosPage() {
               )}
             </div>
 
-          </div>
         </div>
       </main>
     </div>
