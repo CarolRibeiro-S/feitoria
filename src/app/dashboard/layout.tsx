@@ -10,6 +10,7 @@ import {
   Archive,
   ClipboardList,
   TrendingUp,
+  BarChart2,
   Store,
   LogOut,
   Menu,
@@ -23,6 +24,7 @@ const NAV = [
   { label: "Estoque",        href: "/dashboard/estoque",   icon: Archive         },
   { label: "Pedidos",        href: "/dashboard/pedidos",   icon: ClipboardList   },
   { label: "Vendas",         href: "/dashboard/vendas",    icon: TrendingUp      },
+  { label: "Analytics",      href: "/dashboard/analytics", icon: BarChart2       },
   { label: "Perfil da Marca",href: "/dashboard/perfil",    icon: Store           },
 ];
 
