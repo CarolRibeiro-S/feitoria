@@ -7,6 +7,7 @@ import Image from "next/image";
 import {
   LayoutDashboard,
   Package,
+  Archive,
   ClipboardList,
   TrendingUp,
   Store,
@@ -19,6 +20,7 @@ import { supabase } from "@/lib/supabase-client";
 const NAV = [
   { label: "Visão Geral",    href: "/dashboard",          icon: LayoutDashboard },
   { label: "Meus Produtos",  href: "/dashboard/produtos",  icon: Package         },
+  { label: "Estoque",        href: "/dashboard/estoque",   icon: Archive         },
   { label: "Pedidos",        href: "/dashboard/pedidos",   icon: ClipboardList   },
   { label: "Vendas",         href: "/dashboard/vendas",    icon: TrendingUp      },
   { label: "Perfil da Marca",href: "/dashboard/perfil",    icon: Store           },
