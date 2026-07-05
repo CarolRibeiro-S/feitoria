@@ -107,17 +107,17 @@ export default function Home() {
                 Ver todas <ArrowRight size={11} />
               </a>
             </div>
-            <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-6 scrollbar-hide -mx-5 px-5 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 lg:grid lg:grid-cols-7">
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
               {CATEGORIES.map(({ name, Icon }) => (
                 <a
                   key={name}
                   href={`/produtos?categoria=${name}`}
-                  className="flex flex-col items-center gap-2.5 flex-shrink-0 group lg:flex-shrink"
+                  className="flex flex-col items-center gap-2.5 group"
                 >
-                  <div className="w-[4.2rem] h-[4.2rem] sm:w-20 sm:h-20 lg:w-full bg-cream dark:bg-dark-bg group-hover:bg-beige/70 dark:group-hover:bg-espresso/40 transition-colors border border-beige/40 dark:border-espresso/40 flex items-center justify-center">
+                  <div className="w-[4.2rem] h-[4.2rem] sm:w-20 sm:h-20 bg-cream dark:bg-dark-bg group-hover:bg-beige/70 dark:group-hover:bg-espresso/40 transition-colors border border-beige/40 dark:border-espresso/40 flex items-center justify-center">
                     <Icon size={24} strokeWidth={1.4} className="text-olive/80 group-hover:text-olive transition-colors" />
                   </div>
-                  <span className="font-sans text-[0.65rem] sm:text-[0.68rem] font-medium text-espresso/75 dark:text-cream/75 tracking-wide text-center w-[4.2rem] sm:w-20 lg:w-full leading-tight">
+                  <span className="font-sans text-[0.65rem] sm:text-[0.68rem] font-medium text-espresso/75 dark:text-cream/75 tracking-wide text-center w-[4.2rem] sm:w-20 leading-tight">
                     {name}
                   </span>
                 </a>
